@@ -6,6 +6,7 @@
     xmlns:local="using:FluentScrobbler"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
@@ -26,7 +27,7 @@
                 <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE81C;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
+                            <ic:SymbolIcon Symbol="History" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="Scrobbles Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="42" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
@@ -37,7 +38,7 @@
                 <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE77B;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
+                            <ic:SymbolIcon Symbol="Person" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="Top Artist (Week)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="Daft Punk" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
@@ -48,7 +49,7 @@
                 <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE9D2;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
+                            <ic:SymbolIcon Symbol="DataHistogram" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="Total Scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="18,492" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
@@ -59,7 +60,7 @@
                 <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE703;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
+                            <ic:SymbolIcon Symbol="CheckmarkCircle" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="Service Status" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="Active" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
@@ -78,7 +79,7 @@
 
                     <Border Grid.Column="0" Width="80" Height="80" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
                         <Grid>
-                            <FontIcon Glyph="&#xE93C;" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <ic:SymbolIcon Symbol="MusicNote1" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </Grid>
                     </Border>
 
@@ -96,7 +97,7 @@
                     <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <Button Style="{ThemeResource AccentButtonStyle}" Padding="16,8">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xEB51;" FontSize="14" />
+                                <ic:SymbolIcon Symbol="Heart" FontSize="14" />
                                 <TextBlock Text="Love Track" />
                             </StackPanel>
                         </Button>
@@ -118,7 +119,6 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-
                     <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ScrobblesPage" Click="QuickAction_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -126,12 +126,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xE81C;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="History" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Scrobbles recentes" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="Check history &amp; scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
 
@@ -142,12 +142,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xE9D2;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="DataHistogram" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Top charts" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Top Charts" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="Artists, albums &amp; tracks" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
 
@@ -158,12 +158,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xE790;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Color" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Tema do app" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="App Theme" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="Theme &amp; appearance" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
 
@@ -174,14 +174,15 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xEB51;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Heart" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                 <TextBlock Text="Favorites" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="Your loved tracks" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
+
                     <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -189,12 +190,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xE713;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Settings" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Config gerais" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Scrobbling &amp; system settings" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="General Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Scrobbling &amp; system preferences" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
 
@@ -205,12 +206,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <FontIcon Grid.Column="0" Glyph="&#xE1A6;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Premium" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Get Pro" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Support &amp; premium features" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="Support Project" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Help keep the project active" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                 </Grid>

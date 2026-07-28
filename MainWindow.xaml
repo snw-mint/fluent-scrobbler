@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -18,7 +19,7 @@
 
         <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <FontIcon Glyph="&#xE81C;" FontSize="15" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                <ic:SymbolIcon Symbol="MusicNote1" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                 <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <TextBlock Text="v1.0" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
             </StackPanel>
@@ -35,51 +36,51 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Dashboard" Tag="HomePage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE80F;" />
+                        <ic:SymbolIcon Symbol="Home" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="Scrobbles" Tag="ScrobblesPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE81C;" />
+                        <ic:SymbolIcon Symbol="History" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="Favorites" Tag="FavoritesPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEB51;" />
+                        <ic:SymbolIcon Symbol="Heart" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="Charts" Tag="ChartsPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE9D2;" />
+                        <ic:SymbolIcon Symbol="DataHistogram" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="Settings" Tag="SettingsPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;" />
+                        <ic:SymbolIcon Symbol="Settings" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="Account" Tag="AccountPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE77B;" />
+                        <ic:SymbolIcon Symbol="Person" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="Get Pro" Tag="ProPage">
+                <NavigationViewItem Content="Support" Tag="ProPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE743;" FontFamily="Segoe Fluent Icons" />
+                        <ic:SymbolIcon Symbol="Premium" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem Content="About" Tag="AboutPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE946;" />
+                        <ic:SymbolIcon Symbol="Info" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.FooterMenuItems>

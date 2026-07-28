@@ -7,6 +7,7 @@
     xmlns:models="using:FluentScrobbler.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
@@ -19,7 +20,7 @@
 
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="Refresh_Click">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE72C;" FontSize="14"/>
+                        <ic:SymbolIcon Symbol="ArrowClockwise" FontSize="14"/>
                         <TextBlock Text="Refresh" />
                     </StackPanel>
                 </Button>
@@ -42,7 +43,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Width="64" Height="64" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                            <FontIcon Glyph="&#xE93C;" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <ic:SymbolIcon Symbol="MusicNote1" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
@@ -57,34 +58,34 @@
 
                         <Border Grid.Column="2" VerticalAlignment="Center" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="12,6" CornerRadius="16">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE81C;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <ic:SymbolIcon Symbol="History" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock x:Name="NowPlayingCount" Text="34 scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
 
                         <Button Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0">
-                            <FontIcon Glyph="&#xE712;" />
+                            <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="14" />
                             <Button.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuFlyoutItem Text="Favoritar" Click="MenuFavorite_Click">
+                                    <MenuFlyoutItem Text="Love Track" Click="MenuFavorite_Click">
                                         <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE734;" />
+                                            <ic:SymbolIcon Symbol="Heart" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
-                                    <MenuFlyoutItem Text="Editar" Click="MenuEdit_Click">
+                                    <MenuFlyoutItem Text="Edit" Click="MenuEdit_Click">
                                         <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE70F;" />
+                                            <ic:SymbolIcon Symbol="Edit" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                     <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Text="Excluir" Click="MenuDelete_Click">
+                                    <MenuFlyoutItem Text="Delete" Click="MenuDelete_Click">
                                         <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xE74D;" />
+                                            <ic:SymbolIcon Symbol="Delete" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
-                                    <MenuFlyoutItem Text="Bloquear" Click="MenuBlock_Click">
+                                    <MenuFlyoutItem Text="Block" Click="MenuBlock_Click">
                                         <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xEA39;" />
+                                            <ic:SymbolIcon Symbol="DismissCircle" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                 </MenuFlyout>
@@ -116,7 +117,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Border Grid.Column="0" Width="52" Height="52" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                                        <FontIcon Glyph="&#xE93C;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <ic:SymbolIcon Symbol="MusicNote1" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </Border>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
@@ -135,28 +136,28 @@
                                     </Border>
 
                                     <Button Grid.Column="4" VerticalAlignment="Center">
-                                        <FontIcon Glyph="&#xE712;" FontSize="12" />
+                                        <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="14" />
                                         <Button.Flyout>
                                             <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                                <MenuFlyoutItem Text="Favoritar" Click="MenuFavorite_Click">
+                                                <MenuFlyoutItem Text="Love Track" Click="MenuFavorite_Click">
                                                     <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE734;" />
+                                                        <ic:SymbolIcon Symbol="Heart" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
-                                                <MenuFlyoutItem Text="Editar" Click="MenuEdit_Click">
+                                                <MenuFlyoutItem Text="Edit" Click="MenuEdit_Click">
                                                     <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE70F;" />
+                                                        <ic:SymbolIcon Symbol="Edit" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                                 <MenuFlyoutSeparator />
-                                                <MenuFlyoutItem Text="Excluir" Click="MenuDelete_Click">
+                                                <MenuFlyoutItem Text="Delete" Click="MenuDelete_Click">
                                                     <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE74D;" />
+                                                        <ic:SymbolIcon Symbol="Delete" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
-                                                <MenuFlyoutItem Text="Bloquear" Click="MenuBlock_Click">
+                                                <MenuFlyoutItem Text="Block" Click="MenuBlock_Click">
                                                     <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xEA39;" />
+                                                        <ic:SymbolIcon Symbol="DismissCircle" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                             </MenuFlyout>
