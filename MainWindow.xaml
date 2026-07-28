@@ -17,9 +17,10 @@
         </Grid.RowDefinitions>
 
         <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
-            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                <FontIcon Glyph="&#xE81C;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <FontIcon Glyph="&#xE81C;" FontSize="15" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                 <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <TextBlock Text="v1.0" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
             </StackPanel>
         </Grid>
 
@@ -32,7 +33,7 @@
                         Loaded="NavView_Loaded">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Home" Tag="HomePage">
+                <NavigationViewItem Content="Dashboard" Tag="HomePage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
@@ -41,6 +42,12 @@
                 <NavigationViewItem Content="Scrobbles" Tag="ScrobblesPage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="Favorites" Tag="FavoritesPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEB51;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
@@ -64,6 +71,12 @@
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="Get Pro" Tag="ProPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE743;" FontFamily="Segoe Fluent Icons" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
                 <NavigationViewItem Content="About" Tag="AboutPage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE946;" />

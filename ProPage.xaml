@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FluentScrobbler.ProPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FluentScrobbler"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
+        <StackPanel Spacing="24" MaxWidth="700" HorizontalAlignment="Left">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <Border Width="72" Height="72" CornerRadius="36" Background="{ThemeResource AccentFillColorDefaultBrush}">
+                        <FontIcon Glyph="&#xE1A6;" FontSize="36" Foreground="White" />
+                    </Border>
+
+                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                        <TextBlock Text="Get Fluent Scrobbler PRO" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Support the project &amp; unlock premium features" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <Button Style="{ThemeResource AccentButtonStyle}" Padding="24,10" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE1A6;" FontSize="14" />
+                            <TextBlock Text="Upgrade to PRO" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="PRO Features" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+
+                <Grid ColumnSpacing="16" RowSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE790;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Dynamic Colors" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="App theme automatically matches cover artwork colors in real time." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="0" Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE9D2;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Advanced Charts" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Detailed graphs, export listening history to CSV/JSON, and custom time ranges." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE7F4;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Desktop Widget" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Floating mini scrobbler widget for Windows desktop." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xEB51;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Supporter Badge" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Special supporter badge on your Last.fm profile and in app." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

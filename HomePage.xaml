@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
         <StackPanel Spacing="24">
             <StackPanel Spacing="4">
                 <TextBlock Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
@@ -26,21 +26,21 @@
                 <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE81C;" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="18"/>
+                            <FontIcon Glyph="&#xE81C;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
                             <TextBlock Text="Scrobbles Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="42" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
-                        <TextBlock Text="+12% from yesterday" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="ForestGreen" />
+                        <TextBlock Text="+12% from yesterday" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE77B;" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="18"/>
+                            <FontIcon Glyph="&#xE77B;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
                             <TextBlock Text="Top Artist (Week)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
-                        <TextBlock Text="Daft Punk" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="Daft Punk" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="128 plays" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </Border>
@@ -48,7 +48,7 @@
                 <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE9D2;" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="18"/>
+                            <FontIcon Glyph="&#xE9D2;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
                             <TextBlock Text="Total Scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                         <TextBlock Text="18,492" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
@@ -59,16 +59,16 @@
                 <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE703;" Foreground="ForestGreen" FontSize="18"/>
+                            <FontIcon Glyph="&#xE703;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="18"/>
                             <TextBlock Text="Service Status" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
-                        <TextBlock Text="Active" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Foreground="ForestGreen" />
+                        <TextBlock Text="Active" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
                         <TextBlock Text="Last.fm Connected" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource AccentControlElevationBorderBrush}" BorderThickness="1.5" CornerRadius="12" Padding="20">
+            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                 <Grid ColumnSpacing="20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -76,8 +76,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="80" Height="80" CornerRadius="8">
-                        <Grid Background="#2A2A2A">
+                    <Border Grid.Column="0" Width="80" Height="80" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                        <Grid>
                             <FontIcon Glyph="&#xE93C;" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </Grid>
                     </Border>
@@ -96,7 +96,7 @@
                     <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <Button Style="{ThemeResource AccentButtonStyle}" Padding="16,8">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon Glyph="&#xE735;" FontSize="14" />
+                                <FontIcon Glyph="&#xEB51;" FontSize="14" />
                                 <TextBlock Text="Love Track" />
                             </StackPanel>
                         </Button>
@@ -106,30 +106,112 @@
 
             <StackPanel Spacing="12">
                 <TextBlock Text="Quick Actions" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
-                <Grid ColumnSpacing="16">
+
+                <Grid ColumnSpacing="16" RowSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                    <Button Grid.Column="0" HorizontalAlignment="Stretch" Padding="16" Height="70">
-                        <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
-                            <FontIcon Glyph="&#xE81C;" FontSize="24" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                            <StackPanel VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="View Recent Scrobbles" FontWeight="SemiBold" />
-                                <TextBlock Text="Check history, favorite, or edit scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                    <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ScrobblesPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE81C;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Scrobbles recentes" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Check history &amp; scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                        </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
                     </Button>
 
-                    <Button Grid.Column="1" HorizontalAlignment="Stretch" Padding="16" Height="70">
-                        <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
-                            <FontIcon Glyph="&#xE9D2;" FontSize="24" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                            <StackPanel VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Explore Top Charts" FontWeight="SemiBold" />
-                                <TextBlock Text="See your top artists, albums, and tracks" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ChartsPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE9D2;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Top charts" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Artists, albums &amp; tracks" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
-                        </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE790;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Tema do app" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Theme &amp; appearance" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="FavoritesPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xEB51;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Favorites" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Your loved tracks" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE713;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Config gerais" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Scrobbling &amp; system settings" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ProPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE1A6;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Get Pro" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Support &amp; premium features" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
                     </Button>
                 </Grid>
             </StackPanel>

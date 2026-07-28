@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
         <StackPanel Spacing="24">
             <StackPanel Spacing="4">
                 <TextBlock Text="Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
@@ -23,8 +23,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="72" Height="72" CornerRadius="36" Background="#3B4252">
-                        <FontIcon Glyph="&#xE77B;" FontSize="32" Foreground="White" />
+                    <Border Grid.Column="0" Width="72" Height="72" CornerRadius="36" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                        <FontIcon Glyph="&#xE77B;" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Border>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">

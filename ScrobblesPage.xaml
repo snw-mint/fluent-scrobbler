@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
         <StackPanel Spacing="20">
             <Grid>
                 <StackPanel Spacing="4">
@@ -41,7 +41,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Width="64" Height="64" CornerRadius="6" Background="#2B2B2B">
+                        <Border Grid.Column="0" Width="64" Height="64" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
                             <FontIcon Glyph="&#xE93C;" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </Border>
 
@@ -115,7 +115,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <Border Grid.Column="0" Width="52" Height="52" CornerRadius="6" Background="#2B2B2B">
+                                    <Border Grid.Column="0" Width="52" Height="52" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
                                         <FontIcon Glyph="&#xE93C;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </Border>
 

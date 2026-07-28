@@ -31,9 +31,11 @@ namespace FluentScrobbler
                 {
                     "HomePage" => typeof(HomePage),
                     "ScrobblesPage" => typeof(ScrobblesPage),
+                    "FavoritesPage" => typeof(FavoritesPage),
                     "ChartsPage" => typeof(ChartsPage),
                     "SettingsPage" => typeof(SettingsPage),
                     "AccountPage" => typeof(AccountPage),
+                    "ProPage" => typeof(ProPage),
                     "AboutPage" => typeof(AboutPage),
                     _ => null
                 };

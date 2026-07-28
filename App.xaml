@@ -8,9 +8,21 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+
+            <Color x:Key="SystemAccentColor">#0078D4</Color>
+            <Color x:Key="SystemAccentColorLight1">#429CE3</Color>
+            <Color x:Key="SystemAccentColorLight2">#74B9EE</Color>
+            <Color x:Key="SystemAccentColorLight3">#A6D7F7</Color>
+            <Color x:Key="SystemAccentColorDark1">#005FB8</Color>
+            <Color x:Key="SystemAccentColorDark2">#00458E</Color>
+            <Color x:Key="SystemAccentColorDark3">#003166</Color>
+
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="#0078D4" Opacity="0.2" />
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumBrush" Color="#0078D4" Opacity="0.4" />
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentHighBrush" Color="#0078D4" Opacity="0.6" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#005FB8" />
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#005FB8" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
