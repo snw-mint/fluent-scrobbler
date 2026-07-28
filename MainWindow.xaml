@@ -1,0 +1,21 @@
+<Window
+    x:Class="FluentScrobbler.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Padding="36" RowSpacing="12">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
+            <FontIcon Glyph="&#xE8D6;" FontSize="48" Foreground="{ThemeResource SystemAccentColor}" />
+            <TextBlock Text="Fluent Scrobbler" Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Center" />
+            <TextBlock Text="Efeito Mica e Barra Nativa do WinUI 3 Ativados!" Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" HorizontalAlignment="Center" />
+            <Button Content="Testar Botão" HorizontalAlignment="Center" Margin="0,12,0,0" />
+        </StackPanel>
+    </Grid>
+</Window>
