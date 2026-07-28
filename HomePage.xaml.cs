@@ -2,9 +2,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace FluentScrobbler
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class HomePage : Page
     {
-        public MainPage()
+        public HomePage()
         {
             this.InitializeComponent();
         }
