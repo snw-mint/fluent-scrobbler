@@ -1,31 +1,93 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using FluentScrobbler.Services;
 
 namespace FluentScrobbler
 {
     public sealed partial class MainWindow : Window
     {
+        public static new MainWindow? Current { get; private set; }
+
         public MainWindow()
         {
+            Current = this;
             this.InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Title = "Fluent Scrobbler";
         }
 
+        public void UpdateNavigationState(bool isLoggedIn)
+        {
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem navItem)
+                {
+                    string tag = navItem.Tag?.ToString() ?? "";
+                    if (tag != "AccountPage")
+                    {
+                        navItem.IsEnabled = isLoggedIn;
+                    }
+                }
+            }
+
+            foreach (var item in NavView.FooterMenuItems)
+            {
+                if (item is NavigationViewItem navItem)
+                {
+                    string tag = navItem.Tag?.ToString() ?? "";
+                    if (tag != "AboutPage" && tag != "ProPage")
+                    {
+                        navItem.IsEnabled = isLoggedIn;
+                    }
+                }
+            }
+        }
+
         private void NavView_Loaded(object sender, RoutedEventArgs e)
         {
-            ContentFrame.Navigate(typeof(HomePage));
-            if (NavView.MenuItems.Count > 0)
+            var service = new LastFmService();
+            bool isLoggedIn = service.IsLoggedIn();
+
+            UpdateNavigationState(isLoggedIn);
+
+            if (!isLoggedIn)
             {
-                NavView.SelectedItem = NavView.MenuItems[0];
+                ContentFrame.Navigate(typeof(AccountPage));
+                SetSelectedItemByTag("AccountPage");
+            }
+            else
+            {
+                ContentFrame.Navigate(typeof(HomePage));
+                SetSelectedItemByTag("HomePage");
+            }
+        }
+
+        private void SetSelectedItemByTag(string tag)
+        {
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == tag)
+                {
+                    NavView.SelectedItem = navItem;
+                    return;
+                }
+            }
+
+            foreach (var item in NavView.FooterMenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == tag)
+                {
+                    NavView.SelectedItem = navItem;
+                    return;
+                }
             }
         }
 
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItemContainer is NavigationViewItem item)
+            if (args.InvokedItemContainer is NavigationViewItem item && item.IsEnabled)
             {
                 Type? pageType = item.Tag?.ToString() switch
                 {

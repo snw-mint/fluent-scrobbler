@@ -6,6 +6,7 @@
     xmlns:local="using:FluentScrobbler"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
@@ -15,42 +16,45 @@
                 <TextBlock Text="Manage your profile settings and scrobbler integrations" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-                <Grid ColumnSpacing="20">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                <Grid ColumnSpacing="24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="72" Height="72" CornerRadius="36" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                        <FontIcon Glyph="&#xE77B;" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Border Grid.Column="0" Width="96" Height="96" CornerRadius="48" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                        <Grid>
+                            <FontIcon x:Name="UserAvatarIcon" Glyph="&#xE77B;" FontSize="44" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            <Image x:Name="UserAvatarImage" Width="96" Height="96" Stretch="UniformToFill" Visibility="Collapsed" />
+                        </Grid>
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="ScrobblerUser" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                            <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                <TextBlock Text="PRO" FontSize="10" FontWeight="Bold" Foreground="White" />
+                            <TextBlock x:Name="AccountTitleText" Text="Login to Lastfm Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
+                            <Border x:Name="SupporterBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock Text="Supporter" FontSize="10" FontWeight="Bold" Foreground="White" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Connected to Last.fm" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Text="Member since Jan 2022 • 18,492 scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="AccountSubtitleText" Text="Not connected" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="AccountDetailsText" Text="" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
                     </StackPanel>
 
-                    <Button Grid.Column="2" VerticalAlignment="Center" Style="{ThemeResource DefaultButtonStyle}">
+                    <Button x:Name="ActionButton" Grid.Column="2" VerticalAlignment="Center" Style="{ThemeResource AccentButtonStyle}" Padding="20,10" Click="OnActionButtonClick">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE8A7;" FontSize="14" />
-                            <TextBlock Text="Log out" />
+                            <FontIcon x:Name="ActionButtonIcon" Glyph="&#xE8A7;" FontSize="16" />
+                            <TextBlock x:Name="ActionButtonText" Text="Login" FontSize="14" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
                 </Grid>
             </Border>
 
-            <StackPanel Spacing="12">
-                <TextBlock Text="Scrobbling Preferences" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+            <StackPanel x:Name="AccountOptionsSection" Spacing="12" Visibility="Collapsed">
+                <TextBlock Text="Account Options" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                     <StackPanel Spacing="16">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -58,10 +62,15 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="2">
-                                <TextBlock Text="Enable Auto-Scrobble" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Automatically detect and submit tracks listened on Windows media players" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="View Last.fm Profile" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Open your Last.fm profile page in browser" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
+                            <Button Grid.Column="1" Click="ViewProfile_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <ic:SymbolIcon Symbol="Open" FontSize="14" />
+                                    <TextBlock Text="View Profile" />
+                                </StackPanel>
+                            </Button>
                         </Grid>
 
                         <MenuFlyoutSeparator />
@@ -72,15 +81,15 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="2">
-                                <TextBlock Text="Scrobble Threshold" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Track duration percentage required before sending scrobble" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Sync Manually" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock x:Name="SyncStatusText" Text="Force a data refresh (available once per minute)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ComboBox Grid.Column="1" SelectedIndex="1" Width="120">
-                                <ComboBoxItem Content="50%" />
-                                <ComboBoxItem Content="60%" />
-                                <ComboBoxItem Content="75%" />
-                                <ComboBoxItem Content="90%" />
-                            </ComboBox>
+                            <Button x:Name="SyncButton" Grid.Column="1" Click="SyncManually_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <ic:SymbolIcon Symbol="ArrowClockwise" FontSize="14" />
+                                    <TextBlock x:Name="SyncButtonText" Text="Sync Now" />
+                                </StackPanel>
+                            </Button>
                         </Grid>
 
                         <MenuFlyoutSeparator />
@@ -91,10 +100,23 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="2">
-                                <TextBlock Text="Windows Toast Notifications" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Show a notification whenever a new track is successfully scrobbled" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Import &amp; Export Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Backup or restore your application configuration" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Click="ExportSettings_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="ArrowDownload" FontSize="14" />
+                                        <TextBlock Text="Export" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Click="ImportSettings_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <ic:SymbolIcon Symbol="ArrowUpload" FontSize="14" />
+                                        <TextBlock Text="Import" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </Border>
