@@ -21,7 +21,7 @@
                         <TextBlock Text="Version 0.1 (WinUI 3 / .NET 8)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
 
-                    <TextBlock Text="A modern, lightweight scrobbler for Windows inspired by Pano Scrobbler and Windows Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                    <TextBlock Text="A lightweight, modern Windows scrobbler for Last.fm built with WinUI 3 and Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

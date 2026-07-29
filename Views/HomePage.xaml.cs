@@ -13,6 +13,7 @@ namespace FluentScrobbler.Views
     {
         private readonly LastFmService _lastFmService = new();
         private readonly MediaArtResolver _mediaArtResolver = new();
+        private readonly WindowsMediaService _windowsMediaService = new();
 
         private static string? _cachedTitle;
         private static string? _cachedSubtitle;
@@ -164,11 +165,50 @@ namespace FluentScrobbler.Views
                     }
                     else
                     {
-                        NowPlayingCard.Visibility = Visibility.Collapsed;
-                        _cachedNowPlayingVisible = false;
-                        _cachedNowPlayingTrack = null;
-                        _cachedNowPlayingArtistAlbum = null;
-                        _cachedNowPlayingArtUrl = null;
+                        var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
+                        if (winMedia.HasValue)
+                        {
+                            var (winTitle, winArtist, winAlbum, winSource) = winMedia.Value;
+                            NowPlayingCard.Visibility = Visibility.Visible;
+                            NowPlayingTrackText.Text = winTitle;
+                            string artistAlbumStr = string.IsNullOrEmpty(winAlbum) ? winArtist : $"{winArtist} • {winAlbum}";
+                            NowPlayingArtistAlbumText.Text = artistAlbumStr;
+                            NowPlayingSourceText.Text = winSource;
+
+                            string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum);
+                            if (!string.IsNullOrEmpty(artUrl))
+                            {
+                                try
+                                {
+                                    NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(artUrl));
+                                    NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
+                                    NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
+                                }
+                                catch
+                                {
+                                    NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+                                    NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+                                }
+                            }
+                            else
+                            {
+                                NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+                                NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+                            }
+
+                            _cachedNowPlayingVisible = true;
+                            _cachedNowPlayingTrack = winTitle;
+                            _cachedNowPlayingArtistAlbum = artistAlbumStr;
+                            _cachedNowPlayingArtUrl = artUrl;
+                        }
+                        else
+                        {
+                            NowPlayingCard.Visibility = Visibility.Collapsed;
+                            _cachedNowPlayingVisible = false;
+                            _cachedNowPlayingTrack = null;
+                            _cachedNowPlayingArtistAlbum = null;
+                            _cachedNowPlayingArtUrl = null;
+                        }
                     }
 
                     if (userInfo.HasValue)

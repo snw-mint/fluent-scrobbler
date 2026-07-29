@@ -291,5 +291,32 @@ namespace FluentScrobbler.Services
             }
             return name;
         }
+
+        public async Task<(string Title, string Artist, string Album, string SourceApp)?> GetCurrentWindowsMediaAsync()
+        {
+            try
+            {
+                var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                var currentSession = manager?.GetCurrentSession();
+                if (currentSession != null)
+                {
+                    var playbackInfo = currentSession.GetPlaybackInfo();
+                    if (playbackInfo != null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                    {
+                        var mediaProperties = await currentSession.TryGetMediaPropertiesAsync();
+                        if (mediaProperties != null && !string.IsNullOrWhiteSpace(mediaProperties.Title))
+                        {
+                            string appId = currentSession.SourceAppUserModelId;
+                            string sourceName = FormatAppDisplayName(appId);
+                            return (mediaProperties.Title, mediaProperties.Artist ?? string.Empty, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
     }
 }

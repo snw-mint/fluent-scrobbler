@@ -37,24 +37,6 @@ namespace FluentScrobbler.Views
             PrimaryArtistToggle.IsOn = mediaService.IsPrimaryArtistOnlyEnabled();
             UpdatePrimaryArtistStatusText();
 
-            MinTrackLengthSlider.ValueChanged -= MinTrackLengthSlider_ValueChanged;
-            int minSeconds = mediaService.GetMinimumTrackLengthSeconds();
-            MinTrackLengthSlider.Value = minSeconds;
-            UpdateMinTrackLengthText(minSeconds);
-            MinTrackLengthSlider.ValueChanged += MinTrackLengthSlider_ValueChanged;
-
-            PercentageThresholdSlider.ValueChanged -= PercentageThresholdSlider_ValueChanged;
-            int pct = mediaService.GetScrobblePercentageThreshold();
-            PercentageThresholdSlider.Value = pct;
-            UpdatePercentageThresholdText(pct);
-            PercentageThresholdSlider.ValueChanged += PercentageThresholdSlider_ValueChanged;
-
-            MaxTimeThresholdSlider.ValueChanged -= MaxTimeThresholdSlider_ValueChanged;
-            int maxSeconds = mediaService.GetMaximumTimeThresholdSeconds();
-            MaxTimeThresholdSlider.Value = maxSeconds;
-            UpdateMaxTimeThresholdText(maxSeconds);
-            MaxTimeThresholdSlider.ValueChanged += MaxTimeThresholdSlider_ValueChanged;
-
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
             PrimaryArtistToggle.Toggled += PrimaryArtistToggle_Toggled;
 
@@ -65,60 +47,6 @@ namespace FluentScrobbler.Views
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             PrimaryArtistToggle.Toggled -= PrimaryArtistToggle_Toggled;
-            MinTrackLengthSlider.ValueChanged -= MinTrackLengthSlider_ValueChanged;
-            PercentageThresholdSlider.ValueChanged -= PercentageThresholdSlider_ValueChanged;
-            MaxTimeThresholdSlider.ValueChanged -= MaxTimeThresholdSlider_ValueChanged;
-        }
-
-        private void PercentageThresholdSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            if (PercentageThresholdSlider == null) return;
-            int pct = (int)e.NewValue;
-            UpdatePercentageThresholdText(pct);
-            var mediaService = new WindowsMediaService();
-            mediaService.SetScrobblePercentageThreshold(pct);
-        }
-
-        private void UpdatePercentageThresholdText(int pct)
-        {
-            if (PercentageThresholdText != null)
-            {
-                PercentageThresholdText.Text = $"{pct}%";
-            }
-        }
-
-        private void MaxTimeThresholdSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            if (MaxTimeThresholdSlider == null) return;
-            int seconds = (int)e.NewValue;
-            UpdateMaxTimeThresholdText(seconds);
-            var mediaService = new WindowsMediaService();
-            mediaService.SetMaximumTimeThresholdSeconds(seconds);
-        }
-
-        private void UpdateMaxTimeThresholdText(int seconds)
-        {
-            if (MaxTimeThresholdText != null)
-            {
-                MaxTimeThresholdText.Text = TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
-            }
-        }
-
-        private void MinTrackLengthSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            if (MinTrackLengthSlider == null) return;
-            int seconds = (int)e.NewValue;
-            UpdateMinTrackLengthText(seconds);
-            var mediaService = new WindowsMediaService();
-            mediaService.SetMinimumTrackLengthSeconds(seconds);
-        }
-
-        private void UpdateMinTrackLengthText(int seconds)
-        {
-            if (MinTrackLengthText != null)
-            {
-                MinTrackLengthText.Text = TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
-            }
         }
 
         private void PrimaryArtistToggle_Toggled(object sender, RoutedEventArgs e)

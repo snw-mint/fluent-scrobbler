@@ -399,9 +399,17 @@ namespace FluentScrobbler.Services
                                 }
                             }
 
-                            if (item.TryGetProperty("@attr", out var attrProp) &&
-                                attrProp.TryGetProperty("nowplaying", out var nowPlayingProp) &&
-                                nowPlayingProp.GetString() == "true")
+                            bool hasNowPlayingAttr = item.TryGetProperty("@attr", out var attrProp) &&
+                                                     attrProp.ValueKind == JsonValueKind.Object &&
+                                                     attrProp.TryGetProperty("nowplaying", out var nowPlayingProp) &&
+                                                     (nowPlayingProp.ValueKind == JsonValueKind.True ||
+                                                      (nowPlayingProp.ValueKind == JsonValueKind.String &&
+                                                       (string.Equals(nowPlayingProp.GetString(), "true", StringComparison.OrdinalIgnoreCase) ||
+                                                        nowPlayingProp.GetString() == "1")));
+
+                            bool isFirstTrackWithoutDate = !item.TryGetProperty("date", out _) && tracks.Count == 0;
+
+                            if (hasNowPlayingAttr || isFirstTrackWithoutDate)
                             {
                                 track.IsNowPlaying = true;
                             }
