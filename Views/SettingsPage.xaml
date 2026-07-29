@@ -108,6 +108,184 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <StackPanel Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="Source &amp; Track Filtering" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="0">
+                        <Grid x:Name="SourceFilteringHeader" Background="Transparent" PointerPressed="SourceFilteringHeader_PointerPressed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ic:SymbolIcon Grid.Column="0" Symbol="AppsList" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Source Filtering" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Only scrobble from explicitly permitted applications" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+
+                            <ic:SymbolIcon x:Name="SourceFilteringChevron" Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                        </Grid>
+
+                        <StackPanel x:Name="SourceFilteringAccordion" Visibility="Collapsed" Margin="0,16,0,0" Spacing="12">
+                            <MenuFlyoutSeparator Margin="0,0,0,8" />
+                            <TextBlock Text="Detected Applications" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <StackPanel x:Name="SourceAppsStackPanel" Spacing="8" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Person" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Use Primary Artist Only" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Strip featured artists and keep only the main performer" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock x:Name="PrimaryArtistStatusText" Text="Off" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ToggleSwitch x:Name="PrimaryArtistToggle" OffContent="" OnContent="" VerticalAlignment="Center" MinWidth="0" Toggled="PrimaryArtistToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Timer" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Minimum Track Length" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Ignore tracks shorter than this duration" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock x:Name="MinTrackLengthText" Text="00:10" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Width="44" TextAlignment="Right" />
+                            <Slider x:Name="MinTrackLengthSlider"
+                                    Minimum="10"
+                                    Maximum="60"
+                                    StepFrequency="5"
+                                    TickFrequency="5"
+                                    TickPlacement="Outside"
+                                    SnapsTo="Ticks"
+                                    IsThumbToolTipEnabled="False"
+                                    SmallChange="5"
+                                    LargeChange="5"
+                                    Width="140"
+                                    VerticalAlignment="Center"
+                                    ValueChanged="MinTrackLengthSlider_ValueChanged" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="Scrobble Timings &amp; Trigger" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Live" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Send &quot;Now Playing&quot; Notifications" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Update your Last.fm profile instantly when a song starts" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock x:Name="NowPlayingStatusText" Text="On" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <ToggleSwitch x:Name="NowPlayingToggle" OffContent="" OnContent="" VerticalAlignment="Center" MinWidth="0" Toggled="NowPlayingToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="TopSpeed" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Scrobble Percentage Threshold" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Trigger scrobble after listening to a percentage of the track" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock x:Name="PercentageThresholdText" Text="50%" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Width="44" TextAlignment="Right" />
+                            <Slider x:Name="PercentageThresholdSlider"
+                                    Minimum="10"
+                                    Maximum="100"
+                                    StepFrequency="1"
+                                    IsThumbToolTipEnabled="False"
+                                    SmallChange="1"
+                                    LargeChange="5"
+                                    Width="140"
+                                    VerticalAlignment="Center"
+                                    ValueChanged="PercentageThresholdSlider_ValueChanged" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Clock" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Maximum Time Threshold" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Trigger scrobble after listening for a fixed amount of time" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock x:Name="MaxTimeThresholdText" Text="04:00" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Width="44" TextAlignment="Right" />
+                            <Slider x:Name="MaxTimeThresholdSlider"
+                                    Minimum="60"
+                                    Maximum="600"
+                                    StepFrequency="5"
+                                    TickFrequency="5"
+                                    TickPlacement="Outside"
+                                    SnapsTo="Ticks"
+                                    IsThumbToolTipEnabled="False"
+                                    SmallChange="5"
+                                    LargeChange="30"
+                                    Width="140"
+                                    VerticalAlignment="Center"
+                                    ValueChanged="MaxTimeThresholdSlider_ValueChanged" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Page>
