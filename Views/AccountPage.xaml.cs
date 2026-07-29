@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using FluentScrobbler.Services;
 
-namespace FluentScrobbler
+namespace FluentScrobbler.Views
 {
     public sealed partial class AccountPage : Page
     {

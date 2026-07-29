@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI;
 
-namespace FluentScrobbler
+namespace FluentScrobbler.Views
 {
     public sealed partial class SettingsPage : Page
     {

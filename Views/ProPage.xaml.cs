@@ -1,10 +1,10 @@
 using Microsoft.UI.Xaml.Controls;
 
-namespace FluentScrobbler
+namespace FluentScrobbler.Views
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class ProPage : Page
     {
-        public MainPage()
+        public ProPage()
         {
             this.InitializeComponent();
         }

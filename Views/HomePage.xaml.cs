@@ -2,7 +2,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FluentScrobbler
+namespace FluentScrobbler.Views
 {
     public sealed partial class HomePage : Page
     {

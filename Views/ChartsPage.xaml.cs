@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using FluentScrobbler.Models;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FluentScrobbler
+namespace FluentScrobbler.Views
 {
     public sealed partial class ChartsPage : Page
     {
