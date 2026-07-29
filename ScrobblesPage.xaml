@@ -27,13 +27,13 @@
             </Grid>
 
             <StackPanel x:Name="NowPlayingPanel" Spacing="8">
-                <TextBlock Text="NOW PLAYING" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Bold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
                 
                 <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                         BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                         BorderThickness="2"
                         CornerRadius="8"
-                        Padding="16">
+                        Padding="20">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -42,11 +42,11 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Width="64" Height="64" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
-                            <ic:SymbolIcon Symbol="MusicNote1" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <Border Grid.Column="0" Width="88" Height="88" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                            <ic:SymbolIcon Symbol="MusicNote1" FontSize="38" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </Border>
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock x:Name="NowPlayingTrack" Text="Starboy" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
@@ -56,36 +56,31 @@
                             <TextBlock x:Name="NowPlayingArtist" Text="The Weeknd • Starboy" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
-                        <Border Grid.Column="2" VerticalAlignment="Center" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="12,6" CornerRadius="16">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <ic:SymbolIcon Symbol="History" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock x:Name="NowPlayingCount" Text="34 scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
-                            </StackPanel>
-                        </Border>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Like" Click="MenuFavorite_Click">
+                                <ic:SymbolIcon Symbol="Heart" FontSize="18" />
+                            </Button>
+                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Block" Click="MenuBlock_Click">
+                                <ic:SymbolIcon Symbol="Prohibited" FontSize="18" />
+                            </Button>
+                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Edit" Click="MenuEdit_Click">
+                                <ic:SymbolIcon Symbol="Edit" FontSize="18" />
+                            </Button>
+                        </StackPanel> 
 
-                        <Button Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0">
-                            <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="14" />
+                        <Button Grid.Column="3" VerticalAlignment="Center" ToolTipService.ToolTip="More options" Margin="4,0,0,0">
+                            <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="18" />
                             <Button.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuFlyoutItem Text="Love Track" Click="MenuFavorite_Click">
+                                    <MenuFlyoutItem Text="Open Info" Click="MenuOpenInfo_Click">
                                         <MenuFlyoutItem.Icon>
-                                            <ic:SymbolIcon Symbol="Heart" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem Text="Edit" Click="MenuEdit_Click">
-                                        <MenuFlyoutItem.Icon>
-                                            <ic:SymbolIcon Symbol="Edit" />
+                                            <ic:SymbolIcon Symbol="Open" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                     <MenuFlyoutSeparator />
                                     <MenuFlyoutItem Text="Delete" Click="MenuDelete_Click">
                                         <MenuFlyoutItem.Icon>
                                             <ic:SymbolIcon Symbol="Delete" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem Text="Block" Click="MenuBlock_Click">
-                                        <MenuFlyoutItem.Icon>
-                                            <ic:SymbolIcon Symbol="DismissCircle" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                 </MenuFlyout>

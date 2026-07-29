@@ -77,6 +77,12 @@ namespace FluentScrobbler
 
         private void MenuFavorite_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is Button btn && btn.Content is FluentIcons.WinUI.SymbolIcon icon)
+            {
+                icon.IconVariant = icon.IconVariant == FluentIcons.Common.IconVariant.Filled
+                    ? FluentIcons.Common.IconVariant.Regular
+                    : FluentIcons.Common.IconVariant.Filled;
+            }
         }
 
         private void MenuEdit_Click(object sender, RoutedEventArgs e)
@@ -88,6 +94,10 @@ namespace FluentScrobbler
         }
 
         private void MenuBlock_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void MenuOpenInfo_Click(object sender, RoutedEventArgs e)
         {
         }
     }
