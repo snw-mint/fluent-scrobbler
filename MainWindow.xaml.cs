@@ -32,12 +32,7 @@ namespace FluentScrobbler
                 appWindow.SetIcon(iconPath);
             }
 
-            if (!IsManualColor)
-            {
-                var uiSettings = new Windows.UI.ViewManagement.UISettings();
-                var systemAccent = uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
-                SetAccentColor(systemAccent);
-            }
+            SetAccentColor(Windows.UI.Color.FromArgb(255, 0, 120, 212));
         }
 
         public void SetAppTheme(ElementTheme theme)
@@ -146,7 +141,7 @@ namespace FluentScrobbler
                 if (item is NavigationViewItem navItem)
                 {
                     string tag = navItem.Tag?.ToString() ?? "";
-                    if (tag != "AboutPage" && tag != "ProPage")
+                    if (tag != "AboutPage")
                     {
                         navItem.IsEnabled = isLoggedIn;
                     }
@@ -202,11 +197,8 @@ namespace FluentScrobbler
                 {
                     "HomePage" => typeof(HomePage),
                     "ScrobblesPage" => typeof(ScrobblesPage),
-                    "FavoritesPage" => typeof(FavoritesPage),
-                    "ChartsPage" => typeof(ChartsPage),
                     "SettingsPage" => typeof(SettingsPage),
                     "AccountPage" => typeof(AccountPage),
-                    "ProPage" => typeof(ProPage),
                     "AboutPage" => typeof(AboutPage),
                     _ => null
                 };

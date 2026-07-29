@@ -21,7 +21,7 @@
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <Image Source="ms-appx:///Assets/Square44x44Logo.scale-200.png" Width="24" Height="24" VerticalAlignment="Center" />
                 <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <TextBlock Text="v1.0" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
+                <TextBlock Text="v0.1" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
             </StackPanel>
         </Grid>
 
@@ -46,18 +46,6 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Favorites" Tag="FavoritesPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Heart" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="Charts" Tag="ChartsPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="DataHistogram" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
                 <NavigationViewItem Content="Settings" Tag="SettingsPage">
                     <NavigationViewItem.Icon>
                         <ic:SymbolIcon Symbol="Settings" />
@@ -72,12 +60,6 @@
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="Support" Tag="ProPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Premium" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
                 <NavigationViewItem Content="About" Tag="AboutPage">
                     <NavigationViewItem.Icon>
                         <ic:SymbolIcon Symbol="Info" />

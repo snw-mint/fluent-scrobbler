@@ -317,19 +317,110 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task<List<ScrobbleTrack>> GetRecentTracksAsync(string username, int limit = 50)
+        public async Task<List<ScrobbleTrack>> GetRecentTracksAsync(string username, int limit = 50, long? fromTimestamp = null)
         {
             var tracks = new List<ScrobbleTrack>();
 
             try
             {
-                string requestUrl = $"{BaseUrl}?method=user.getrecenttracks&user={Uri.EscapeDataString(username)}&api_key={ApiKey}&format=json&limit={limit}";
+                string requestUrl = $"{BaseUrl}?method=user.getrecenttracks&user={Uri.EscapeDataString(username)}&api_key={ApiKey}&format=json&limit={limit}&extended=1";
+                if (fromTimestamp.HasValue)
+                {
+                    requestUrl += $"&from={fromTimestamp.Value}";
+                }
 
                 HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+
+                    if (doc.RootElement.TryGetProperty("recenttracks", out var recentTracksElement) &&
+                        recentTracksElement.TryGetProperty("track", out var trackElement))
+                    {
+                        var trackList = new List<JsonElement>();
+                        if (trackElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var el in trackElement.EnumerateArray())
+                            {
+                                trackList.Add(el);
+                            }
+                        }
+                        else if (trackElement.ValueKind == JsonValueKind.Object)
+                        {
+                            trackList.Add(trackElement);
+                        }
+
+                        foreach (var item in trackList)
+                        {
+                            var track = new ScrobbleTrack();
+                            if (item.TryGetProperty("name", out var nameProp))
+                            {
+                                track.Name = nameProp.GetString() ?? string.Empty;
+                            }
+
+                            if (item.TryGetProperty("artist", out var artistProp))
+                            {
+                                if (artistProp.ValueKind == JsonValueKind.Object)
+                                {
+                                    if (artistProp.TryGetProperty("name", out var artistName))
+                                        track.Artist = artistName.GetString() ?? string.Empty;
+                                    else if (artistProp.TryGetProperty("#text", out var artistText))
+                                        track.Artist = artistText.GetString() ?? string.Empty;
+                                }
+                                else if (artistProp.ValueKind == JsonValueKind.String)
+                                {
+                                    track.Artist = artistProp.GetString() ?? string.Empty;
+                                }
+                            }
+
+                            if (item.TryGetProperty("album", out var albumProp))
+                            {
+                                if (albumProp.ValueKind == JsonValueKind.Object && albumProp.TryGetProperty("#text", out var albumText))
+                                {
+                                    track.Album = albumText.GetString() ?? string.Empty;
+                                }
+                                else if (albumProp.ValueKind == JsonValueKind.String)
+                                {
+                                    track.Album = albumProp.GetString() ?? string.Empty;
+                                }
+                            }
+
+                            if (item.TryGetProperty("image", out var imagesProp) && imagesProp.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var img in imagesProp.EnumerateArray())
+                                {
+                                    if (img.TryGetProperty("size", out var sizeProp) && sizeProp.GetString() == "large")
+                                    {
+                                        if (img.TryGetProperty("#text", out var imgText))
+                                            track.AlbumArtUrl = imgText.GetString() ?? string.Empty;
+                                    }
+                                }
+                            }
+
+                            if (item.TryGetProperty("@attr", out var attrProp) &&
+                                attrProp.TryGetProperty("nowplaying", out var nowPlayingProp) &&
+                                nowPlayingProp.GetString() == "true")
+                            {
+                                track.IsNowPlaying = true;
+                            }
+
+                            if (item.TryGetProperty("loved", out var lovedProp))
+                            {
+                                track.IsLoved = lovedProp.GetString() == "1";
+                            }
+
+                            if (item.TryGetProperty("date", out var dateProp) &&
+                                dateProp.TryGetProperty("uts", out var utsProp) &&
+                                long.TryParse(utsProp.GetString(), out long uts))
+                            {
+                                track.PlayedAt = DateTimeOffset.FromUnixTimeSeconds(uts);
+                            }
+
+                            tracks.Add(track);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -338,6 +429,43 @@ namespace FluentScrobbler.Services
             }
 
             return tracks;
+        }
+
+        public async Task<List<string>> GetArtistTopTagsAsync(string artist, int count = 5)
+        {
+            var tags = new List<string>();
+            try
+            {
+                string url = $"{BaseUrl}?method=artist.gettoptags&artist={Uri.EscapeDataString(artist)}&api_key={ApiKey}&format=json";
+                var response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("toptags", out var topTags) &&
+                        topTags.TryGetProperty("tag", out var tagArray) &&
+                        tagArray.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var tag in tagArray.EnumerateArray())
+                        {
+                            if (tag.TryGetProperty("name", out var tagName))
+                            {
+                                string name = tagName.GetString() ?? string.Empty;
+                                if (!string.IsNullOrWhiteSpace(name))
+                                {
+                                    tags.Add(name.ToLowerInvariant());
+                                }
+                            }
+                            if (tags.Count >= count) break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao buscar tags do artista: {ex.Message}");
+            }
+            return tags;
         }
 
         public async Task<bool> ToggleLoveTrackAsync(string track, string artist, bool love, string sessionKey)

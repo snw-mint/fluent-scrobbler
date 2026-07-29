@@ -34,9 +34,6 @@
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="AccountTitleText" Text="Login to Lastfm Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                            <Border x:Name="SupporterBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
-                                <TextBlock Text="Supporter" FontSize="10" FontWeight="Bold" Foreground="White" />
-                            </Border>
                         </StackPanel>
                         <TextBlock x:Name="AccountSubtitleText" Text="Not connected" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock x:Name="AccountDetailsText" Text="" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
@@ -51,76 +48,6 @@
                 </Grid>
             </Border>
 
-            <StackPanel x:Name="AccountOptionsSection" Spacing="12" Visibility="Collapsed">
-                <TextBlock Text="Account Options" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
-
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-                    <StackPanel Spacing="16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="View Last.fm Profile" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Open your Last.fm profile page in browser" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <Button Grid.Column="1" Click="ViewProfile_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <ic:SymbolIcon Symbol="Open" FontSize="14" />
-                                    <TextBlock Text="View Profile" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-
-                        <MenuFlyoutSeparator />
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Sync Manually" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock x:Name="SyncStatusText" Text="Force a data refresh (available once per minute)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <Button x:Name="SyncButton" Grid.Column="1" Click="SyncManually_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <ic:SymbolIcon Symbol="ArrowClockwise" FontSize="14" />
-                                    <TextBlock x:Name="SyncButtonText" Text="Sync Now" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-
-                        <MenuFlyoutSeparator />
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Import &amp; Export Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Backup or restore your application configuration" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                <Button Click="ExportSettings_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="ArrowDownload" FontSize="14" />
-                                        <TextBlock Text="Export" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Click="ImportSettings_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <ic:SymbolIcon Symbol="ArrowUpload" FontSize="14" />
-                                        <TextBlock Text="Import" />
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Page>

@@ -2,7 +2,6 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI;
 using FluentScrobbler.Services;
 
 namespace FluentScrobbler.Views
@@ -21,7 +20,6 @@ namespace FluentScrobbler.Views
         private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
-            ColorModeComboBox.SelectionChanged -= ColorMode_SelectionChanged;
             PrimaryArtistToggle.Toggled -= PrimaryArtistToggle_Toggled;
 
             if (MainWindow.Current != null)
@@ -33,9 +31,6 @@ namespace FluentScrobbler.Views
                     ElementTheme.Default => 2,
                     _ => 2
                 };
-
-                ColorModeComboBox.SelectedIndex = MainWindow.Current.IsManualColor ? 1 : 0;
-                PaletteSection.Visibility = MainWindow.Current.IsManualColor ? Visibility.Visible : Visibility.Collapsed;
             }
 
             var mediaService = new WindowsMediaService();
@@ -47,10 +42,6 @@ namespace FluentScrobbler.Views
             MinTrackLengthSlider.Value = minSeconds;
             UpdateMinTrackLengthText(minSeconds);
             MinTrackLengthSlider.ValueChanged += MinTrackLengthSlider_ValueChanged;
-
-            NowPlayingToggle.Toggled -= NowPlayingToggle_Toggled;
-            NowPlayingToggle.IsOn = mediaService.IsSendNowPlayingEnabled();
-            UpdateNowPlayingStatusText();
 
             PercentageThresholdSlider.ValueChanged -= PercentageThresholdSlider_ValueChanged;
             int pct = mediaService.GetScrobblePercentageThreshold();
@@ -65,9 +56,7 @@ namespace FluentScrobbler.Views
             MaxTimeThresholdSlider.ValueChanged += MaxTimeThresholdSlider_ValueChanged;
 
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
-            ColorModeComboBox.SelectionChanged += ColorMode_SelectionChanged;
             PrimaryArtistToggle.Toggled += PrimaryArtistToggle_Toggled;
-            NowPlayingToggle.Toggled += NowPlayingToggle_Toggled;
 
             LoadSourceApplications();
         }
@@ -75,10 +64,8 @@ namespace FluentScrobbler.Views
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
-            ColorModeComboBox.SelectionChanged -= ColorMode_SelectionChanged;
             PrimaryArtistToggle.Toggled -= PrimaryArtistToggle_Toggled;
             MinTrackLengthSlider.ValueChanged -= MinTrackLengthSlider_ValueChanged;
-            NowPlayingToggle.Toggled -= NowPlayingToggle_Toggled;
             PercentageThresholdSlider.ValueChanged -= PercentageThresholdSlider_ValueChanged;
             MaxTimeThresholdSlider.ValueChanged -= MaxTimeThresholdSlider_ValueChanged;
         }
@@ -114,22 +101,6 @@ namespace FluentScrobbler.Views
             if (MaxTimeThresholdText != null)
             {
                 MaxTimeThresholdText.Text = TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
-            }
-        }
-
-        private void NowPlayingToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (NowPlayingToggle == null) return;
-            UpdateNowPlayingStatusText();
-            var mediaService = new WindowsMediaService();
-            mediaService.SetSendNowPlayingEnabled(NowPlayingToggle.IsOn);
-        }
-
-        private void UpdateNowPlayingStatusText()
-        {
-            if (NowPlayingStatusText != null && NowPlayingToggle != null)
-            {
-                NowPlayingStatusText.Text = NowPlayingToggle.IsOn ? "On" : "Off";
             }
         }
 
@@ -197,45 +168,39 @@ namespace FluentScrobbler.Views
 
                 foreach (var app in sources)
                 {
-                    var itemGrid = new Grid();
-                    itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                    itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-                    var leftStack = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, VerticalAlignment = VerticalAlignment.Center };
-
-                    var icon = new FluentIcons.WinUI.SymbolIcon
+                    var textStack = new StackPanel
                     {
-                        Symbol = FluentIcons.Common.Symbol.Speaker2,
-                        FontSize = 16,
-                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                        VerticalAlignment = VerticalAlignment.Center
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Spacing = 2,
+                        Margin = new Thickness(4, 0, 0, 0)
                     };
-                    leftStack.Children.Add(icon);
 
                     var nameText = new TextBlock
                     {
                         Text = app.DisplayName,
-                        Style = (Style)Application.Current.Resources["BodyTextBlockStyle"],
-                        VerticalAlignment = VerticalAlignment.Center
+                        Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
                     };
-                    leftStack.Children.Add(nameText);
+                    textStack.Children.Add(nameText);
 
-                    Grid.SetColumn(leftStack, 0);
-                    itemGrid.Children.Add(leftStack);
+                    var packageText = new TextBlock
+                    {
+                        Text = app.AppId,
+                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                    };
+                    textStack.Children.Add(packageText);
 
                     var check = new CheckBox
                     {
                         IsChecked = app.IsAllowed,
+                        Content = textStack,
                         VerticalAlignment = VerticalAlignment.Center,
                         Tag = app.AppId
                     };
                     check.Checked += SourceApp_CheckChanged;
                     check.Unchecked += SourceApp_CheckChanged;
 
-                    Grid.SetColumn(check, 1);
-                    itemGrid.Children.Add(check);
-
-                    SourceAppsStackPanel.Children.Add(itemGrid);
+                    SourceAppsStackPanel.Children.Add(check);
                 }
             }
             catch
@@ -265,60 +230,6 @@ namespace FluentScrobbler.Views
             };
 
             MainWindow.Current.SetAppTheme(theme);
-        }
-
-        private void ColorMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ColorModeComboBox == null || MainWindow.Current == null) return;
-
-            bool isManual = ColorModeComboBox.SelectedIndex == 1;
-            PaletteSection.Visibility = isManual ? Visibility.Visible : Visibility.Collapsed;
-            MainWindow.Current.SetColorMode(isManual);
-
-            if (!isManual)
-            {
-                var uiSettings = new Windows.UI.ViewManagement.UISettings();
-                Color systemAccent = uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
-                MainWindow.Current.SetAccentColor(systemAccent);
-            }
-        }
-
-        private void ColorPalette_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string hex)
-            {
-                try
-                {
-                    Color color = ParseColorFromHex(hex);
-                    MainWindow.Current?.SetAccentColor(color);
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        private static Color ParseColorFromHex(string hex)
-        {
-            hex = hex.TrimStart('#');
-            byte a = 255;
-            byte r = 0, g = 0, b = 0;
-
-            if (hex.Length == 8)
-            {
-                a = Convert.ToByte(hex.Substring(0, 2), 16);
-                r = Convert.ToByte(hex.Substring(2, 2), 16);
-                g = Convert.ToByte(hex.Substring(4, 2), 16);
-                b = Convert.ToByte(hex.Substring(6, 2), 16);
-            }
-            else if (hex.Length == 6)
-            {
-                r = Convert.ToByte(hex.Substring(0, 2), 16);
-                g = Convert.ToByte(hex.Substring(2, 2), 16);
-                b = Convert.ToByte(hex.Substring(4, 2), 16);
-            }
-
-            return Color.FromArgb(a, r, g, b);
         }
     }
 }

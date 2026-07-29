@@ -12,19 +12,10 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
         <StackPanel Spacing="20">
-            <Grid>
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Scrobbles" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                    <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
-
-                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="Refresh_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ic:SymbolIcon Symbol="ArrowClockwise" FontSize="14"/>
-                        <TextBlock Text="Refresh" />
-                    </StackPanel>
-                </Button>
-            </Grid>
+            <StackPanel Spacing="4">
+                <TextBlock Text="Scrobbles" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
+                <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
 
             <StackPanel x:Name="NowPlayingPanel" Spacing="8">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
@@ -38,8 +29,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Width="88" Height="88" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
@@ -55,37 +44,6 @@
                             </StackPanel>
                             <TextBlock x:Name="NowPlayingArtist" Text="The Weeknd • Starboy" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
-
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Like" Click="MenuFavorite_Click">
-                                <ic:SymbolIcon Symbol="Heart" FontSize="18" />
-                            </Button>
-                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Block" Click="MenuBlock_Click">
-                                <ic:SymbolIcon Symbol="Prohibited" FontSize="18" />
-                            </Button>
-                            <Button Style="{ThemeResource SubtleButtonStyle}" ToolTipService.ToolTip="Edit" Click="MenuEdit_Click">
-                                <ic:SymbolIcon Symbol="Edit" FontSize="18" />
-                            </Button>
-                        </StackPanel> 
-
-                        <Button Grid.Column="3" VerticalAlignment="Center" ToolTipService.ToolTip="More options" Margin="4,0,0,0">
-                            <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="18" />
-                            <Button.Flyout>
-                                <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuFlyoutItem Text="Open Info" Click="MenuOpenInfo_Click">
-                                        <MenuFlyoutItem.Icon>
-                                            <ic:SymbolIcon Symbol="Open" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Text="Delete" Click="MenuDelete_Click">
-                                        <MenuFlyoutItem.Icon>
-                                            <ic:SymbolIcon Symbol="Delete" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                </MenuFlyout>
-                            </Button.Flyout>
-                        </Button>
                     </Grid>
                 </Border>
             </StackPanel>
@@ -108,7 +66,6 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <Border Grid.Column="0" Width="52" Height="52" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
@@ -129,35 +86,6 @@
                                     <Border Grid.Column="3" VerticalAlignment="Center" Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="10,4" CornerRadius="12">
                                         <TextBlock Text="{x:Bind ScrobbleCountText}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Medium" />
                                     </Border>
-
-                                    <Button Grid.Column="4" VerticalAlignment="Center">
-                                        <ic:SymbolIcon Symbol="MoreHorizontal" FontSize="14" />
-                                        <Button.Flyout>
-                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                                <MenuFlyoutItem Text="Love Track" Click="MenuFavorite_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <ic:SymbolIcon Symbol="Heart" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem Text="Edit" Click="MenuEdit_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <ic:SymbolIcon Symbol="Edit" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutSeparator />
-                                                <MenuFlyoutItem Text="Delete" Click="MenuDelete_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <ic:SymbolIcon Symbol="Delete" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem Text="Block" Click="MenuBlock_Click">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <ic:SymbolIcon Symbol="DismissCircle" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                    </Button>
                                 </Grid>
                             </Border>
                         </DataTemplate>

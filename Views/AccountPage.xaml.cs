@@ -11,8 +11,6 @@ namespace FluentScrobbler.Views
     {
         private readonly LastFmService _lastFmService = new();
         private string? _currentAuthToken;
-        private DateTime _lastSyncTime = DateTime.MinValue;
-        private DispatcherTimer? _syncTimer;
 
         public AccountPage()
         {
@@ -36,7 +34,6 @@ namespace FluentScrobbler.Views
             {
                 MainWindow.Current.Activated -= Window_Activated;
             }
-            _syncTimer?.Stop();
         }
 
         private async void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -74,8 +71,6 @@ namespace FluentScrobbler.Views
                 var (username, sessionKey) = _lastFmService.GetUserSession();
                 AccountTitleText.Text = username ?? "Last.fm User";
                 AccountSubtitleText.Text = "Connected to Last.fm";
-                SupporterBadge.Visibility = Visibility.Visible;
-                AccountOptionsSection.Visibility = Visibility.Visible;
 
                 ActionButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
                 ActionButtonText.Text = "Log out";
@@ -111,8 +106,6 @@ namespace FluentScrobbler.Views
                 AccountTitleText.Text = "Login to Lastfm Account";
                 AccountSubtitleText.Text = "Not connected";
                 AccountDetailsText.Visibility = Visibility.Collapsed;
-                SupporterBadge.Visibility = Visibility.Collapsed;
-                AccountOptionsSection.Visibility = Visibility.Collapsed;
 
                 UserAvatarImage.Visibility = Visibility.Collapsed;
                 UserAvatarIcon.Visibility = Visibility.Visible;
@@ -153,69 +146,6 @@ namespace FluentScrobbler.Views
                     await _lastFmService.OpenAuthPageInBrowserAsync(_currentAuthToken);
                 }
             }
-        }
-
-        private async void ViewProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var (username, _) = _lastFmService.GetUserSession();
-            if (!string.IsNullOrEmpty(username))
-            {
-                string url = $"https://www.last.fm/user/{username}";
-                if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri != null)
-                {
-                    await Windows.System.Launcher.LaunchUriAsync(uri);
-                }
-            }
-        }
-
-        private async void SyncManually_Click(object sender, RoutedEventArgs e)
-        {
-            TimeSpan elapsed = DateTime.Now - _lastSyncTime;
-            if (elapsed < TimeSpan.FromMinutes(1))
-            {
-                return;
-            }
-
-            _lastSyncTime = DateTime.Now;
-            SyncButton.IsEnabled = false;
-
-            await LoadAccountStateAsync();
-
-            StartSyncTimer();
-        }
-
-        private void StartSyncTimer()
-        {
-            _syncTimer?.Stop();
-            _syncTimer = new DispatcherTimer();
-            _syncTimer.Interval = TimeSpan.FromSeconds(1);
-            _syncTimer.Tick += (s, args) =>
-            {
-                TimeSpan elapsed = DateTime.Now - _lastSyncTime;
-                TimeSpan remaining = TimeSpan.FromMinutes(1) - elapsed;
-
-                if (remaining <= TimeSpan.Zero)
-                {
-                    _syncTimer?.Stop();
-                    SyncButton.IsEnabled = true;
-                    SyncButtonText.Text = "Sync Now";
-                    SyncStatusText.Text = "Force a data refresh (available once per minute)";
-                }
-                else
-                {
-                    SyncButtonText.Text = $"{remaining.Seconds}s";
-                    SyncStatusText.Text = $"Cooldown active. Try again in {remaining.Seconds}s";
-                }
-            };
-            _syncTimer.Start();
-        }
-
-        private void ExportSettings_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void ImportSettings_Click(object sender, RoutedEventArgs e)
-        {
         }
     }
 }
