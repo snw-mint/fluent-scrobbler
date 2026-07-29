@@ -14,7 +14,7 @@ public partial class App : Application
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
+        _window = new SplashWindow();
         _window.Activate();
     }
 }

@@ -11,7 +11,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -19,7 +19,7 @@
 
         <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <ic:SymbolIcon Symbol="MusicNote1" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                <Image Source="ms-appx:///Assets/Square44x44Logo.scale-200.png" Width="24" Height="24" VerticalAlignment="Center" />
                 <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <TextBlock Text="v1.0" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
             </StackPanel>

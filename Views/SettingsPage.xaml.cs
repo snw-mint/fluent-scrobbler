@@ -18,7 +18,6 @@ namespace FluentScrobbler.Views
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             ColorModeComboBox.SelectionChanged -= ColorMode_SelectionChanged;
-            BackdropToggle.Toggled -= Backdrop_Toggled;
 
             if (MainWindow.Current != null)
             {
@@ -27,24 +26,21 @@ namespace FluentScrobbler.Views
                     ElementTheme.Light => 0,
                     ElementTheme.Dark => 1,
                     ElementTheme.Default => 2,
-                    _ => 0
+                    _ => 2
                 };
 
-                BackdropToggle.IsOn = MainWindow.Current.IsAcrylic;
                 ColorModeComboBox.SelectedIndex = MainWindow.Current.IsManualColor ? 1 : 0;
                 PaletteSection.Visibility = MainWindow.Current.IsManualColor ? Visibility.Visible : Visibility.Collapsed;
             }
 
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
             ColorModeComboBox.SelectionChanged += ColorMode_SelectionChanged;
-            BackdropToggle.Toggled += Backdrop_Toggled;
         }
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             ColorModeComboBox.SelectionChanged -= ColorMode_SelectionChanged;
-            BackdropToggle.Toggled -= Backdrop_Toggled;
         }
 
         private void ThemeMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -56,7 +52,7 @@ namespace FluentScrobbler.Views
                 0 => ElementTheme.Light,
                 1 => ElementTheme.Dark,
                 2 => ElementTheme.Default,
-                _ => ElementTheme.Light
+                _ => ElementTheme.Default
             };
 
             MainWindow.Current.SetAppTheme(theme);
@@ -72,8 +68,9 @@ namespace FluentScrobbler.Views
 
             if (!isManual)
             {
-                Color defaultBlue = Color.FromArgb(255, 0, 120, 212);
-                MainWindow.Current.SetAccentColor(defaultBlue);
+                var uiSettings = new Windows.UI.ViewManagement.UISettings();
+                Color systemAccent = uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
+                MainWindow.Current.SetAccentColor(systemAccent);
             }
         }
 
@@ -90,12 +87,6 @@ namespace FluentScrobbler.Views
                 {
                 }
             }
-        }
-
-        private void Backdrop_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (BackdropToggle == null || MainWindow.Current == null) return;
-            MainWindow.Current.SetSystemBackdrop(BackdropToggle.IsOn);
         }
 
         private static Color ParseColorFromHex(string hex)

@@ -11,10 +11,9 @@ namespace FluentScrobbler
     {
         public static new MainWindow? Current { get; private set; }
 
-        public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Light;
+        public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
         public Windows.UI.Color CurrentAccentColor { get; private set; } = Windows.UI.Color.FromArgb(255, 0, 120, 212);
-        public bool IsAcrylic { get; private set; } = false;
-        public bool IsManualColor { get; private set; } = true;
+        public bool IsManualColor { get; private set; } = false;
 
         public MainWindow()
         {
@@ -23,6 +22,22 @@ namespace FluentScrobbler
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Title = "Fluent Scrobbler";
+
+            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
+            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            string iconPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "Assets", "AppIcon.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                appWindow.SetIcon(iconPath);
+            }
+
+            if (!IsManualColor)
+            {
+                var uiSettings = new Windows.UI.ViewManagement.UISettings();
+                var systemAccent = uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Accent);
+                SetAccentColor(systemAccent);
+            }
         }
 
         public void SetAppTheme(ElementTheme theme)
@@ -34,19 +49,6 @@ namespace FluentScrobbler
             }
         }
 
-        public void SetSystemBackdrop(bool isAcrylic)
-        {
-            IsAcrylic = isAcrylic;
-            if (isAcrylic)
-            {
-                this.SystemBackdrop = new DesktopAcrylicBackdrop();
-            }
-            else
-            {
-                this.SystemBackdrop = new MicaBackdrop();
-            }
-        }
-
         public void SetColorMode(bool isManual)
         {
             IsManualColor = isManual;
@@ -55,26 +57,74 @@ namespace FluentScrobbler
         public void SetAccentColor(Windows.UI.Color color)
         {
             CurrentAccentColor = color;
-            var brush = new SolidColorBrush(color);
+
+            Windows.UI.Color light1 = LightenColor(color, 0.15f);
+            Windows.UI.Color light2 = LightenColor(color, 0.30f);
+            Windows.UI.Color light3 = LightenColor(color, 0.45f);
+            Windows.UI.Color dark1 = DarkenColor(color, 0.15f);
+            Windows.UI.Color dark2 = DarkenColor(color, 0.30f);
+            Windows.UI.Color dark3 = DarkenColor(color, 0.45f);
+
+            UpdateResourceColor("SystemAccentColor", color);
+            UpdateResourceColor("SystemAccentColorLight1", light1);
+            UpdateResourceColor("SystemAccentColorLight2", light2);
+            UpdateResourceColor("SystemAccentColorLight3", light3);
+            UpdateResourceColor("SystemAccentColorDark1", dark1);
+            UpdateResourceColor("SystemAccentColorDark2", dark2);
+            UpdateResourceColor("SystemAccentColorDark3", dark3);
+
+            UpdateResourceBrush("AccentFillColorDefaultBrush", color);
+            UpdateResourceBrush("AccentFillColorSecondaryBrush", light1);
+            UpdateResourceBrush("AccentFillColorTertiaryBrush", light2);
+            UpdateResourceBrush("AccentTextFillColorPrimaryBrush", color);
+            UpdateResourceBrush("ToggleSwitchFillOn", color);
+            UpdateResourceBrush("ToggleSwitchFillOnPointerOver", light1);
+            UpdateResourceBrush("ToggleSwitchFillOnPressed", dark1);
 
             if (this.Content is FrameworkElement root)
             {
                 root.Resources["SystemAccentColor"] = color;
-                root.Resources["SystemAccentColorLight1"] = color;
-                root.Resources["SystemAccentColorLight2"] = color;
-                root.Resources["SystemAccentColorDark1"] = color;
-                root.Resources["SystemAccentColorDark2"] = color;
-                root.Resources["AccentFillColorDefaultBrush"] = brush;
-                root.Resources["AccentFillColorSecondaryBrush"] = brush;
-                root.Resources["AccentFillColorTertiaryBrush"] = brush;
-                root.Resources["AccentTextFillColorPrimaryBrush"] = brush;
-            }
+                root.Resources["AccentFillColorDefaultBrush"] = Application.Current.Resources["AccentFillColorDefaultBrush"];
+                root.Resources["AccentFillColorSecondaryBrush"] = Application.Current.Resources["AccentFillColorSecondaryBrush"];
+                root.Resources["AccentFillColorTertiaryBrush"] = Application.Current.Resources["AccentFillColorTertiaryBrush"];
 
-            Application.Current.Resources["SystemAccentColor"] = color;
-            Application.Current.Resources["AccentFillColorDefaultBrush"] = brush;
-            Application.Current.Resources["AccentFillColorSecondaryBrush"] = brush;
-            Application.Current.Resources["AccentFillColorTertiaryBrush"] = brush;
-            Application.Current.Resources["AccentTextFillColorPrimaryBrush"] = brush;
+                var current = root.RequestedTheme;
+                root.RequestedTheme = ElementTheme.Default;
+                root.RequestedTheme = current;
+            }
+        }
+
+        private static void UpdateResourceColor(string key, Windows.UI.Color color)
+        {
+            Application.Current.Resources[key] = color;
+        }
+
+        private static void UpdateResourceBrush(string key, Windows.UI.Color color)
+        {
+            if (Application.Current.Resources[key] is SolidColorBrush brush)
+            {
+                brush.Color = color;
+            }
+            else
+            {
+                Application.Current.Resources[key] = new SolidColorBrush(color);
+            }
+        }
+
+        private static Windows.UI.Color LightenColor(Windows.UI.Color color, float factor)
+        {
+            byte r = (byte)Math.Min(255, color.R + (255 - color.R) * factor);
+            byte g = (byte)Math.Min(255, color.G + (255 - color.G) * factor);
+            byte b = (byte)Math.Min(255, color.B + (255 - color.B) * factor);
+            return Windows.UI.Color.FromArgb(color.A, r, g, b);
+        }
+
+        private static Windows.UI.Color DarkenColor(Windows.UI.Color color, float factor)
+        {
+            byte r = (byte)Math.Max(0, color.R * (1 - factor));
+            byte g = (byte)Math.Max(0, color.G * (1 - factor));
+            byte b = (byte)Math.Max(0, color.B * (1 - factor));
+            return Windows.UI.Color.FromArgb(color.A, r, g, b);
         }
 
         public void UpdateNavigationState(bool isLoggedIn)
