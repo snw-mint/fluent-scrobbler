@@ -6,147 +6,104 @@
     xmlns:local="using:FluentScrobbler"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
         <StackPanel Spacing="24">
             <StackPanel Spacing="4">
                 <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock Text="Configure scrobbler engine, player detection, and notifications" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Customize application appearance, themes, and preferences" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
-            <StackPanel Spacing="12">
-                <TextBlock Text="Scrobbling Engine" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+            <StackPanel Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="Theme &amp; Appearance" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+                    <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                        <TextBlock Text="Supporter Feature" FontSize="10" FontWeight="Bold" Foreground="White" />
+                    </Border>
+                </StackPanel>
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                    <StackPanel Spacing="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="PaintBrush" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="App Theme" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Select Light, Dark, or System Default theme mode" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <ComboBox x:Name="ThemeModeComboBox" Grid.Column="2" Width="160" VerticalAlignment="Center">
+                            <ComboBoxItem Content="Light" />
+                            <ComboBoxItem Content="Dark" />
+                            <ComboBoxItem Content="System Default" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="0">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Automatic Scrobbling" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Detect background playback from Windows System Media Transport Controls" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
 
-                        <MenuFlyoutSeparator />
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Color" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Scrobble Threshold" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Percentage of track played required before scrobbling" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Accent Color" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Choose automatic palette or manual color selection" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ComboBox Grid.Column="1" SelectedIndex="1" Width="120">
-                                <ComboBoxItem Content="50%" />
-                                <ComboBoxItem Content="60%" />
-                                <ComboBoxItem Content="75%" />
-                                <ComboBoxItem Content="90%" />
+
+                            <ComboBox x:Name="ColorModeComboBox" Grid.Column="2" Width="140" VerticalAlignment="Center">
+                                <ComboBoxItem Content="Automatic" />
+                                <ComboBoxItem Content="Manual" />
                             </ComboBox>
                         </Grid>
 
-                        <MenuFlyoutSeparator />
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Scrobble Now Playing Status" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Update your online status immediately when a new song starts playing" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <StackPanel x:Name="PaletteSection" Visibility="Collapsed" Margin="0,16,0,0" Spacing="12">
+                            <MenuFlyoutSeparator Margin="0,0,0,12" />
+                            <TextBlock Text="Fixed Color Palette" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#0078D4" ToolTipService.ToolTip="Blue (Default)" Click="ColorPalette_Click" Tag="#0078D4" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#8764B8" ToolTipService.ToolTip="Purple" Click="ColorPalette_Click" Tag="#8764B8" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#008272" ToolTipService.ToolTip="Teal" Click="ColorPalette_Click" Tag="#008272" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#107C41" ToolTipService.ToolTip="Green" Click="ColorPalette_Click" Tag="#107C41" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#D13438" ToolTipService.ToolTip="Red" Click="ColorPalette_Click" Tag="#D13438" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#CA5010" ToolTipService.ToolTip="Orange" Click="ColorPalette_Click" Tag="#CA5010" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#E3008C" ToolTipService.ToolTip="Pink" Click="ColorPalette_Click" Tag="#E3008C" />
+                                <Button Width="36" Height="36" CornerRadius="6" Background="#4A5568" ToolTipService.ToolTip="Slate" Click="ColorPalette_Click" Tag="#4A5568" />
                             </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
-            </StackPanel>
-
-            <StackPanel Spacing="12">
-                <TextBlock Text="Media Players" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                    <StackPanel Spacing="16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Spotify Desktop" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Scrobble songs playing on Spotify for Windows" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                        <MenuFlyoutSeparator />
+                        <ic:SymbolIcon Grid.Column="0" Symbol="SquareHintSparkles" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Apple Music / iTunes" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Scrobble songs playing on Apple Music for Windows" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Transparency Effect" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Enable acrylic or mica material transparency effect on window" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
 
-                        <MenuFlyoutSeparator />
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Web Browsers (YouTube, Web Players)" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Scrobble music played in Chrome, Edge, and Firefox" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-
-            <StackPanel Spacing="12">
-                <TextBlock Text="Notifications &amp; System" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
-
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                    <StackPanel Spacing="16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Windows Toast Notifications" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Display notification banner when a track is scrobbled" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="True" />
-                        </Grid>
-
-                        <MenuFlyoutSeparator />
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Run at Windows Startup" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Launch scrobbler minimized to system tray on startup" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ToggleSwitch Grid.Column="1" IsOn="False" />
-                        </Grid>
-                    </StackPanel>
+                        <ToggleSwitch x:Name="BackdropToggle" Grid.Column="2" VerticalAlignment="Center" />
+                    </Grid>
                 </Border>
             </StackPanel>
         </StackPanel>

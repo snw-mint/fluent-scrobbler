@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using FluentScrobbler.Services;
 
 namespace FluentScrobbler
@@ -9,6 +10,11 @@ namespace FluentScrobbler
     {
         public static new MainWindow? Current { get; private set; }
 
+        public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Light;
+        public Windows.UI.Color CurrentAccentColor { get; private set; } = Windows.UI.Color.FromArgb(255, 0, 120, 212);
+        public bool IsAcrylic { get; private set; } = false;
+        public bool IsManualColor { get; private set; } = true;
+
         public MainWindow()
         {
             Current = this;
@@ -16,6 +22,58 @@ namespace FluentScrobbler
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Title = "Fluent Scrobbler";
+        }
+
+        public void SetAppTheme(ElementTheme theme)
+        {
+            CurrentTheme = theme;
+            if (this.Content is FrameworkElement root)
+            {
+                root.RequestedTheme = theme;
+            }
+        }
+
+        public void SetSystemBackdrop(bool isAcrylic)
+        {
+            IsAcrylic = isAcrylic;
+            if (isAcrylic)
+            {
+                this.SystemBackdrop = new DesktopAcrylicBackdrop();
+            }
+            else
+            {
+                this.SystemBackdrop = new MicaBackdrop();
+            }
+        }
+
+        public void SetColorMode(bool isManual)
+        {
+            IsManualColor = isManual;
+        }
+
+        public void SetAccentColor(Windows.UI.Color color)
+        {
+            CurrentAccentColor = color;
+            var brush = new SolidColorBrush(color);
+
+            if (this.Content is FrameworkElement root)
+            {
+                root.Resources["SystemAccentColor"] = color;
+                root.Resources["SystemAccentColorLight1"] = color;
+                root.Resources["SystemAccentColorLight2"] = color;
+                root.Resources["SystemAccentColorDark1"] = color;
+                root.Resources["SystemAccentColorDark2"] = color;
+                root.Resources["AccentFillColorDefaultBrush"] = brush;
+                root.Resources["AccentFillColorSecondaryBrush"] = brush;
+                root.Resources["AccentFillColorTertiaryBrush"] = brush;
+                root.Resources["AccentTextFillColorPrimaryBrush"] = brush;
+            }
+
+            Application.Current.Resources["SystemAccentColor"] = color;
+            Application.Current.Resources["AccentFillColorDefaultBrush"] = brush;
+            Application.Current.Resources["AccentFillColorSecondaryBrush"] = brush;
+            Application.Current.Resources["AccentFillColorTertiaryBrush"] = brush;
+            Application.Current.Resources["AccentTextFillColorPrimaryBrush"] = brush;
         }
 
         public void UpdateNavigationState(bool isLoggedIn)
