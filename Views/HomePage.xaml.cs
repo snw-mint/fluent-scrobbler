@@ -137,7 +137,7 @@ namespace FluentScrobbler.Views
                             : $"{nowPlayingTrack.Artist} • {nowPlayingTrack.Album}";
                         NowPlayingArtistAlbumText.Text = artistAlbumStr;
 
-                        string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(nowPlayingTrack.Artist, nowPlayingTrack.Album, nowPlayingTrack.AlbumArtUrl);
+                        string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(nowPlayingTrack.Artist, nowPlayingTrack.Album, nowPlayingTrack.Name, nowPlayingTrack.AlbumArtUrl);
                         if (!string.IsNullOrEmpty(artUrl))
                         {
                             try
@@ -175,7 +175,7 @@ namespace FluentScrobbler.Views
                             NowPlayingArtistAlbumText.Text = artistAlbumStr;
                             NowPlayingSourceText.Text = winSource;
 
-                            string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum);
+                            string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum, winTitle);
                             if (!string.IsNullOrEmpty(artUrl))
                             {
                                 try

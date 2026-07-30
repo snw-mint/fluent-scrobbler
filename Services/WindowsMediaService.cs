@@ -318,5 +318,26 @@ namespace FluentScrobbler.Services
             }
             return null;
         }
+
+        public async Task<Windows.Storage.Streams.IRandomAccessStreamWithContentType?> GetCurrentWindowsMediaThumbnailAsync()
+        {
+            try
+            {
+                var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                var currentSession = manager?.GetCurrentSession();
+                if (currentSession != null)
+                {
+                    var mediaProperties = await currentSession.TryGetMediaPropertiesAsync();
+                    if (mediaProperties?.Thumbnail != null)
+                    {
+                        return await mediaProperties.Thumbnail.OpenReadAsync();
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
     }
 }

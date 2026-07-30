@@ -155,6 +155,7 @@ namespace FluentScrobbler
             bool isLoggedIn = service.IsLoggedIn();
 
             UpdateNavigationState(isLoggedIn);
+            ScrobblerBackgroundService.Instance.Start();
 
             if (!isLoggedIn)
             {

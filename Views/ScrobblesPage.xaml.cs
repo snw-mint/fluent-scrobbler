@@ -106,7 +106,7 @@ namespace FluentScrobbler.Views
                     : $"{nowPlaying.Artist} • {nowPlaying.Album}";
                 NowPlayingArtist.Text = artistAlbumStr;
 
-                string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.AlbumArtUrl);
+                string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.Name, nowPlaying.AlbumArtUrl);
                 if (!string.IsNullOrEmpty(coverUrl))
                 {
                     try
@@ -143,7 +143,7 @@ namespace FluentScrobbler.Views
                     string artistAlbumStr = string.IsNullOrEmpty(winAlbum) ? winArtist : $"{winArtist} • {winAlbum}";
                     NowPlayingArtist.Text = artistAlbumStr;
 
-                    string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum);
+                    string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum, winTitle);
                     if (!string.IsNullOrEmpty(coverUrl))
                     {
                         try
@@ -180,12 +180,10 @@ namespace FluentScrobbler.Views
             }
 
             var historyTracks = recentTracks.Where(t => !t.IsNowPlaying).Take(5).ToList();
-            var historyItems = new List<ScrobbleItem>();
-
-            foreach (var t in historyTracks)
+            var historyTasks = historyTracks.Select(async t =>
             {
-                string? resolvedCover = await _mediaArtResolver.ResolveAlbumArtAsync(t.Artist, t.Album, t.AlbumArtUrl);
-                historyItems.Add(new ScrobbleItem
+                string? resolvedCover = await _mediaArtResolver.ResolveAlbumArtAsync(t.Artist, t.Album, t.Name, t.AlbumArtUrl);
+                return new ScrobbleItem
                 {
                     TrackName = t.Name,
                     ArtistName = t.Artist,
@@ -194,8 +192,10 @@ namespace FluentScrobbler.Views
                     Timestamp = t.PlayedAt?.LocalDateTime ?? DateTime.Now,
                     IsNowPlaying = false,
                     IsFavorite = t.IsLoved
-                });
-            }
+                };
+            });
+
+            var historyItems = await Task.WhenAll(historyTasks);
 
             Scrobbles.Clear();
             _cachedHistory.Clear();

@@ -476,6 +476,90 @@ namespace FluentScrobbler.Services
             return tags;
         }
 
+        public async Task<bool> UpdateNowPlayingAsync(string track, string artist, string album = "")
+        {
+            var (_, sessionKey) = GetUserSession();
+            if (string.IsNullOrEmpty(sessionKey)) return false;
+
+            try
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    { "api_key", ApiKey },
+                    { "artist", artist },
+                    { "method", "track.updateNowPlaying" },
+                    { "sk", sessionKey },
+                    { "track", track }
+                };
+
+                if (!string.IsNullOrWhiteSpace(album))
+                {
+                    parameters["album"] = album;
+                }
+
+                string apiSig = GenerateApiSignature(parameters, ApiSecret);
+                parameters["api_sig"] = apiSig;
+                parameters["format"] = "json";
+
+                var content = new FormUrlEncodedContent(parameters);
+                var response = await _httpClient.PostAsync(BaseUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return !json.Contains("error");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar Now Playing: {ex.Message}");
+            }
+            return false;
+        }
+
+        public async Task<bool> ScrobbleTrackAsync(string track, string artist, string album = "", long? timestamp = null)
+        {
+            var (_, sessionKey) = GetUserSession();
+            if (string.IsNullOrEmpty(sessionKey)) return false;
+
+            try
+            {
+                long uts = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var parameters = new Dictionary<string, string>
+                {
+                    { "api_key", ApiKey },
+                    { "artist", artist },
+                    { "method", "track.scrobble" },
+                    { "sk", sessionKey },
+                    { "timestamp", uts.ToString() },
+                    { "track", track }
+                };
+
+                if (!string.IsNullOrWhiteSpace(album))
+                {
+                    parameters["album"] = album;
+                }
+
+                string apiSig = GenerateApiSignature(parameters, ApiSecret);
+                parameters["api_sig"] = apiSig;
+                parameters["format"] = "json";
+
+                var content = new FormUrlEncodedContent(parameters);
+                var response = await _httpClient.PostAsync(BaseUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return !json.Contains("error");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao enviar scrobble: {ex.Message}");
+            }
+            return false;
+        }
+
         public async Task<bool> ToggleLoveTrackAsync(string track, string artist, bool love, string sessionKey)
         {
             await Task.Delay(100);
