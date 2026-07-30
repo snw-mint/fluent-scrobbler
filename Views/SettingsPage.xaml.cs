@@ -20,7 +20,6 @@ namespace FluentScrobbler.Views
         private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
-            PrimaryArtistToggle.Toggled -= PrimaryArtistToggle_Toggled;
 
             if (MainWindow.Current != null)
             {
@@ -33,12 +32,7 @@ namespace FluentScrobbler.Views
                 };
             }
 
-            var mediaService = new WindowsMediaService();
-            PrimaryArtistToggle.IsOn = mediaService.IsPrimaryArtistOnlyEnabled();
-            UpdatePrimaryArtistStatusText();
-
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
-            PrimaryArtistToggle.Toggled += PrimaryArtistToggle_Toggled;
 
             LoadSourceApplications();
         }
@@ -46,23 +40,6 @@ namespace FluentScrobbler.Views
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
-            PrimaryArtistToggle.Toggled -= PrimaryArtistToggle_Toggled;
-        }
-
-        private void PrimaryArtistToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (PrimaryArtistToggle == null) return;
-            UpdatePrimaryArtistStatusText();
-            var mediaService = new WindowsMediaService();
-            mediaService.SetPrimaryArtistOnlyEnabled(PrimaryArtistToggle.IsOn);
-        }
-
-        private void UpdatePrimaryArtistStatusText()
-        {
-            if (PrimaryArtistStatusText != null && PrimaryArtistToggle != null)
-            {
-                PrimaryArtistStatusText.Text = PrimaryArtistToggle.IsOn ? "On" : "Off";
-            }
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

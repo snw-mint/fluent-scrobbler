@@ -75,28 +75,6 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <ic:SymbolIcon Grid.Column="0" Symbol="Person" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
-
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="Use Primary Artist Only" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Strip featured artists and keep only the main performer" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <TextBlock x:Name="PrimaryArtistStatusText" Text="Off" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                            <ToggleSwitch x:Name="PrimaryArtistToggle" OffContent="" OnContent="" VerticalAlignment="Center" MinWidth="0" Toggled="PrimaryArtistToggle_Toggled" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>
