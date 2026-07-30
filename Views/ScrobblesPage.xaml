@@ -42,7 +42,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock x:Name="NowPlayingTrack" Text="" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                    <TextBlock Text="Scrobbling" FontSize="10" FontWeight="SemiBold" Foreground="White" />
+                                    <TextBlock Text="NOW PLAYING" FontSize="10" FontWeight="SemiBold" Foreground="White" />
                                 </Border>
                             </StackPanel>
                             <TextBlock x:Name="NowPlayingArtist" Text="" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
