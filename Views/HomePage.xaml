@@ -158,7 +158,7 @@
                         </Grid>
                     </Button>
 
-                    <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="" Click="ExternalLink_Click">
+                    <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml" Click="ExternalLink_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -174,7 +174,7 @@
                         </Grid>
                     </Button>
 
-                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="" Click="ExternalLink_Click">
+                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml" Click="ExternalLink_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
