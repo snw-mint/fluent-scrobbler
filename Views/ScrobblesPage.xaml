@@ -73,7 +73,7 @@
                                     <Border Grid.Column="0" Width="52" Height="52" CornerRadius="6" Background="{ThemeResource LayerFillColorDefaultBrush}">
                                         <Grid>
                                             <ic:SymbolIcon Symbol="MusicNote1" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <Image Source="{x:Bind CoverUrl}" Width="52" Height="52" Stretch="UniformToFill" />
+                                            <Image Source="{x:Bind CoverUrl, Mode=OneWay}" Width="52" Height="52" Stretch="UniformToFill" />
                                         </Grid>
                                     </Border>
 

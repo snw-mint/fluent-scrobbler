@@ -31,11 +31,16 @@ namespace FluentScrobbler.Views
         private static string? _cachedNowPlayingArtistAlbum;
         private static string? _cachedNowPlayingArtUrl;
 
+        private DispatcherTimer? _nowPlayingTimer;
+        private string _lastNowPlayingTrack = string.Empty;
+        private string _lastNowPlayingArtist = string.Empty;
+
         public HomePage()
         {
             this.InitializeComponent();
             ApplyCachedState();
             this.Loaded += HomePage_Loaded;
+            this.Unloaded += HomePage_Unloaded;
         }
 
         private void ApplyCachedState()
@@ -94,6 +99,102 @@ namespace FluentScrobbler.Views
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadDashboardDataAsync();
+            StartNowPlayingTimer();
+        }
+
+        private void HomePage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _nowPlayingTimer?.Stop();
+            _nowPlayingTimer = null;
+        }
+
+        private void StartNowPlayingTimer()
+        {
+            _nowPlayingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            _nowPlayingTimer.Tick += async (s, e) => await RefreshNowPlayingAsync();
+            _nowPlayingTimer.Start();
+        }
+
+        private async Task RefreshNowPlayingAsync()
+        {
+            if (!_lastFmService.IsLoggedIn()) return;
+
+            var (username, _) = _lastFmService.GetUserSession();
+            if (string.IsNullOrEmpty(username)) return;
+
+            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 3);
+            var nowPlaying = recentTracks?.FirstOrDefault(t => t.IsNowPlaying);
+
+            string newTrack = nowPlaying?.Name ?? string.Empty;
+            string newArtist = nowPlaying?.Artist ?? string.Empty;
+
+            if (nowPlaying == null)
+            {
+                var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
+                if (winMedia.HasValue)
+                {
+                    var (winTitle, winArtist, winAlbum, winSource) = winMedia.Value;
+                    newTrack = winTitle;
+                    newArtist = winArtist;
+
+                    if (newTrack == _lastNowPlayingTrack && newArtist == _lastNowPlayingArtist) return;
+
+                    _lastNowPlayingTrack = newTrack;
+                    _lastNowPlayingArtist = newArtist;
+                    await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null);
+                    return;
+                }
+
+                if (_lastNowPlayingTrack != string.Empty)
+                {
+                    _lastNowPlayingTrack = string.Empty;
+                    _lastNowPlayingArtist = string.Empty;
+                    NowPlayingCard.Visibility = Visibility.Collapsed;
+                    _cachedNowPlayingVisible = false;
+                    _cachedNowPlayingTrack = null;
+                    _cachedNowPlayingArtistAlbum = null;
+                    _cachedNowPlayingArtUrl = null;
+                }
+                return;
+            }
+
+            if (newTrack == _lastNowPlayingTrack && newArtist == _lastNowPlayingArtist) return;
+
+            _lastNowPlayingTrack = newTrack;
+            _lastNowPlayingArtist = newArtist;
+            await ApplyNowPlayingAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.Name, nowPlaying.AlbumArtUrl);
+        }
+
+        private async Task ApplyNowPlayingAsync(string artist, string album, string track, string? lastFmArtUrl)
+        {
+            NowPlayingCard.Visibility = Visibility.Visible;
+            NowPlayingTrackText.Text = track;
+            string artistAlbumStr = string.IsNullOrEmpty(album) ? artist : $"{artist} • {album}";
+            NowPlayingArtistAlbumText.Text = artistAlbumStr;
+
+            NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+            NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+
+            string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist, album, track, lastFmArtUrl);
+            if (!string.IsNullOrEmpty(artUrl))
+            {
+                try
+                {
+                    NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(artUrl));
+                    NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
+                    NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
+                }
+                catch
+                {
+                    NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+                    NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+                }
+            }
+
+            _cachedNowPlayingVisible = true;
+            _cachedNowPlayingTrack = track;
+            _cachedNowPlayingArtistAlbum = artistAlbumStr;
+            _cachedNowPlayingArtUrl = artUrl;
         }
 
         private async Task LoadDashboardDataAsync()
@@ -130,38 +231,9 @@ namespace FluentScrobbler.Views
                     var nowPlayingTrack = recentTracks.FirstOrDefault(t => t.IsNowPlaying);
                     if (nowPlayingTrack != null)
                     {
-                        NowPlayingCard.Visibility = Visibility.Visible;
-                        NowPlayingTrackText.Text = nowPlayingTrack.Name;
-                        string artistAlbumStr = string.IsNullOrEmpty(nowPlayingTrack.Album)
-                            ? nowPlayingTrack.Artist
-                            : $"{nowPlayingTrack.Artist} • {nowPlayingTrack.Album}";
-                        NowPlayingArtistAlbumText.Text = artistAlbumStr;
-
-                        string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(nowPlayingTrack.Artist, nowPlayingTrack.Album, nowPlayingTrack.Name, nowPlayingTrack.AlbumArtUrl);
-                        if (!string.IsNullOrEmpty(artUrl))
-                        {
-                            try
-                            {
-                                NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(artUrl));
-                                NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
-                                NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
-                            }
-                            catch
-                            {
-                                NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
-                                NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-                            }
-                        }
-                        else
-                        {
-                            NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
-                            NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-                        }
-
-                        _cachedNowPlayingVisible = true;
-                        _cachedNowPlayingTrack = nowPlayingTrack.Name;
-                        _cachedNowPlayingArtistAlbum = artistAlbumStr;
-                        _cachedNowPlayingArtUrl = artUrl;
+                        _lastNowPlayingTrack = nowPlayingTrack.Name;
+                        _lastNowPlayingArtist = nowPlayingTrack.Artist;
+                        await ApplyNowPlayingAsync(nowPlayingTrack.Artist, nowPlayingTrack.Album, nowPlayingTrack.Name, nowPlayingTrack.AlbumArtUrl);
                     }
                     else
                     {
@@ -169,37 +241,9 @@ namespace FluentScrobbler.Views
                         if (winMedia.HasValue)
                         {
                             var (winTitle, winArtist, winAlbum, winSource) = winMedia.Value;
-                            NowPlayingCard.Visibility = Visibility.Visible;
-                            NowPlayingTrackText.Text = winTitle;
-                            string artistAlbumStr = string.IsNullOrEmpty(winAlbum) ? winArtist : $"{winArtist} • {winAlbum}";
-                            NowPlayingArtistAlbumText.Text = artistAlbumStr;
-                            NowPlayingSourceText.Text = winSource;
-
-                            string? artUrl = await _mediaArtResolver.ResolveAlbumArtAsync(winArtist, winAlbum, winTitle);
-                            if (!string.IsNullOrEmpty(artUrl))
-                            {
-                                try
-                                {
-                                    NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(artUrl));
-                                    NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
-                                    NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
-                                }
-                                catch
-                                {
-                                    NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
-                                    NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-                                }
-                            }
-                            else
-                            {
-                                NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
-                                NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-                            }
-
-                            _cachedNowPlayingVisible = true;
-                            _cachedNowPlayingTrack = winTitle;
-                            _cachedNowPlayingArtistAlbum = artistAlbumStr;
-                            _cachedNowPlayingArtUrl = artUrl;
+                            _lastNowPlayingTrack = winTitle;
+                            _lastNowPlayingArtist = winArtist;
+                            await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null);
                         }
                         else
                         {
