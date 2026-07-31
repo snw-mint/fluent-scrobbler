@@ -21,7 +21,6 @@ namespace FluentScrobbler.Views
 
         public ObservableCollection<ScrobbleItem> Scrobbles { get; } = new();
 
-        private static readonly List<ScrobbleItem> _cachedHistory = new();
         private static bool _cachedNowPlayingVisible;
         private static string? _cachedNowPlayingTrack;
         private static string? _cachedNowPlayingArtist;
@@ -30,64 +29,32 @@ namespace FluentScrobbler.Views
         private DispatcherTimer? _nowPlayingTimer;
         private string _lastNowPlayingTrack = string.Empty;
         private string _lastNowPlayingArtist = string.Empty;
+        private CancellationTokenSource? _cts;
 
         private static readonly SemaphoreSlim _artLoadSemaphore = new(3, 3);
 
         public ScrobblesPage()
         {
             this.InitializeComponent();
-            ApplyCachedState();
             this.Loaded += ScrobblesPage_Loaded;
             this.Unloaded += ScrobblesPage_Unloaded;
         }
 
-        private void ApplyCachedState()
-        {
-            if (_cachedHistory.Count > 0)
-            {
-                Scrobbles.Clear();
-                foreach (var item in _cachedHistory)
-                {
-                    Scrobbles.Add(item);
-                }
-                ScrobblesListView.ItemsSource = Scrobbles;
-            }
-
-            if (_cachedNowPlayingVisible)
-            {
-                NowPlayingPanel.Visibility = Visibility.Visible;
-                if (_cachedNowPlayingTrack != null) NowPlayingTrack.Text = _cachedNowPlayingTrack;
-                if (_cachedNowPlayingArtist != null) NowPlayingArtist.Text = _cachedNowPlayingArtist;
-
-                if (!string.IsNullOrEmpty(_cachedNowPlayingCoverUrl))
-                {
-                    try
-                    {
-                        NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(_cachedNowPlayingCoverUrl));
-                        NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
-                        NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
-                    }
-                    catch
-                    {
-                        NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
-                        NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-                    }
-                }
-            }
-            else
-            {
-                NowPlayingPanel.Visibility = Visibility.Collapsed;
-            }
-        }
-
         private async void ScrobblesPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await LoadDataAsync();
-            StartNowPlayingTimer();
+            _cts = new CancellationTokenSource();
+            await LoadDataAsync(_cts.Token);
+            if (!_cts.IsCancellationRequested)
+            {
+                StartNowPlayingTimer();
+            }
         }
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
             _nowPlayingTimer?.Stop();
             _nowPlayingTimer = null;
         }
@@ -95,11 +62,15 @@ namespace FluentScrobbler.Views
         private void StartNowPlayingTimer()
         {
             _nowPlayingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-            _nowPlayingTimer.Tick += async (s, e) => await RefreshNowPlayingAsync();
+            _nowPlayingTimer.Tick += async (s, e) =>
+            {
+                if (_cts == null || _cts.IsCancellationRequested) return;
+                await RefreshNowPlayingAsync(_cts.Token);
+            };
             _nowPlayingTimer.Start();
         }
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync(CancellationToken ct)
         {
             if (!_lastFmService.IsLoggedIn()) return;
 
@@ -107,10 +78,14 @@ namespace FluentScrobbler.Views
             if (string.IsNullOrEmpty(username)) return;
 
             var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 6);
+            if (ct.IsCancellationRequested) return;
             if (recentTracks == null || recentTracks.Count == 0) return;
 
             var nowPlaying = recentTracks.FirstOrDefault(t => t.IsNowPlaying);
-            await ApplyNowPlayingAsync(nowPlaying?.Artist, nowPlaying?.Album, nowPlaying?.Name, nowPlaying?.AlbumArtUrl);
+            if (!ct.IsCancellationRequested)
+                await ApplyNowPlayingAsync(nowPlaying?.Artist, nowPlaying?.Album, nowPlaying?.Name, nowPlaying?.AlbumArtUrl, ct);
+
+            if (ct.IsCancellationRequested) return;
 
             if (nowPlaying != null)
             {
@@ -131,25 +106,26 @@ namespace FluentScrobbler.Views
                 IsFavorite = t.IsLoved
             }).ToList();
 
-            Scrobbles.Clear();
-            _cachedHistory.Clear();
+            if (ct.IsCancellationRequested) return;
 
+            Scrobbles.Clear();
             foreach (var item in historyItems)
             {
                 Scrobbles.Add(item);
-                _cachedHistory.Add(item);
             }
 
             ScrobblesListView.ItemsSource = Scrobbles;
 
-            _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList());
+            _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
         }
 
         private async Task LoadArtProgressivelyAsync(
             List<ScrobbleItem> items,
-            List<(string Artist, string? Album, string Name, string? AlbumArtUrl)> trackInfos)
+            List<(string Artist, string? Album, string Name, string? AlbumArtUrl)> trackInfos,
+            CancellationToken ct)
         {
             var tasks = new List<Task>();
+            var dq = this.DispatcherQueue;
 
             for (int i = 0; i < items.Count; i++)
             {
@@ -158,37 +134,68 @@ namespace FluentScrobbler.Views
 
                 tasks.Add(Task.Run(async () =>
                 {
-                    await _artLoadSemaphore.WaitAsync();
+                    await _artLoadSemaphore.WaitAsync(ct).ConfigureAwait(false);
                     try
                     {
+                        if (ct.IsCancellationRequested) return;
                         string? resolved = await _mediaArtResolver.ResolveAlbumArtAsync(artist, album ?? string.Empty, name, artUrl);
-                        if (!string.IsNullOrEmpty(resolved))
+                        if (!ct.IsCancellationRequested && !string.IsNullOrEmpty(resolved) && dq != null)
                         {
-                            DispatcherQueue.TryEnqueue(() =>
+                            dq.TryEnqueue(() =>
                             {
-                                item.CoverUrl = resolved;
+                                if (!ct.IsCancellationRequested)
+                                    item.CoverUrl = resolved;
                             });
                         }
                     }
+                    catch (OperationCanceledException) { }
                     finally
                     {
-                        _artLoadSemaphore.Release();
+                        if (!ct.IsCancellationRequested)
+                            _artLoadSemaphore.Release();
+                        else
+                            _artLoadSemaphore.Release();
                     }
-                }));
+                }, ct));
             }
 
-            await Task.WhenAll(tasks);
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException) { }
         }
 
-        private async Task RefreshNowPlayingAsync()
+        private async Task RefreshNowPlayingAsync(CancellationToken ct)
         {
+            if (ct.IsCancellationRequested) return;
             if (!_lastFmService.IsLoggedIn()) return;
 
             var (username, _) = _lastFmService.GetUserSession();
             if (string.IsNullOrEmpty(username)) return;
 
-            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 3);
-            var nowPlaying = recentTracks?.FirstOrDefault(t => t.IsNowPlaying);
+            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 6);
+            if (ct.IsCancellationRequested) return;
+            if (recentTracks == null) return;
+
+            var historyTracks = recentTracks.Where(t => !t.IsNowPlaying).Take(5).ToList();
+            if (historyTracks.Count > 0 && Scrobbles.Count > 0)
+            {
+                var latestHistory = historyTracks[0];
+                var currentLatest = Scrobbles[0];
+                if (latestHistory.Name != currentLatest.TrackName || latestHistory.PlayedAt?.LocalDateTime != currentLatest.Timestamp)
+                {
+                    UpdateHistoryList(historyTracks, ct);
+                }
+            }
+            else if (historyTracks.Count > 0 && Scrobbles.Count == 0)
+            {
+                UpdateHistoryList(historyTracks, ct);
+            }
+
+            if (ct.IsCancellationRequested) return;
+
+            var nowPlaying = recentTracks.FirstOrDefault(t => t.IsNowPlaying);
 
             string newTrack = nowPlaying?.Name ?? string.Empty;
             string newArtist = nowPlaying?.Artist ?? string.Empty;
@@ -196,6 +203,7 @@ namespace FluentScrobbler.Views
             if (nowPlaying == null)
             {
                 var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
+                if (ct.IsCancellationRequested) return;
                 if (winMedia.HasValue)
                 {
                     var (winTitle, winArtist, winAlbum, _) = winMedia.Value;
@@ -206,7 +214,7 @@ namespace FluentScrobbler.Views
 
                     _lastNowPlayingTrack = newTrack;
                     _lastNowPlayingArtist = newArtist;
-                    await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null);
+                    await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null, ct);
                     return;
                 }
 
@@ -214,8 +222,11 @@ namespace FluentScrobbler.Views
                 {
                     _lastNowPlayingTrack = string.Empty;
                     _lastNowPlayingArtist = string.Empty;
-                    NowPlayingPanel.Visibility = Visibility.Collapsed;
-                    _cachedNowPlayingVisible = false;
+                    if (!ct.IsCancellationRequested)
+                    {
+                        NowPlayingPanel.Visibility = Visibility.Collapsed;
+                        _cachedNowPlayingVisible = false;
+                    }
                 }
                 return;
             }
@@ -224,14 +235,42 @@ namespace FluentScrobbler.Views
 
             _lastNowPlayingTrack = newTrack;
             _lastNowPlayingArtist = newArtist;
-            await ApplyNowPlayingAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.Name, nowPlaying.AlbumArtUrl);
+            await ApplyNowPlayingAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.Name, nowPlaying.AlbumArtUrl, ct);
         }
 
-        private async Task ApplyNowPlayingAsync(string? artist, string? album, string? track, string? lastFmArtUrl)
+        private void UpdateHistoryList(List<ScrobbleTrack> historyTracks, CancellationToken ct)
         {
+            if (ct.IsCancellationRequested) return;
+
+            var historyItems = historyTracks.Select(t => new ScrobbleItem
+            {
+                TrackName = t.Name,
+                ArtistName = t.Artist,
+                AlbumName = t.Album,
+                CoverUrl = string.Empty,
+                Timestamp = t.PlayedAt?.LocalDateTime ?? DateTime.Now,
+                IsNowPlaying = false,
+                IsFavorite = t.IsLoved
+            }).ToList();
+
+            Scrobbles.Clear();
+
+            foreach (var item in historyItems)
+            {
+                Scrobbles.Add(item);
+            }
+
+            _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
+        }
+
+        private async Task ApplyNowPlayingAsync(string? artist, string? album, string? track, string? lastFmArtUrl, CancellationToken ct)
+        {
+            if (ct.IsCancellationRequested) return;
+
             if (string.IsNullOrEmpty(track))
             {
                 var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
+                if (ct.IsCancellationRequested) return;
                 if (winMedia.HasValue)
                 {
                     var (winTitle, winArtist, winAlbum, _) = winMedia.Value;
@@ -250,6 +289,8 @@ namespace FluentScrobbler.Views
                 }
             }
 
+            if (ct.IsCancellationRequested) return;
+
             NowPlayingPanel.Visibility = Visibility.Visible;
             NowPlayingTrack.Text = track;
             string artistAlbumStr = string.IsNullOrEmpty(album) ? (artist ?? string.Empty) : $"{artist} • {album}";
@@ -259,6 +300,8 @@ namespace FluentScrobbler.Views
             NowPlayingFallbackIcon.Visibility = Visibility.Visible;
 
             string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist ?? string.Empty, album ?? string.Empty, track, lastFmArtUrl);
+            if (ct.IsCancellationRequested) return;
+
             if (!string.IsNullOrEmpty(coverUrl))
             {
                 try

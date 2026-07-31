@@ -53,17 +53,17 @@ namespace FluentScrobbler.Services
                 if (File.Exists(baseDirSecrets))
                 {
                     string json = File.ReadAllText(baseDirSecrets);
-                    return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
                 if (File.Exists("secrets.json"))
                 {
                     string json = File.ReadAllText("secrets.json");
-                    return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
                 if (File.Exists(LocalSecretsFilePath))
                 {
                     string json = File.ReadAllText(LocalSecretsFilePath);
-                    return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
             }
             catch
@@ -79,7 +79,7 @@ namespace FluentScrobbler.Services
                 if (File.Exists(SettingsFilePath))
                 {
                     string json = File.ReadAllText(SettingsFilePath);
-                    return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
             }
             catch
@@ -97,7 +97,7 @@ namespace FluentScrobbler.Services
                 {
                     Directory.CreateDirectory(dir);
                 }
-                string json = JsonSerializer.Serialize(settings);
+                string json = JsonSerializer.Serialize(settings, AppJsonContext.Default.DictionaryStringString);
                 File.WriteAllText(SettingsFilePath, json);
             }
             catch
@@ -222,9 +222,11 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task OpenAuthPageInBrowserAsync(string token)
+        public async Task OpenAuthPageInBrowserAsync(string? token = null)
         {
-            string authUrl = $"https://www.last.fm/api/auth/?api_key={ApiKey}&token={token}";
+            string authUrl = string.IsNullOrEmpty(token)
+                ? $"https://www.last.fm/api/auth/?api_key={ApiKey}"
+                : $"https://www.last.fm/api/auth/?api_key={ApiKey}&token={token}";
 
             try
             {
@@ -236,9 +238,18 @@ namespace FluentScrobbler.Services
             }
             catch
             {
-                if (Uri.TryCreate(authUrl, UriKind.Absolute, out Uri? targetUri) && targetUri != null)
+                try
                 {
-                    await Launcher.LaunchUriAsync(targetUri);
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "cmd",
+                        Arguments = $"/c start \"\" \"{authUrl.Replace("&", "^&")}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    });
+                }
+                catch
+                {
                 }
             }
         }

@@ -9,7 +9,6 @@
 *.userosscache
 *.sln.docstates
 artifacts/
-commands.txt
 
 # Build logs
 [Ll]og/

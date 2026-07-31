@@ -42,7 +42,7 @@ namespace FluentScrobbler.Services
                     if (File.Exists(SettingsFilePath))
                     {
                         string json = File.ReadAllText(SettingsFilePath);
-                        var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                        var dict = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString);
                         if (dict != null) return dict;
                     }
                 }
@@ -64,7 +64,7 @@ namespace FluentScrobbler.Services
                     {
                         Directory.CreateDirectory(dir);
                     }
-                    string json = JsonSerializer.Serialize(dict);
+                    string json = JsonSerializer.Serialize(dict, AppJsonContext.Default.DictionaryStringString);
                     File.WriteAllText(SettingsFilePath, json);
                 }
                 catch
@@ -197,10 +197,6 @@ namespace FluentScrobbler.Services
                                 if (!string.IsNullOrWhiteSpace(appId) && !knownSources.Contains(appId))
                                 {
                                     knownSources.Add(appId);
-                                    if (!allowedSources.Contains(appId))
-                                    {
-                                        allowedSources.Add(appId);
-                                    }
                                 }
                             }
                             catch
@@ -297,19 +293,29 @@ namespace FluentScrobbler.Services
             try
             {
                 var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                var currentSession = manager?.GetCurrentSession();
-                if (currentSession != null)
+                var sessions = manager?.GetSessions();
+                if (sessions == null) return null;
+
+                foreach (var session in sessions)
                 {
-                    var playbackInfo = currentSession.GetPlaybackInfo();
-                    if (playbackInfo != null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                    try
                     {
-                        var mediaProperties = await currentSession.TryGetMediaPropertiesAsync();
+                        string appId = session.SourceAppUserModelId;
+                        if (!IsSourceAllowed(appId)) continue;
+
+                        var playbackInfo = session.GetPlaybackInfo();
+                        if (playbackInfo == null || playbackInfo.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                            continue;
+
+                        var mediaProperties = await session.TryGetMediaPropertiesAsync();
                         if (mediaProperties != null && !string.IsNullOrWhiteSpace(mediaProperties.Title))
                         {
-                            string appId = currentSession.SourceAppUserModelId;
                             string sourceName = FormatAppDisplayName(appId);
                             return (mediaProperties.Title, mediaProperties.Artist ?? string.Empty, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
                         }
+                    }
+                    catch
+                    {
                     }
                 }
             }

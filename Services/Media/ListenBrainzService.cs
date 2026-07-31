@@ -27,7 +27,7 @@ namespace FluentScrobbler.Services.Media
         private static bool _diskCacheLoaded = false;
         private static Dictionary<string, DiskCacheEntry> _diskCache = new();
 
-        private record DiskCacheEntry(string? Url, long ExpiresAtUnix);
+        internal record DiskCacheEntry(string? Url, long ExpiresAtUnix);
 
         public ListenBrainzService()
         {
@@ -47,7 +47,7 @@ namespace FluentScrobbler.Services.Media
                 if (!File.Exists(DiskCachePath)) return;
 
                 string json = File.ReadAllText(DiskCachePath);
-                var loaded = JsonSerializer.Deserialize<Dictionary<string, DiskCacheEntry>>(json);
+                var loaded = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringDiskCacheEntry);
                 if (loaded == null) return;
 
                 long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -69,7 +69,7 @@ namespace FluentScrobbler.Services.Media
             {
                 string dir = Path.GetDirectoryName(DiskCachePath)!;
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                await File.WriteAllTextAsync(DiskCachePath, JsonSerializer.Serialize(_diskCache));
+                await File.WriteAllTextAsync(DiskCachePath, JsonSerializer.Serialize(_diskCache, AppJsonContext.Default.DictionaryStringDiskCacheEntry));
             }
             catch
             {

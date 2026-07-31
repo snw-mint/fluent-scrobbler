@@ -145,6 +145,12 @@ namespace FluentScrobbler.Views
                     ActionButtonText.Text = "Complete Login";
                     await _lastFmService.OpenAuthPageInBrowserAsync(_currentAuthToken);
                 }
+                else
+                {
+                    AccountSubtitleText.Text = "Authorize in browser, then click Complete Login";
+                    ActionButtonText.Text = "Complete Login";
+                    await _lastFmService.OpenAuthPageInBrowserAsync(null);
+                }
             }
         }
     }

@@ -380,9 +380,18 @@ namespace FluentScrobbler.Views
                 }
                 catch
                 {
-                    if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri != null)
+                    try
                     {
-                        await Windows.System.Launcher.LaunchUriAsync(uri);
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = $"/c start \"\" \"{url.Replace("&", "^&")}\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        });
+                    }
+                    catch
+                    {
                     }
                 }
             }

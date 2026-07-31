@@ -2,7 +2,7 @@
 AppName=Fluent Scrobbler
 AppVersion=0.1.0
 AppPublisher=Snow Mint
-DefaultDirName={localappdata}\Programs\FluentScrobbler
+DefaultDirName={localappdata}\FluentScrobbler
 PrivilegesRequired=lowest
 DefaultGroupName=Fluent Scrobbler
 UninstallDisplayIcon={app}\FluentScrobbler.exe
