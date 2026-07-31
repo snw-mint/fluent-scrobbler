@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using FluentIcons.WinUI;
 using FluentScrobbler.Models;
 using FluentScrobbler.Services;
 using FluentScrobbler.Services.Media;
@@ -40,6 +39,9 @@ namespace FluentScrobbler.Views
         private async void ScrobblesPage_Loaded(object sender, RoutedEventArgs e)
         {
             _cts = new CancellationTokenSource();
+            
+            ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
+
             await LoadDataAsync(_cts.Token);
             if (!_cts.IsCancellationRequested)
             {
@@ -49,6 +51,7 @@ namespace FluentScrobbler.Views
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbledInBackground;
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
@@ -56,9 +59,20 @@ namespace FluentScrobbler.Views
             _nowPlayingTimer = null;
         }
 
+        private void OnTrackScrobbledInBackground(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(async () =>
+            {
+                if (_cts != null && !_cts.IsCancellationRequested)
+                {
+                    await LoadDataAsync(_cts.Token);
+                }
+            });
+        }
+
         private void StartNowPlayingTimer()
         {
-            _nowPlayingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            _nowPlayingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
             _nowPlayingTimer.Tick += async (s, e) =>
             {
                 if (_cts == null || _cts.IsCancellationRequested) return;
@@ -133,8 +147,6 @@ namespace FluentScrobbler.Views
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            // Album Art Container
             var artBorder = new Border
             {
                 Width = 52,
@@ -144,8 +156,6 @@ namespace FluentScrobbler.Views
             };
 
             var artGrid = new Grid();
-            
-            // Usando nome totalmente qualificado para evitar ambiguidade entre WinUI e FluentIcons
             var icon = new FluentIcons.WinUI.SymbolIcon
             {
                 Symbol = FluentIcons.Common.Symbol.MusicNote1,
@@ -160,30 +170,35 @@ namespace FluentScrobbler.Views
             {
                 Width = 52,
                 Height = 52,
-                Stretch = Stretch.UniformToFill
+                Stretch = Stretch.UniformToFill,
+                Visibility = Visibility.Collapsed
             };
 
-            if (!string.IsNullOrEmpty(item.CoverUrl))
+            Action updateImageAction = () =>
             {
-                try
+                if (!string.IsNullOrEmpty(item.CoverUrl))
                 {
-                    img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                    try
+                    {
+                        img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                        img.Visibility = Visibility.Visible;
+                        icon.Visibility = Visibility.Collapsed;
+                    }
+                    catch
+                    {
+                        img.Visibility = Visibility.Collapsed;
+                        icon.Visibility = Visibility.Visible;
+                    }
                 }
-                catch { }
-            }
+            };
+
+            updateImageAction();
 
             item.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(ScrobbleItem.CoverUrl) && !string.IsNullOrEmpty(item.CoverUrl))
+                if (e.PropertyName == nameof(ScrobbleItem.CoverUrl))
                 {
-                    this.DispatcherQueue?.TryEnqueue(() =>
-                    {
-                        try
-                        {
-                            img.Source = new BitmapImage(new Uri(item.CoverUrl));
-                        }
-                        catch { }
-                    });
+                    this.DispatcherQueue?.TryEnqueue(() => updateImageAction());
                 }
             };
 
@@ -191,8 +206,6 @@ namespace FluentScrobbler.Views
             artBorder.Child = artGrid;
             Grid.SetColumn(artBorder, 0);
             grid.Children.Add(artBorder);
-
-            // Track Details Stack
             var infoStack = new StackPanel
             {
                 VerticalAlignment = VerticalAlignment.Center,
@@ -218,30 +231,31 @@ namespace FluentScrobbler.Views
                 Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
                 Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
             };
-
-            var dotText = new TextBlock
-            {
-                Text = "•",
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
-            };
-
-            var albumText = new TextBlock
-            {
-                Text = item.AlbumName,
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
-            };
-
             subStack.Children.Add(artistText);
-            subStack.Children.Add(dotText);
-            subStack.Children.Add(albumText);
+            if (!string.IsNullOrWhiteSpace(item.AlbumName))
+            {
+                var dotText = new TextBlock
+                {
+                    Text = "•",
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                };
+
+                var albumText = new TextBlock
+                {
+                    Text = item.AlbumName,
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                };
+
+                subStack.Children.Add(dotText);
+                subStack.Children.Add(albumText);
+            }
+
             infoStack.Children.Add(subStack);
 
             Grid.SetColumn(infoStack, 1);
             grid.Children.Add(infoStack);
-
-            // Timestamp
             var timeText = new TextBlock
             {
                 Text = item.TimeFormatted,
@@ -252,8 +266,6 @@ namespace FluentScrobbler.Views
             };
             Grid.SetColumn(timeText, 2);
             grid.Children.Add(timeText);
-
-            // Card Container
             var outerBorder = new Border
             {
                 Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
@@ -435,13 +447,18 @@ namespace FluentScrobbler.Views
 
             NowPlayingPanel.Visibility = Visibility.Visible;
             NowPlayingTrack.Text = track;
-            string artistAlbumStr = string.IsNullOrEmpty(album) ? (artist ?? string.Empty) : $"{artist} • {album}";
+
+            string artistAlbumStr = string.IsNullOrWhiteSpace(album) 
+                ? (artist ?? string.Empty) 
+                : $"{artist} • {album}";
+
             NowPlayingArtist.Text = artistAlbumStr;
 
             NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
             NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+            string searchAlbum = string.IsNullOrWhiteSpace(album) ? (track ?? string.Empty) : album;
+            string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist ?? string.Empty, searchAlbum, track, lastFmArtUrl);
 
-            string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist ?? string.Empty, album ?? string.Empty, track, lastFmArtUrl);
             if (ct.IsCancellationRequested) return;
 
             if (!string.IsNullOrEmpty(coverUrl))

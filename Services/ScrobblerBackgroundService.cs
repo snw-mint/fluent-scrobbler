@@ -23,11 +23,11 @@ namespace FluentScrobbler.Services
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
         private bool _isPlaying;
+        public event EventHandler? TrackScrobbled;
 
         public void Start()
         {
             if (_timer != null) return;
-
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(2);
             _timer.Tick += Timer_Tick;
@@ -42,8 +42,8 @@ namespace FluentScrobbler.Services
             {
                 var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
                 var sessions = manager?.GetSessions();
-
                 GlobalSystemMediaTransportControlsSession? allowedSession = null;
+
                 if (sessions != null)
                 {
                     foreach (var s in sessions)
@@ -58,12 +58,12 @@ namespace FluentScrobbler.Services
 
                 if (allowedSession == null)
                 {
+                    await CheckTrackEndedAsync();
                     ResetStateWithoutScrobble();
                     return;
                 }
 
                 string appId = allowedSession.SourceAppUserModelId;
-
                 var playbackInfo = allowedSession.GetPlaybackInfo();
                 bool isCurrentlyPlaying = playbackInfo != null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
 
@@ -111,13 +111,16 @@ namespace FluentScrobbler.Services
 
                     int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
                     int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
-
                     if (!_hasScrobbledCurrentTrack && _elapsedSeconds >= minLength)
                     {
-                        if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 120)
+                        if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 30)
                         {
                             _hasScrobbledCurrentTrack = true;
-                            await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                            bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                            if (success)
+                            {
+                                TrackScrobbled?.Invoke(this, EventArgs.Empty);
+                            }
                         }
                     }
                 }
@@ -133,14 +136,12 @@ namespace FluentScrobbler.Services
             if (_isPlaying && !_hasScrobbledCurrentTrack && !string.IsNullOrEmpty(_currentTrack) && _elapsedSeconds >= 30)
             {
                 _hasScrobbledCurrentTrack = true;
-                await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                if (success)
+                {
+                    TrackScrobbled?.Invoke(this, EventArgs.Empty);
+                }
             }
-
-            _currentTrack = string.Empty;
-            _currentArtist = string.Empty;
-            _currentAlbum = string.Empty;
-            _hasScrobbledCurrentTrack = true;
-            _isPlaying = false;
         }
 
         private void ResetStateWithoutScrobble()

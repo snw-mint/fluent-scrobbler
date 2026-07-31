@@ -10,7 +10,6 @@ namespace FluentScrobbler
     public sealed partial class MainWindow : Window
     {
         public static new MainWindow? Current { get; private set; }
-
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
         public Windows.UI.Color CurrentAccentColor { get; private set; } = Windows.UI.Color.FromArgb(255, 0, 120, 212);
         public bool IsManualColor { get; private set; } = false;
@@ -26,6 +25,7 @@ namespace FluentScrobbler
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
             var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+
             string iconPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "Assets", "AppIcon.ico");
             if (System.IO.File.Exists(iconPath))
             {
@@ -33,6 +33,14 @@ namespace FluentScrobbler
             }
 
             SetAccentColor(Windows.UI.Color.FromArgb(255, 0, 120, 212));
+
+            this.Closed += MainWindow_Closed;
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            args.Handled = true;
+            this.AppWindow.Hide();
         }
 
         public void SetAppTheme(ElementTheme theme)
@@ -52,7 +60,6 @@ namespace FluentScrobbler
         public void SetAccentColor(Windows.UI.Color color)
         {
             CurrentAccentColor = color;
-
             Windows.UI.Color light1 = LightenColor(color, 0.15f);
             Windows.UI.Color light2 = LightenColor(color, 0.30f);
             Windows.UI.Color light3 = LightenColor(color, 0.45f);
@@ -153,8 +160,8 @@ namespace FluentScrobbler
         {
             var service = new LastFmService();
             bool isLoggedIn = service.IsLoggedIn();
-
             UpdateNavigationState(isLoggedIn);
+
             ScrobblerBackgroundService.Instance.Start();
 
             if (!isLoggedIn)

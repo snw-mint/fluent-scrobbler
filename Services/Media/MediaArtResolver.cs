@@ -16,18 +16,22 @@ namespace FluentScrobbler.Services.Media
                 return lastFmArtUrl;
             }
 
-            if (!string.IsNullOrWhiteSpace(artist) && !string.IsNullOrWhiteSpace(album))
+            if (!string.IsNullOrWhiteSpace(artist))
             {
-                string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, album);
-                if (!string.IsNullOrWhiteSpace(lastFmApiArt))
-                {
-                    return lastFmApiArt;
-                }
+                string targetAlbum = !string.IsNullOrWhiteSpace(album) ? album : (trackTitle ?? string.Empty);
 
-                string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(album, artist);
-                if (!string.IsNullOrWhiteSpace(musicBrainzArt))
+                if (!string.IsNullOrWhiteSpace(targetAlbum))
                 {
-                    return musicBrainzArt;
+                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, targetAlbum);
+                    if (!string.IsNullOrWhiteSpace(lastFmApiArt))
+                    {
+                        return lastFmApiArt;
+                    }
+                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(targetAlbum, artist);
+                    if (!string.IsNullOrWhiteSpace(musicBrainzArt))
+                    {
+                        return musicBrainzArt;
+                    }
                 }
             }
 
