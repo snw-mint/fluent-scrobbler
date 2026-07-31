@@ -124,7 +124,7 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ScrobblerBackgroundService] Erro: {ex.Message}");
+                LogService.LogError("[Scrobbler Service Error] Background processing failed", ex);
             }
         }
 

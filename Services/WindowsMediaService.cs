@@ -313,13 +313,15 @@ namespace FluentScrobbler.Services
                             return (mediaProperties.Title, mediaProperties.Artist ?? string.Empty, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        LogService.LogError("[Media Detection Error] Exception processing media session", ex);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogService.LogError("[Media Detection Error] Exception requesting media manager", ex);
             }
             return null;
         }

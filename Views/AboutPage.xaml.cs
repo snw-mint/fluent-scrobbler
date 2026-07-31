@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using FluentScrobbler.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
@@ -20,6 +21,11 @@ namespace FluentScrobbler.Views
             OsVersionText.Text = RuntimeInformation.OSDescription;
             ArchitectureText.Text = $"{RuntimeInformation.OSArchitecture} (Process: {RuntimeInformation.ProcessArchitecture})";
             RuntimeVersionText.Text = RuntimeInformation.FrameworkDescription;
+        }
+
+        private void OpenLogsButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogService.OpenLogLocation();
         }
 
         private async void CopySystemInfoButton_Click(object sender, RoutedEventArgs e)

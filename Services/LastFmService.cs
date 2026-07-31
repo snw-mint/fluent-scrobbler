@@ -213,10 +213,14 @@ namespace FluentScrobbler.Services
                         return tokenElement.GetString();
                     }
                 }
+                else
+                {
+                    LogService.LogError($"[Auth Error] auth.getToken failed: HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao obter token: {ex.Message}");
+                LogService.LogError("[Auth Error] Failed to request auth token", ex);
             }
 
             return null;
@@ -236,7 +240,7 @@ namespace FluentScrobbler.Services
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception ex)
             {
                 try
                 {
@@ -248,8 +252,9 @@ namespace FluentScrobbler.Services
                         CreateNoWindow = true
                     });
                 }
-                catch
+                catch (Exception cmdEx)
                 {
+                    LogService.LogError("[Auth Error] Failed to open auth URL in browser", cmdEx);
                 }
             }
         }
@@ -283,11 +288,19 @@ namespace FluentScrobbler.Services
                         SaveUserSession(username, sessionKey);
                         return sessionKey;
                     }
+                    else if (doc.RootElement.TryGetProperty("error", out var errElement))
+                    {
+                        LogService.LogError($"[Auth Error] auth.getSession error code: {errElement}");
+                    }
+                }
+                else
+                {
+                    LogService.LogError($"[Auth Error] auth.getSession failed: HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao obter sessão: {ex.Message}");
+                LogService.LogError("[Auth Error] Exception fetching session key", ex);
             }
 
             return null;
@@ -330,10 +343,14 @@ namespace FluentScrobbler.Services
                         return (name, imageUrl, playcount);
                     }
                 }
+                else
+                {
+                    LogService.LogError($"[API Error] user.getinfo failed: HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao obter info do usuario: {ex.Message}");
+                LogService.LogError("[API Error] Exception fetching user info", ex);
             }
 
             return null;
@@ -455,7 +472,7 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar scrobbles: {ex.Message}");
+                LogService.LogError("[API Error] Exception fetching recent tracks", ex);
             }
 
             return tracks;
@@ -553,7 +570,11 @@ namespace FluentScrobbler.Services
         public async Task<bool> UpdateNowPlayingAsync(string track, string artist, string album = "")
         {
             var (_, sessionKey) = GetUserSession();
-            if (string.IsNullOrEmpty(sessionKey)) return false;
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                LogService.LogWarning("[Auth Warning] UpdateNowPlaying cancelled: No active session.");
+                return false;
+            }
 
             try
             {
@@ -581,12 +602,21 @@ namespace FluentScrobbler.Services
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    return !json.Contains("error");
+                    bool success = !json.Contains("error");
+                    if (!success)
+                    {
+                        LogService.LogError($"[API Error] track.updateNowPlaying returned error response: {json}");
+                    }
+                    return success;
+                }
+                else
+                {
+                    LogService.LogError($"[API Error] track.updateNowPlaying HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar Now Playing: {ex.Message}");
+                LogService.LogError("[API Error] Exception updating Now Playing", ex);
             }
             return false;
         }
@@ -594,7 +624,11 @@ namespace FluentScrobbler.Services
         public async Task<bool> ScrobbleTrackAsync(string track, string artist, string album = "", long? timestamp = null)
         {
             var (_, sessionKey) = GetUserSession();
-            if (string.IsNullOrEmpty(sessionKey)) return false;
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                LogService.LogWarning("[Auth Warning] ScrobbleTrack cancelled: No active session.");
+                return false;
+            }
 
             try
             {
@@ -624,12 +658,21 @@ namespace FluentScrobbler.Services
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    return !json.Contains("error");
+                    bool success = !json.Contains("error");
+                    if (!success)
+                    {
+                        LogService.LogError($"[API Error] track.scrobble returned error response: {json}");
+                    }
+                    return success;
+                }
+                else
+                {
+                    LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao enviar scrobble: {ex.Message}");
+                LogService.LogError("[API Error] Exception sending scrobble", ex);
             }
             return false;
         }

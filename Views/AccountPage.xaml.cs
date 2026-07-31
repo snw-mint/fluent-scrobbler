@@ -94,8 +94,9 @@ namespace FluentScrobbler.Views
                                 UserAvatarImage.Visibility = Visibility.Visible;
                                 UserAvatarIcon.Visibility = Visibility.Collapsed;
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                LogService.LogError("[Render/UI Exception] Failed to load avatar image bitmap", ex);
                             }
                         }
                     }

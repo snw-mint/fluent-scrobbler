@@ -1,5 +1,7 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using FluentScrobbler.Services;
 
 namespace FluentScrobbler;
 
@@ -10,6 +12,27 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        this.UnhandledException += App_UnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+    }
+
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        LogService.LogError($"[Render/UI Exception] {e.Message}", e.Exception);
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            LogService.LogError("[Unhandled Domain Exception]", ex);
+        }
+    }
+
+    private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        LogService.LogError("[Unobserved Task Exception]", e.Exception);
     }
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
