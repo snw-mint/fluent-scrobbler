@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using FluentIcons.WinUI;
 using FluentScrobbler.Models;
 using FluentScrobbler.Services;
 using FluentScrobbler.Services.Media;
@@ -20,11 +22,6 @@ namespace FluentScrobbler.Views
         private readonly WindowsMediaService _windowsMediaService = new();
 
         public ObservableCollection<ScrobbleItem> Scrobbles { get; } = new();
-
-        private static bool _cachedNowPlayingVisible;
-        private static string? _cachedNowPlayingTrack;
-        private static string? _cachedNowPlayingArtist;
-        private static string? _cachedNowPlayingCoverUrl;
 
         private DispatcherTimer? _nowPlayingTimer;
         private string _lastNowPlayingTrack = string.Empty;
@@ -114,7 +111,161 @@ namespace FluentScrobbler.Views
                 Scrobbles.Add(item);
             }
 
+            RenderScrobblesList();
             _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
+        }
+
+        private void RenderScrobblesList()
+        {
+            if (ScrobblesItemsContainer == null) return;
+            ScrobblesItemsContainer.Children.Clear();
+
+            foreach (var item in Scrobbles)
+            {
+                var cardBorder = CreateScrobbleCardUI(item);
+                ScrobblesItemsContainer.Children.Add(cardBorder);
+            }
+        }
+
+        private Border CreateScrobbleCardUI(ScrobbleItem item)
+        {
+            var grid = new Grid { ColumnSpacing = 16 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            // Album Art Container
+            var artBorder = new Border
+            {
+                Width = 52,
+                Height = 52,
+                CornerRadius = new CornerRadius(6),
+                Background = (Brush)Application.Current.Resources["LayerFillColorDefaultBrush"]
+            };
+
+            var artGrid = new Grid();
+            
+            // Usando nome totalmente qualificado para evitar ambiguidade entre WinUI e FluentIcons
+            var icon = new FluentIcons.WinUI.SymbolIcon
+            {
+                Symbol = FluentIcons.Common.Symbol.MusicNote1,
+                FontSize = 24,
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            artGrid.Children.Add(icon);
+
+            var img = new Image
+            {
+                Width = 52,
+                Height = 52,
+                Stretch = Stretch.UniformToFill
+            };
+
+            if (!string.IsNullOrEmpty(item.CoverUrl))
+            {
+                try
+                {
+                    img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                }
+                catch { }
+            }
+
+            item.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ScrobbleItem.CoverUrl) && !string.IsNullOrEmpty(item.CoverUrl))
+                {
+                    this.DispatcherQueue?.TryEnqueue(() =>
+                    {
+                        try
+                        {
+                            img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                        }
+                        catch { }
+                    });
+                }
+            };
+
+            artGrid.Children.Add(img);
+            artBorder.Child = artGrid;
+            Grid.SetColumn(artBorder, 0);
+            grid.Children.Add(artBorder);
+
+            // Track Details Stack
+            var infoStack = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Spacing = 2
+            };
+
+            var titleText = new TextBlock
+            {
+                Text = item.TrackName,
+                Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
+            };
+            infoStack.Children.Add(titleText);
+
+            var subStack = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 4
+            };
+
+            var artistText = new TextBlock
+            {
+                Text = item.ArtistName,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+            };
+
+            var dotText = new TextBlock
+            {
+                Text = "•",
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+            };
+
+            var albumText = new TextBlock
+            {
+                Text = item.AlbumName,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+            };
+
+            subStack.Children.Add(artistText);
+            subStack.Children.Add(dotText);
+            subStack.Children.Add(albumText);
+            infoStack.Children.Add(subStack);
+
+            Grid.SetColumn(infoStack, 1);
+            grid.Children.Add(infoStack);
+
+            // Timestamp
+            var timeText = new TextBlock
+            {
+                Text = item.TimeFormatted,
+                VerticalAlignment = VerticalAlignment.Center,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                Margin = new Thickness(8, 0, 8, 0)
+            };
+            Grid.SetColumn(timeText, 2);
+            grid.Children.Add(timeText);
+
+            // Card Container
+            var outerBorder = new Border
+            {
+                Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
+                BorderBrush = (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(14),
+                Margin = new Thickness(0, 0, 0, 8),
+                Child = grid
+            };
+
+            return outerBorder;
         }
 
         private async Task LoadArtProgressivelyAsync(
@@ -149,10 +300,7 @@ namespace FluentScrobbler.Views
                     catch (OperationCanceledException) { }
                     finally
                     {
-                        if (!ct.IsCancellationRequested)
-                            _artLoadSemaphore.Release();
-                        else
-                            _artLoadSemaphore.Release();
+                        _artLoadSemaphore.Release();
                     }
                 }, ct));
             }
@@ -223,7 +371,6 @@ namespace FluentScrobbler.Views
                     if (!ct.IsCancellationRequested)
                     {
                         NowPlayingPanel.Visibility = Visibility.Collapsed;
-                        _cachedNowPlayingVisible = false;
                     }
                 }
                 return;
@@ -258,6 +405,7 @@ namespace FluentScrobbler.Views
                 Scrobbles.Add(item);
             }
 
+            RenderScrobblesList();
             _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
         }
 
@@ -279,10 +427,6 @@ namespace FluentScrobbler.Views
                 else
                 {
                     NowPlayingPanel.Visibility = Visibility.Collapsed;
-                    _cachedNowPlayingVisible = false;
-                    _cachedNowPlayingTrack = null;
-                    _cachedNowPlayingArtist = null;
-                    _cachedNowPlayingCoverUrl = null;
                     return;
                 }
             }
@@ -314,11 +458,6 @@ namespace FluentScrobbler.Views
                     NowPlayingFallbackIcon.Visibility = Visibility.Visible;
                 }
             }
-
-            _cachedNowPlayingVisible = true;
-            _cachedNowPlayingTrack = track;
-            _cachedNowPlayingArtist = artistAlbumStr;
-            _cachedNowPlayingCoverUrl = coverUrl;
         }
     }
 }
