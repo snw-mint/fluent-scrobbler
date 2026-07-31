@@ -2,6 +2,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using FluentScrobbler.Services;
 
 namespace FluentScrobbler.Views
@@ -17,8 +18,23 @@ namespace FluentScrobbler.Views
             this.Unloaded += SettingsPage_Unloaded;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (e.Parameter is string param && param == "ExpandSourceFiltering")
+            {
+                isSourceFilteringExpanded = true;
+            }
+        }
+
         private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (isSourceFilteringExpanded)
+            {
+                SourceFilteringAccordion.Visibility = Visibility.Visible;
+                SourceFilteringChevron.Symbol = FluentIcons.Common.Symbol.ChevronDown;
+            }
+
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
 
             if (MainWindow.Current != null)

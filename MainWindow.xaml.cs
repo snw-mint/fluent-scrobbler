@@ -176,6 +176,12 @@ namespace FluentScrobbler
             }
         }
 
+        public void NavigateToSourceSettings()
+        {
+            ContentFrame.Navigate(typeof(SettingsPage), "ExpandSourceFiltering");
+            SetSelectedItemByTag("SettingsPage");
+        }
+
         private void SetSelectedItemByTag(string tag)
         {
             foreach (var item in NavView.MenuItems)
