@@ -26,10 +26,12 @@ jobs:
         run: |
           dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None
 
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
       - name: Compile Inno Setup Installer
-        uses: sborgert/inno-setup-action@v1
-        with:
-          filepath: installer.iss
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
