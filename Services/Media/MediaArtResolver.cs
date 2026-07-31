@@ -6,6 +6,7 @@ namespace FluentScrobbler.Services.Media
     public class MediaArtResolver
     {
         private readonly ListenBrainzService _listenBrainzService = new();
+        private readonly LastFmService _lastFmService = new();
 
         public async Task<string?> ResolveAlbumArtAsync(string artist, string album, string? trackTitle = null, string? lastFmArtUrl = null)
         {
@@ -15,9 +16,15 @@ namespace FluentScrobbler.Services.Media
                 return lastFmArtUrl;
             }
 
-            if (!string.IsNullOrWhiteSpace(artist))
+            if (!string.IsNullOrWhiteSpace(artist) && !string.IsNullOrWhiteSpace(album))
             {
-                string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(album, artist, trackTitle);
+                string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, album);
+                if (!string.IsNullOrWhiteSpace(lastFmApiArt))
+                {
+                    return lastFmApiArt;
+                }
+
+                string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(album, artist);
                 if (!string.IsNullOrWhiteSpace(musicBrainzArt))
                 {
                     return musicBrainzArt;

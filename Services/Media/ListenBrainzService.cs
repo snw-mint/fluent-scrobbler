@@ -80,11 +80,12 @@ namespace FluentScrobbler.Services.Media
             }
         }
 
-        public Task<string?> GetAlbumCoverUrlAsync(string? albumName, string artistName, string? trackTitle = null)
+        public Task<string?> GetAlbumCoverUrlAsync(string? albumName, string artistName)
         {
-            if (string.IsNullOrWhiteSpace(artistName)) return Task.FromResult<string?>(null);
+            if (string.IsNullOrWhiteSpace(artistName) || string.IsNullOrWhiteSpace(albumName))
+                return Task.FromResult<string?>(null);
 
-            string cacheKey = $"{artistName.Trim().ToLowerInvariant()}|{albumName?.Trim().ToLowerInvariant() ?? trackTitle?.Trim().ToLowerInvariant()}";
+            string cacheKey = $"{artistName.Trim().ToLowerInvariant()}|{albumName.Trim().ToLowerInvariant()}";
 
             if (_memoryCache.TryGetValue(cacheKey, out var memHit))
                 return Task.FromResult(memHit);
@@ -97,7 +98,7 @@ namespace FluentScrobbler.Services.Media
 
             return _inFlightTasks.GetOrAdd(cacheKey, async key =>
             {
-                string? resolved = await FetchWithFallbackAsync(albumName, artistName, trackTitle);
+                string? resolved = await FetchWithFallbackAsync(albumName, artistName);
                 _memoryCache[key] = resolved;
                 _diskCache[key] = new DiskCacheEntry(resolved, DateTimeOffset.UtcNow.AddHours(24).ToUnixTimeSeconds());
                 _ = PersistDiskCacheAsync();
@@ -106,21 +107,13 @@ namespace FluentScrobbler.Services.Media
             });
         }
 
-        private async Task<string?> FetchWithFallbackAsync(string? albumName, string artistName, string? trackTitle)
+        private async Task<string?> FetchWithFallbackAsync(string albumName, string artistName)
         {
-            if (!string.IsNullOrWhiteSpace(albumName))
-            {
-                string? caaUrl = await TryCoverArtArchiveAsync(albumName, artistName);
-                if (!string.IsNullOrEmpty(caaUrl)) return caaUrl;
+            string? caaUrl = await TryCoverArtArchiveAsync(albumName, artistName);
+            if (!string.IsNullOrEmpty(caaUrl)) return caaUrl;
 
-                string? itunesUrl = await TryItunesAsync(artistName, albumName);
-                if (!string.IsNullOrEmpty(itunesUrl)) return itunesUrl;
-            }
-            else if (!string.IsNullOrWhiteSpace(trackTitle))
-            {
-                string? itunesUrl = await TryItunesTrackAsync(artistName, trackTitle);
-                if (!string.IsNullOrEmpty(itunesUrl)) return itunesUrl;
-            }
+            string? itunesUrl = await TryItunesAsync(artistName, albumName);
+            if (!string.IsNullOrEmpty(itunesUrl)) return itunesUrl;
 
             return null;
         }
@@ -195,21 +188,6 @@ namespace FluentScrobbler.Services.Media
             {
                 string term = Uri.EscapeDataString($"{artistName} {albumName}");
                 string url = $"https://itunes.apple.com/search?term={term}&media=music&entity=album&limit=3";
-                string? json = await _httpClient.GetStringAsync(url);
-                return ParseItunesArtwork(json);
-            }
-            catch
-            {
-            }
-            return null;
-        }
-
-        private async Task<string?> TryItunesTrackAsync(string artistName, string trackTitle)
-        {
-            try
-            {
-                string term = Uri.EscapeDataString($"{artistName} {trackTitle}");
-                string url = $"https://itunes.apple.com/search?term={term}&media=music&entity=song&limit=3";
                 string? json = await _httpClient.GetStringAsync(url);
                 return ParseItunesArtwork(json);
             }

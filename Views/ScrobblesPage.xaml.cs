@@ -114,8 +114,6 @@ namespace FluentScrobbler.Views
                 Scrobbles.Add(item);
             }
 
-            ScrobblesListView.ItemsSource = Scrobbles;
-
             _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
         }
 

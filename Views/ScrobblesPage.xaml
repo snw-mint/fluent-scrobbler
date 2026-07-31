@@ -54,7 +54,7 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="Recent History" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <ItemsControl x:Name="ScrobblesListView">
+                <ItemsControl x:Name="ScrobblesListView" ItemsSource="{x:Bind Scrobbles, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:ScrobbleItem">
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

@@ -41,22 +41,30 @@ namespace FluentScrobbler.Services
             try
             {
                 var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                var session = manager?.GetCurrentSession();
+                var sessions = manager?.GetSessions();
 
-                if (session == null)
+                GlobalSystemMediaTransportControlsSession? allowedSession = null;
+                if (sessions != null)
                 {
-                    await CheckTrackEndedAsync();
+                    foreach (var s in sessions)
+                    {
+                        if (_windowsMediaService.IsSourceAllowed(s.SourceAppUserModelId))
+                        {
+                            allowedSession = s;
+                            break;
+                        }
+                    }
+                }
+
+                if (allowedSession == null)
+                {
+                    ResetStateWithoutScrobble();
                     return;
                 }
 
-                string appId = session.SourceAppUserModelId;
-                if (!_windowsMediaService.IsSourceAllowed(appId))
-                {
-                    await CheckTrackEndedAsync();
-                    return;
-                }
+                string appId = allowedSession.SourceAppUserModelId;
 
-                var playbackInfo = session.GetPlaybackInfo();
+                var playbackInfo = allowedSession.GetPlaybackInfo();
                 bool isCurrentlyPlaying = playbackInfo != null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
 
                 if (!isCurrentlyPlaying)
@@ -65,7 +73,7 @@ namespace FluentScrobbler.Services
                     return;
                 }
 
-                var props = await session.TryGetMediaPropertiesAsync();
+                var props = await allowedSession.TryGetMediaPropertiesAsync();
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
                     await CheckTrackEndedAsync();
@@ -102,7 +110,6 @@ namespace FluentScrobbler.Services
                     _elapsedSeconds += 2;
 
                     int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
-                    int thresholdPct = _windowsMediaService.GetScrobblePercentageThreshold();
                     int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
 
                     if (!_hasScrobbledCurrentTrack && _elapsedSeconds >= minLength)
@@ -132,6 +139,17 @@ namespace FluentScrobbler.Services
             _currentTrack = string.Empty;
             _currentArtist = string.Empty;
             _currentAlbum = string.Empty;
+            _hasScrobbledCurrentTrack = true;
+            _isPlaying = false;
+        }
+
+        private void ResetStateWithoutScrobble()
+        {
+            _currentTrack = string.Empty;
+            _currentArtist = string.Empty;
+            _currentAlbum = string.Empty;
+            _hasScrobbledCurrentTrack = true;
+            _elapsedSeconds = 0;
             _isPlaying = false;
         }
     }

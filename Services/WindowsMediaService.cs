@@ -205,7 +205,6 @@ namespace FluentScrobbler.Services
                         }
                     }
                     SaveStoredList(LocalSettingsKnownKey, knownSources);
-                    SaveStoredList(LocalSettingsAllowedKey, allowedSources);
                 }
             }
             catch
