@@ -370,9 +370,20 @@ namespace FluentScrobbler.Views
         {
             if (sender is Button button && button.Tag is string url && !string.IsNullOrEmpty(url))
             {
-                if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri != null)
+                try
                 {
-                    await Windows.System.Launcher.LaunchUriAsync(uri);
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+                }
+                catch
+                {
+                    if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri != null)
+                    {
+                        await Windows.System.Launcher.LaunchUriAsync(uri);
+                    }
                 }
             }
         }

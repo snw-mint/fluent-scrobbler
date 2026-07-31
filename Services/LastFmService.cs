@@ -226,9 +226,20 @@ namespace FluentScrobbler.Services
         {
             string authUrl = $"https://www.last.fm/api/auth/?api_key={ApiKey}&token={token}";
 
-            if (Uri.TryCreate(authUrl, UriKind.Absolute, out Uri? targetUri) && targetUri != null)
+            try
             {
-                await Launcher.LaunchUriAsync(targetUri);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = authUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                if (Uri.TryCreate(authUrl, UriKind.Absolute, out Uri? targetUri) && targetUri != null)
+                {
+                    await Launcher.LaunchUriAsync(targetUri);
+                }
             }
         }
 

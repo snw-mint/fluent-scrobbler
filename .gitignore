@@ -9,12 +9,14 @@
 *.userosscache
 *.sln.docstates
 artifacts/
+commands.txt
 
 # Build logs
 [Ll]og/
 [Ll]ogs/
 *.log
 *.binlog
+Output/
 
 # Test results
 [Tt]est[Rr]esult*/

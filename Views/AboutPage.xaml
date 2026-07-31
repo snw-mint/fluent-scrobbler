@@ -13,9 +13,7 @@
         <StackPanel Spacing="24" MaxWidth="600" HorizontalAlignment="Left">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
                 <StackPanel Spacing="16" HorizontalAlignment="Center">
-                    <Border Width="80" Height="80" CornerRadius="16" Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="8">
-                        <Image Source="ms-appx:///Assets/Square150x150Logo.scale-200.png" Stretch="Uniform" />
-                    </Border>
+                    <Image Source="ms-appx:///Assets/logo.png" Width="80" Height="80" Stretch="Uniform" HorizontalAlignment="Center" />
 
                     <StackPanel Spacing="4" HorizontalAlignment="Center">
                         <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center" />
