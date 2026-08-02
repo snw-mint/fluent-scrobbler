@@ -35,6 +35,14 @@ namespace FluentScrobbler.Services
 
         private readonly HttpClient _httpClient;
 
+        private List<ScrobbleTrack>? _cachedRecentTracks;
+        private DateTime _lastFetchTime = DateTime.MinValue;
+        private string _lastFetchUsername = string.Empty;
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
+
+        private static (string Username, string ImageUrl, int ScrobbleCount)? _cachedUserInfo;
+        private static string? _cachedUserInfoUsername;
+
         public LastFmService()
         {
             _httpClient = new HttpClient();
@@ -194,6 +202,8 @@ namespace FluentScrobbler.Services
         {
             RemoveSetting("LastFmUsername");
             RemoveSetting("LastFmSessionKey");
+            _cachedUserInfo = null;
+            _cachedUserInfoUsername = null;
         }
 
         public async Task<string?> RequestAuthTokenAsync()
@@ -306,8 +316,11 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task<(string Username, string ImageUrl, int ScrobbleCount)?> GetUserInfoAsync(string username)
+        public async Task<(string Username, string ImageUrl, int ScrobbleCount)?> GetUserInfoAsync(string username, bool forceRefresh = false)
         {
+            if (!forceRefresh && _cachedUserInfo.HasValue && _cachedUserInfoUsername == username)
+                return _cachedUserInfo;
+
             try
             {
                 string url = $"{BaseUrl}?method=user.getinfo&user={Uri.EscapeDataString(username)}&api_key={ApiKey}&format=json";
@@ -340,7 +353,10 @@ namespace FluentScrobbler.Services
                             }
                         }
 
-                        return (name, imageUrl, playcount);
+                        var result = (name, imageUrl, playcount);
+                        _cachedUserInfo = result;
+                        _cachedUserInfoUsername = username;
+                        return result;
                     }
                 }
                 else
@@ -356,8 +372,17 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task<List<ScrobbleTrack>> GetRecentTracksAsync(string username, int limit = 50, long? fromTimestamp = null)
+        public async Task<List<ScrobbleTrack>> GetRecentTracksAsync(string username, int limit = 50, long? fromTimestamp = null, bool forceRefresh = false)
         {
+            if (!forceRefresh
+                && fromTimestamp == null
+                && _cachedRecentTracks != null
+                && _lastFetchUsername == username
+                && (DateTime.Now - _lastFetchTime) < CacheDuration)
+            {
+                return _cachedRecentTracks;
+            }
+
             var tracks = new List<ScrobbleTrack>();
 
             try
@@ -473,6 +498,15 @@ namespace FluentScrobbler.Services
             catch (Exception ex)
             {
                 LogService.LogError("[API Error] Exception fetching recent tracks", ex);
+                if (_cachedRecentTracks != null && _lastFetchUsername == username && fromTimestamp == null)
+                    return _cachedRecentTracks;
+            }
+
+            if (fromTimestamp == null && tracks.Count > 0)
+            {
+                _cachedRecentTracks = tracks;
+                _lastFetchTime = DateTime.Now;
+                _lastFetchUsername = username;
             }
 
             return tracks;

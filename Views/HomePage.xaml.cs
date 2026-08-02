@@ -31,9 +31,9 @@ namespace FluentScrobbler.Views
         private static string? _cachedNowPlayingArtistAlbum;
         private static string? _cachedNowPlayingArtUrl;
 
-        private DispatcherTimer? _nowPlayingTimer;
         private string _lastNowPlayingTrack = string.Empty;
         private string _lastNowPlayingArtist = string.Empty;
+        private static bool _dashboardLoaded;
 
         public HomePage()
         {
@@ -98,54 +98,39 @@ namespace FluentScrobbler.Views
 
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            await LoadDashboardDataAsync();
-            StartNowPlayingTimer();
+            ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
+            ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
+
+            if (!_dashboardLoaded)
+            {
+                await LoadDashboardDataAsync();
+                _dashboardLoaded = true;
+            }
+            else
+            {
+                ApplyCachedState();
+            }
+
+            var currentTrack = ScrobblerBackgroundService.Instance.CurrentTrack;
+            if (currentTrack != null && (_lastNowPlayingTrack != currentTrack.Track || _lastNowPlayingArtist != currentTrack.Artist))
+            {
+                _lastNowPlayingTrack = currentTrack.Track;
+                _lastNowPlayingArtist = currentTrack.Artist;
+                await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null);
+            }
         }
 
         private void HomePage_Unloaded(object sender, RoutedEventArgs e)
         {
-            _nowPlayingTimer?.Stop();
-            _nowPlayingTimer = null;
+            ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
+            ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
         }
 
-        private void StartNowPlayingTimer()
+        private async void OnNowPlayingChanged(object? sender, NowPlayingInfo? info)
         {
-            _nowPlayingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-            _nowPlayingTimer.Tick += async (s, e) => await RefreshNowPlayingAsync();
-            _nowPlayingTimer.Start();
-        }
-
-        private async Task RefreshNowPlayingAsync()
-        {
-            if (!_lastFmService.IsLoggedIn()) return;
-
-            var (username, _) = _lastFmService.GetUserSession();
-            if (string.IsNullOrEmpty(username)) return;
-
-            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 3);
-            var nowPlaying = recentTracks?.FirstOrDefault(t => t.IsNowPlaying);
-
-            string newTrack = nowPlaying?.Name ?? string.Empty;
-            string newArtist = nowPlaying?.Artist ?? string.Empty;
-
-            if (nowPlaying == null)
+            this.DispatcherQueue?.TryEnqueue(async () =>
             {
-                var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
-                if (winMedia.HasValue)
-                {
-                    var (winTitle, winArtist, winAlbum, winSource) = winMedia.Value;
-                    newTrack = winTitle;
-                    newArtist = winArtist;
-
-                    if (newTrack == _lastNowPlayingTrack && newArtist == _lastNowPlayingArtist) return;
-
-                    _lastNowPlayingTrack = newTrack;
-                    _lastNowPlayingArtist = newArtist;
-                    await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null);
-                    return;
-                }
-
-                if (_lastNowPlayingTrack != string.Empty)
+                if (info == null)
                 {
                     _lastNowPlayingTrack = string.Empty;
                     _lastNowPlayingArtist = string.Empty;
@@ -154,15 +139,25 @@ namespace FluentScrobbler.Views
                     _cachedNowPlayingTrack = null;
                     _cachedNowPlayingArtistAlbum = null;
                     _cachedNowPlayingArtUrl = null;
+                    return;
                 }
-                return;
-            }
 
-            if (newTrack == _lastNowPlayingTrack && newArtist == _lastNowPlayingArtist) return;
+                if (info.Track == _lastNowPlayingTrack && info.Artist == _lastNowPlayingArtist) return;
 
-            _lastNowPlayingTrack = newTrack;
-            _lastNowPlayingArtist = newArtist;
-            await ApplyNowPlayingAsync(nowPlaying.Artist, nowPlaying.Album, nowPlaying.Name, nowPlaying.AlbumArtUrl);
+                _lastNowPlayingTrack = info.Track;
+                _lastNowPlayingArtist = info.Artist;
+                await ApplyNowPlayingAsync(info.Artist, info.Album, info.Track, null);
+            });
+        }
+
+        private async void OnTrackScrobbled(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(async () =>
+            {
+                _dashboardLoaded = false;
+                await LoadDashboardDataAsync();
+                _dashboardLoaded = true;
+            });
         }
 
         private async Task ApplyNowPlayingAsync(string artist, string album, string track, string? lastFmArtUrl)
@@ -220,40 +215,13 @@ namespace FluentScrobbler.Views
                     DateTime todayMidnight = DateTime.Today;
                     long todayUts = new DateTimeOffset(todayMidnight).ToUnixTimeSeconds();
                     var tracksTodayTask = _lastFmService.GetRecentTracksAsync(username, limit: 200, fromTimestamp: todayUts);
-                    var recentTracksTask = _lastFmService.GetRecentTracksAsync(username, limit: 5);
 
-                    await Task.WhenAll(userInfoTask, tracksTodayTask, recentTracksTask);
+                    await Task.WhenAll(userInfoTask, tracksTodayTask);
 
                     var userInfo = await userInfoTask;
                     var tracksToday = await tracksTodayTask;
-                    var recentTracks = await recentTracksTask;
 
-                    var nowPlayingTrack = recentTracks.FirstOrDefault(t => t.IsNowPlaying);
-                    if (nowPlayingTrack != null)
-                    {
-                        _lastNowPlayingTrack = nowPlayingTrack.Name;
-                        _lastNowPlayingArtist = nowPlayingTrack.Artist;
-                        await ApplyNowPlayingAsync(nowPlayingTrack.Artist, nowPlayingTrack.Album, nowPlayingTrack.Name, nowPlayingTrack.AlbumArtUrl);
-                    }
-                    else
-                    {
-                        var winMedia = await _windowsMediaService.GetCurrentWindowsMediaAsync();
-                        if (winMedia.HasValue)
-                        {
-                            var (winTitle, winArtist, winAlbum, winSource) = winMedia.Value;
-                            _lastNowPlayingTrack = winTitle;
-                            _lastNowPlayingArtist = winArtist;
-                            await ApplyNowPlayingAsync(winArtist, winAlbum, winTitle, null);
-                        }
-                        else
-                        {
-                            NowPlayingCard.Visibility = Visibility.Collapsed;
-                            _cachedNowPlayingVisible = false;
-                            _cachedNowPlayingTrack = null;
-                            _cachedNowPlayingArtistAlbum = null;
-                            _cachedNowPlayingArtUrl = null;
-                        }
-                    }
+
 
                     if (userInfo.HasValue)
                     {

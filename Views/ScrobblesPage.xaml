@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ic="using:FluentIcons.WinUI"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
@@ -16,7 +17,6 @@
                 <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
-            <!-- Card de Now Playing -->
             <StackPanel x:Name="NowPlayingPanel" Visibility="Collapsed" Spacing="8">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
                 
@@ -51,11 +51,14 @@
                 </Border>
             </StackPanel>
 
-            <!-- Lista de Histórico Reconstruída -->
             <StackPanel Spacing="12">
                 <TextBlock Text="Recent History" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
-                
-                <!-- Container direto sem DataTemplates problemáticos -->
+
+                <StackPanel x:Name="LoadingContainer" Visibility="Collapsed" HorizontalAlignment="Center" Spacing="12" Margin="0,16,0,16">
+                    <ProgressRing x:Name="LoadingRing" IsActive="False" Width="32" Height="32" HorizontalAlignment="Center" />
+                    <TextBlock Text="Loading scrobbles..." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                </StackPanel>
+
                 <StackPanel x:Name="ScrobblesItemsContainer" Spacing="8" />
             </StackPanel>
         </StackPanel>

@@ -11,6 +11,7 @@ namespace FluentScrobbler.Views
     {
         private readonly LastFmService _lastFmService = new();
         private string? _currentAuthToken;
+        private bool _dataLoaded;
 
         public AccountPage()
         {
@@ -25,7 +26,10 @@ namespace FluentScrobbler.Views
             {
                 MainWindow.Current.Activated += Window_Activated;
             }
-            await LoadAccountStateAsync();
+            if (!_dataLoaded)
+            {
+                await LoadAccountStateAsync();
+            }
         }
 
         private void AccountPage_Unloaded(object sender, RoutedEventArgs e)
@@ -52,6 +56,7 @@ namespace FluentScrobbler.Views
             if (!string.IsNullOrEmpty(sessionKey))
             {
                 _currentAuthToken = null;
+                _dataLoaded = false;
                 await LoadAccountStateAsync();
             }
             else
@@ -101,6 +106,7 @@ namespace FluentScrobbler.Views
                         }
                     }
                 }
+                _dataLoaded = true;
             }
             else
             {
@@ -123,6 +129,7 @@ namespace FluentScrobbler.Views
             {
                 _lastFmService.ClearUserSession();
                 _currentAuthToken = null;
+                _dataLoaded = false;
                 await LoadAccountStateAsync();
             }
             else
@@ -133,6 +140,7 @@ namespace FluentScrobbler.Views
                     if (!string.IsNullOrEmpty(sessionKey))
                     {
                         _currentAuthToken = null;
+                        _dataLoaded = false;
                         await LoadAccountStateAsync();
                         return;
                     }

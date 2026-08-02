@@ -6,6 +6,8 @@ using FluentScrobbler.Services.Media;
 
 namespace FluentScrobbler.Services
 {
+    public record NowPlayingInfo(string Track, string Artist, string Album);
+
     public class ScrobblerBackgroundService
     {
         private static ScrobblerBackgroundService? _instance;
@@ -23,7 +25,11 @@ namespace FluentScrobbler.Services
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
         private bool _isPlaying;
+
         public event EventHandler? TrackScrobbled;
+        public event EventHandler<NowPlayingInfo?>? NowPlayingChanged;
+
+        public NowPlayingInfo? CurrentTrack { get; private set; }
 
         public void Start()
         {
@@ -102,6 +108,9 @@ namespace FluentScrobbler.Services
                     _hasScrobbledCurrentTrack = false;
                     _isPlaying = true;
 
+                    CurrentTrack = new NowPlayingInfo(title, artist, album);
+                    NowPlayingChanged?.Invoke(this, CurrentTrack);
+
                     await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
                 }
                 else
@@ -146,12 +155,19 @@ namespace FluentScrobbler.Services
 
         private void ResetStateWithoutScrobble()
         {
+            bool wasPlaying = !string.IsNullOrEmpty(_currentTrack);
             _currentTrack = string.Empty;
             _currentArtist = string.Empty;
             _currentAlbum = string.Empty;
             _hasScrobbledCurrentTrack = true;
             _elapsedSeconds = 0;
             _isPlaying = false;
+
+            if (wasPlaying)
+            {
+                CurrentTrack = null;
+                NowPlayingChanged?.Invoke(this, null);
+            }
         }
     }
 }
