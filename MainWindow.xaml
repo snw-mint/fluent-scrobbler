@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ic="using:FluentIcons.WinUI"
+    xmlns:tb="using:H.NotifyIcon"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -12,62 +13,76 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <tb:TaskbarIcon
+            x:Name="AppTrayIcon"
+            ToolTipText="Fluent Scrobbler - Idle">
+            <tb:TaskbarIcon.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Open Fluent Scrobbler" Click="OnOpenWindowClick" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="Exit" Click="OnExitAppClick" />
+                </MenuFlyout>
+            </tb:TaskbarIcon.ContextFlyout>
+        </tb:TaskbarIcon>
 
-        <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" VerticalAlignment="Center" />
-                <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <TextBlock Text="v0.1" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
-            </StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" VerticalAlignment="Center" />
+                    <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="v0.1" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
+                </StackPanel>
+            </Grid>
+
+            <NavigationView x:Name="NavView"
+                            Grid.Row="1"
+                            IsBackButtonVisible="Collapsed"
+                            IsSettingsVisible="False"
+                            PaneDisplayMode="Left"
+                            ItemInvoked="NavView_ItemInvoked"
+                            Loaded="NavView_Loaded">
+
+                <NavigationView.MenuItems>
+                    <NavigationViewItem Content="Dashboard" Tag="HomePage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Home" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Scrobbles" Tag="ScrobblesPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="History" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Settings" Tag="SettingsPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Settings" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Account" Tag="AccountPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Person" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem Content="About" Tag="AboutPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Info" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
+
+                <Frame x:Name="ContentFrame" />
+            </NavigationView>
         </Grid>
-
-        <NavigationView x:Name="NavView"
-                        Grid.Row="1"
-                        IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="False"
-                        PaneDisplayMode="Left"
-                        ItemInvoked="NavView_ItemInvoked"
-                        Loaded="NavView_Loaded">
-
-            <NavigationView.MenuItems>
-                <NavigationViewItem Content="Dashboard" Tag="HomePage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Home" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="Scrobbles" Tag="ScrobblesPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="History" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="Settings" Tag="SettingsPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Settings" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="Account" Tag="AccountPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Person" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="About" Tag="AboutPage">
-                    <NavigationViewItem.Icon>
-                        <ic:SymbolIcon Symbol="Info" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
-
-            <Frame x:Name="ContentFrame" />
-        </NavigationView>
     </Grid>
 </Window>

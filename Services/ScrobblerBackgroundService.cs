@@ -8,6 +8,16 @@ namespace FluentScrobbler.Services
 {
     public record NowPlayingInfo(string Track, string Artist, string Album);
 
+    public enum ScrobbleStatus
+    {
+        Idle,
+        Listening,
+        Sent,
+        Error
+    }
+
+    public record ScrobbleStatusInfo(ScrobbleStatus Status, string? Track = null, string? Artist = null, string? Album = null);
+
     public class ScrobblerBackgroundService
     {
         private static ScrobblerBackgroundService? _instance;
@@ -25,11 +35,15 @@ namespace FluentScrobbler.Services
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
         private bool _isPlaying;
+        private bool _isProcessing;
+        private string _lastScrobbledSignature = string.Empty;
 
         public event EventHandler? TrackScrobbled;
         public event EventHandler<NowPlayingInfo?>? NowPlayingChanged;
+        public event EventHandler<ScrobbleStatusInfo>? StatusChanged;
 
         public NowPlayingInfo? CurrentTrack { get; private set; }
+        public ScrobbleStatusInfo CurrentStatus { get; private set; } = new(ScrobbleStatus.Idle);
 
         public void Start()
         {
@@ -40,12 +54,29 @@ namespace FluentScrobbler.Services
             _timer.Start();
         }
 
+        private void SetStatus(ScrobbleStatus status, string? track = null, string? artist = null, string? album = null)
+        {
+            var newStatus = new ScrobbleStatusInfo(status, track, artist, album);
+            if (CurrentStatus != newStatus)
+            {
+                CurrentStatus = newStatus;
+                StatusChanged?.Invoke(this, newStatus);
+            }
+        }
+
         private async void Timer_Tick(object? sender, object e)
         {
-            if (!_lastFmService.IsLoggedIn()) return;
+            if (_isProcessing) return;
+            _isProcessing = true;
 
             try
             {
+                if (!_lastFmService.IsLoggedIn())
+                {
+                    SetStatus(ScrobbleStatus.Idle);
+                    return;
+                }
+
                 var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
                 var sessions = manager?.GetSessions();
                 GlobalSystemMediaTransportControlsSession? allowedSession = null;
@@ -76,6 +107,7 @@ namespace FluentScrobbler.Services
                 if (!isCurrentlyPlaying)
                 {
                     _isPlaying = false;
+                    SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
 
@@ -83,6 +115,7 @@ namespace FluentScrobbler.Services
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
                     await CheckTrackEndedAsync();
+                    ResetStateWithoutScrobble();
                     return;
                 }
 
@@ -110,6 +143,7 @@ namespace FluentScrobbler.Services
 
                     CurrentTrack = new NowPlayingInfo(title, artist, album);
                     NowPlayingChanged?.Invoke(this, CurrentTrack);
+                    SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
                     await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
                 }
@@ -124,12 +158,7 @@ namespace FluentScrobbler.Services
                     {
                         if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 30)
                         {
-                            _hasScrobbledCurrentTrack = true;
-                            bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-                            if (success)
-                            {
-                                TrackScrobbled?.Invoke(this, EventArgs.Empty);
-                            }
+                            await ExecuteScrobbleAsync();
                         }
                     }
                 }
@@ -138,18 +167,43 @@ namespace FluentScrobbler.Services
             {
                 LogService.LogError("[Scrobbler Service Error] Background processing failed", ex);
             }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+
+        private async Task ExecuteScrobbleAsync()
+        {
+            if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
+
+            string signature = $"{_currentArtist}|{_currentTrack}|{_trackStartTime}";
+            if (_lastScrobbledSignature == signature)
+            {
+                _hasScrobbledCurrentTrack = true;
+                return;
+            }
+
+            _hasScrobbledCurrentTrack = true;
+            _lastScrobbledSignature = signature;
+
+            bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+            if (success)
+            {
+                SetStatus(ScrobbleStatus.Sent, _currentTrack, _currentArtist, _currentAlbum);
+                TrackScrobbled?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                SetStatus(ScrobbleStatus.Error, _currentTrack, _currentArtist, _currentAlbum);
+            }
         }
 
         private async Task CheckTrackEndedAsync()
         {
             if (_isPlaying && !_hasScrobbledCurrentTrack && !string.IsNullOrEmpty(_currentTrack) && _elapsedSeconds >= 30)
             {
-                _hasScrobbledCurrentTrack = true;
-                bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-                if (success)
-                {
-                    TrackScrobbled?.Invoke(this, EventArgs.Empty);
-                }
+                await ExecuteScrobbleAsync();
             }
         }
 
@@ -162,6 +216,8 @@ namespace FluentScrobbler.Services
             _hasScrobbledCurrentTrack = true;
             _elapsedSeconds = 0;
             _isPlaying = false;
+
+            SetStatus(ScrobbleStatus.Idle);
 
             if (wasPlaying)
             {

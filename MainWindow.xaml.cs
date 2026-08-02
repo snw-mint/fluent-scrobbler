@@ -1,18 +1,31 @@
 using System;
+using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using FluentScrobbler.Services;
 using FluentScrobbler.Views;
 
 namespace FluentScrobbler
 {
+    public class TrayRelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        public TrayRelayCommand(Action execute) => _execute = execute;
+        public bool CanExecute(object? parameter) => true;
+        public void Execute(object? parameter) => _execute();
+        public event EventHandler? CanExecuteChanged;
+    }
+
     public sealed partial class MainWindow : Window
     {
         public static new MainWindow? Current { get; private set; }
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
         public Windows.UI.Color CurrentAccentColor { get; private set; } = Windows.UI.Color.FromArgb(255, 0, 120, 212);
         public bool IsManualColor { get; private set; } = false;
+        private readonly TrayThemeService _trayThemeService = new();
+        private ScrobbleStatusInfo _currentScrobbleStatus = new(ScrobbleStatus.Idle);
 
         public MainWindow()
         {
@@ -33,12 +46,109 @@ namespace FluentScrobbler
             }
 
             SetAccentColor(Windows.UI.Color.FromArgb(255, 0, 120, 212));
-
             LoadSavedTheme();
+            InitializeTrayTheme();
 
             ContentFrame.Navigated += ContentFrame_Navigated;
             this.Closed += MainWindow_Closed;
         }
+
+        #region Tray Icon Logic
+
+        private void InitializeTrayTheme()
+        {
+            if (AppTrayIcon != null)
+            {
+                AppTrayIcon.LeftClickCommand = new TrayRelayCommand(OnTrayIconLeftClick);
+            }
+
+            UpdateTrayIcon();
+            UpdateTrayToolTip();
+
+            _trayThemeService.RegisterThemeChangeCallback(() =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => UpdateTrayIcon());
+            });
+
+            ScrobblerBackgroundService.Instance.StatusChanged += (sender, statusInfo) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => UpdateScrobbleStatus(statusInfo));
+            };
+        }
+
+        public void UpdateScrobbleStatus(ScrobbleStatusInfo statusInfo)
+        {
+            _currentScrobbleStatus = statusInfo;
+            UpdateTrayIcon();
+            UpdateTrayToolTip();
+        }
+
+        private void UpdateTrayIcon()
+        {
+            if (AppTrayIcon == null) return;
+
+            var theme = _trayThemeService.GetCurrentTheme();
+            string colorSuffix = theme == TrayTheme.Dark ? "white" : "black";
+            bool isActive = _currentScrobbleStatus.Status != ScrobbleStatus.Idle;
+            string statePrefix = isActive ? "active" : "idle";
+
+            string relativePath = $"ms-appx:///Assets/Tray/tray-{statePrefix}-{colorSuffix}.ico";
+            AppTrayIcon.IconSource = new BitmapImage(new Uri(relativePath));
+        }
+
+        private void UpdateTrayToolTip()
+        {
+            if (AppTrayIcon == null) return;
+
+            string statusText = _currentScrobbleStatus.Status switch
+            {
+                ScrobbleStatus.Listening => "Listening",
+                ScrobbleStatus.Sent => "Sent",
+                ScrobbleStatus.Error => "Error",
+                _ => "Idle"
+            };
+
+            if (_currentScrobbleStatus.Status == ScrobbleStatus.Idle || 
+                (string.IsNullOrEmpty(_currentScrobbleStatus.Track) && string.IsNullOrEmpty(_currentScrobbleStatus.Artist)))
+            {
+                AppTrayIcon.ToolTipText = $"Fluent Scrobbler\n{statusText}";
+            }
+            else
+            {
+                string track = _currentScrobbleStatus.Track ?? string.Empty;
+                string artist = _currentScrobbleStatus.Artist ?? string.Empty;
+                
+                string header = !string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(track)
+                    ? $"{artist} · {track}"
+                    : (!string.IsNullOrEmpty(track) ? track : artist);
+
+                AppTrayIcon.ToolTipText = $"{header}\n{statusText}";
+            }
+        }
+
+        private void OnTrayIconLeftClick()
+        {
+            this.AppWindow.Show();
+            this.Activate();
+            if (ContentFrame.CurrentSourcePageType != typeof(ScrobblesPage))
+            {
+                ContentFrame.Navigate(typeof(ScrobblesPage));
+            }
+            SetSelectedItemByTag("ScrobblesPage");
+        }
+
+        private void OnOpenWindowClick(object sender, RoutedEventArgs e)
+        {
+            this.AppWindow.Show();
+            this.Activate();
+        }
+
+        private void OnExitAppClick(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Exit();
+        }
+
+        #endregion
 
         private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
