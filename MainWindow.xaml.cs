@@ -36,7 +36,29 @@ namespace FluentScrobbler
 
             LoadSavedTheme();
 
+            ContentFrame.Navigated += ContentFrame_Navigated;
             this.Closed += MainWindow_Closed;
+        }
+
+        private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            if (e.SourcePageType != null)
+            {
+                string? tag = e.SourcePageType.Name switch
+                {
+                    nameof(HomePage) => "HomePage",
+                    nameof(ScrobblesPage) => "ScrobblesPage",
+                    nameof(SettingsPage) => "SettingsPage",
+                    nameof(AccountPage) => "AccountPage",
+                    nameof(AboutPage) => "AboutPage",
+                    _ => null
+                };
+
+                if (tag != null)
+                {
+                    SetSelectedItemByTag(tag);
+                }
+            }
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
