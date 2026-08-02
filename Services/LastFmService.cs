@@ -547,7 +547,6 @@ namespace FluentScrobbler.Services
                             }
                         }
                         
-                        // We prefer small/medium images as requested, fallback to large if medium isn't there
                         string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
                         
                         if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
@@ -560,6 +559,58 @@ namespace FluentScrobbler.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao buscar album info do Last.fm: {ex.Message}");
+            }
+            return null;
+        }
+
+        public async Task<string?> GetTrackArtFromLastFmAsync(string artist, string track)
+        {
+            try
+            {
+                string url = $"{BaseUrl}?method=track.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&track={Uri.EscapeDataString(track)}&format=json";
+                var response = await _httpClient.GetAsync(url);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    
+                    if (doc.RootElement.TryGetProperty("track", out var trackElement) &&
+                        trackElement.TryGetProperty("album", out var albumElement) && 
+                        albumElement.TryGetProperty("image", out var imagesProp) && 
+                        imagesProp.ValueKind == JsonValueKind.Array)
+                    {
+                        string? mediumImage = null;
+                        string? largeImage = null;
+                        
+                        foreach (var img in imagesProp.EnumerateArray())
+                        {
+                            if (img.TryGetProperty("size", out var sizeProp))
+                            {
+                                string size = sizeProp.GetString() ?? "";
+                                if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                                {
+                                    mediumImage = medText.GetString();
+                                }
+                                else if (size == "large" && img.TryGetProperty("#text", out var lgText))
+                                {
+                                    largeImage = lgText.GetString();
+                                }
+                            }
+                        }
+                        
+                        string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
+                        
+                        if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
+                        {
+                            return selectedImage;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao buscar track info do Last.fm: {ex.Message}");
             }
             return null;
         }

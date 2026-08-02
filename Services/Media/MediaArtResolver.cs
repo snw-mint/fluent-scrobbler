@@ -18,16 +18,38 @@ namespace FluentScrobbler.Services.Media
 
             if (!string.IsNullOrWhiteSpace(artist))
             {
-                string targetAlbum = !string.IsNullOrWhiteSpace(album) ? album : (trackTitle ?? string.Empty);
-
-                if (!string.IsNullOrWhiteSpace(targetAlbum))
+                if (!string.IsNullOrWhiteSpace(trackTitle))
                 {
-                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, targetAlbum);
+                    string? trackArt = await _lastFmService.GetTrackArtFromLastFmAsync(artist, trackTitle);
+                    if (!string.IsNullOrWhiteSpace(trackArt))
+                    {
+                        return trackArt;
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(album))
+                {
+                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, album);
                     if (!string.IsNullOrWhiteSpace(lastFmApiArt))
                     {
                         return lastFmApiArt;
                     }
-                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(targetAlbum, artist);
+
+                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(album, artist);
+                    if (!string.IsNullOrWhiteSpace(musicBrainzArt))
+                    {
+                        return musicBrainzArt;
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(trackTitle))
+                {
+                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, trackTitle);
+                    if (!string.IsNullOrWhiteSpace(lastFmApiArt))
+                    {
+                        return lastFmApiArt;
+                    }
+
+                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(trackTitle, artist);
                     if (!string.IsNullOrWhiteSpace(musicBrainzArt))
                     {
                         return musicBrainzArt;

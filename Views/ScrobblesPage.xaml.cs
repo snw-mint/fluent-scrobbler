@@ -386,8 +386,7 @@ namespace FluentScrobbler.Views
 
             NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
             NowPlayingFallbackIcon.Visibility = Visibility.Visible;
-            string searchAlbum = string.IsNullOrWhiteSpace(album) ? (track ?? string.Empty) : album;
-            string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist ?? string.Empty, searchAlbum, track, lastFmArtUrl);
+            string? coverUrl = await _mediaArtResolver.ResolveAlbumArtAsync(artist ?? string.Empty, album ?? string.Empty, track, lastFmArtUrl);
 
             if (ct.IsCancellationRequested) return;
 
