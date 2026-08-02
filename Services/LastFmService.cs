@@ -115,31 +115,12 @@ namespace FluentScrobbler.Services
 
         private static string? GetSetting(string key)
         {
-            try
-            {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                return localSettings.Values[key]?.ToString();
-            }
-            catch
-            {
-                var settings = LoadSettingsFromFile();
-                return settings.TryGetValue(key, out var val) ? val : null;
-            }
+            return SettingsService.GetSetting(key);
         }
 
         private static void SetSetting(string key, string value)
         {
-            try
-            {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                localSettings.Values[key] = value;
-            }
-            catch
-            {
-                var settings = LoadSettingsFromFile();
-                settings[key] = value;
-                SaveSettingsToFile(settings);
-            }
+            SettingsService.SetSetting(key, value);
         }
 
         private static void RemoveSetting(string key)
@@ -151,12 +132,8 @@ namespace FluentScrobbler.Services
             }
             catch
             {
-                var settings = LoadSettingsFromFile();
-                if (settings.Remove(key))
-                {
-                    SaveSettingsToFile(settings);
-                }
             }
+            SettingsService.SetSetting(key, string.Empty);
         }
 
         private string GenerateApiSignature(Dictionary<string, string> parameters, string apiSecret)

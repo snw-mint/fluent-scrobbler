@@ -80,8 +80,7 @@ namespace FluentScrobbler.Views
                     var emptyText = new TextBlock
                     {
                         Text = "No media applications detected yet. Play media in any app to list it here.",
-                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
                     };
                     SourceAppsStackPanel.Children.Add(emptyText);
                     return;
@@ -106,8 +105,7 @@ namespace FluentScrobbler.Views
                     var packageText = new TextBlock
                     {
                         Text = app.AppId,
-                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
                     };
                     textStack.Children.Add(packageText);
 

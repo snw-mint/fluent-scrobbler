@@ -34,6 +34,8 @@ namespace FluentScrobbler
 
             SetAccentColor(Windows.UI.Color.FromArgb(255, 0, 120, 212));
 
+            LoadSavedTheme();
+
             this.Closed += MainWindow_Closed;
         }
 
@@ -43,12 +45,86 @@ namespace FluentScrobbler
             this.AppWindow.Hide();
         }
 
-        public void SetAppTheme(ElementTheme theme)
+        private const string AppThemeKey = "AppThemeMode";
+
+        private void LoadSavedTheme()
+        {
+            string? saved = SettingsService.GetSetting(AppThemeKey);
+            ElementTheme theme = saved switch
+            {
+                "Light" => ElementTheme.Light,
+                "Dark" => ElementTheme.Dark,
+                _ => ElementTheme.Default
+            };
+            SetAppTheme(theme, save: false);
+        }
+
+        public void SetAppTheme(ElementTheme theme, bool save = true)
         {
             CurrentTheme = theme;
             if (this.Content is FrameworkElement root)
             {
                 root.RequestedTheme = theme;
+                root.ActualThemeChanged -= Root_ActualThemeChanged;
+                root.ActualThemeChanged += Root_ActualThemeChanged;
+            }
+
+            UpdateTitleBarTheme(theme);
+
+            if (save)
+            {
+                SettingsService.SetSetting(AppThemeKey, theme.ToString());
+            }
+        }
+
+        private void Root_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            UpdateTitleBarTheme(CurrentTheme);
+        }
+
+        private void UpdateTitleBarTheme(ElementTheme theme)
+        {
+            try
+            {
+                var titleBar = this.AppWindow?.TitleBar;
+                if (titleBar == null) return;
+
+                ElementTheme actualTheme = theme;
+                if (actualTheme == ElementTheme.Default)
+                {
+                    if (this.Content is FrameworkElement root)
+                    {
+                        actualTheme = root.ActualTheme;
+                    }
+                    else
+                    {
+                        actualTheme = Application.Current.RequestedTheme == ApplicationTheme.Dark 
+                            ? ElementTheme.Dark 
+                            : ElementTheme.Light;
+                    }
+                }
+
+                if (actualTheme == ElementTheme.Light)
+                {
+                    titleBar.ButtonForegroundColor = Microsoft.UI.Colors.Black;
+                    titleBar.ButtonHoverForegroundColor = Microsoft.UI.Colors.Black;
+                    titleBar.ButtonPressedForegroundColor = Microsoft.UI.Colors.Black;
+                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(255, 120, 120, 120);
+                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(20, 0, 0, 0);
+                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(30, 0, 0, 0);
+                }
+                else
+                {
+                    titleBar.ButtonForegroundColor = Microsoft.UI.Colors.White;
+                    titleBar.ButtonHoverForegroundColor = Microsoft.UI.Colors.White;
+                    titleBar.ButtonPressedForegroundColor = Microsoft.UI.Colors.White;
+                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(255, 150, 150, 150);
+                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(20, 255, 255, 255);
+                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(30, 255, 255, 255);
+                }
+            }
+            catch
+            {
             }
         }
 

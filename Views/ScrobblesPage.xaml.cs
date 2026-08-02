@@ -239,8 +239,7 @@ namespace FluentScrobbler.Views
             var artistText = new TextBlock
             {
                 Text = item.ArtistName,
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
             };
             subStack.Children.Add(artistText);
             if (!string.IsNullOrWhiteSpace(item.AlbumName))
@@ -248,15 +247,13 @@ namespace FluentScrobbler.Views
                 var dotText = new TextBlock
                 {
                     Text = "•",
-                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
                 };
 
                 var albumText = new TextBlock
                 {
                     Text = item.AlbumName,
-                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
                 };
 
                 subStack.Children.Add(dotText);
@@ -272,7 +269,6 @@ namespace FluentScrobbler.Views
                 Text = item.TimeFormatted,
                 VerticalAlignment = VerticalAlignment.Center,
                 Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
                 Margin = new Thickness(8, 0, 8, 0)
             };
             Grid.SetColumn(timeText, 2);

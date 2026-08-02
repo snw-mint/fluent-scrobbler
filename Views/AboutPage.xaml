@@ -10,18 +10,25 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24" MaxWidth="600" HorizontalAlignment="Left">
+        <StackPanel Spacing="24" MaxWidth="600" HorizontalAlignment="Center">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
-                <StackPanel Spacing="16" HorizontalAlignment="Center">
-                    <Image Source="ms-appx:///Assets/logo.png" Width="80" Height="80" Stretch="Uniform" HorizontalAlignment="Center" />
+                <Grid ColumnSpacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Spacing="4" HorizontalAlignment="Center">
-                        <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center" />
-                        <TextBlock Text="Version 0.1 (WinUI 3 / .NET 8)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                    <Image Grid.Column="0" Source="ms-appx:///Assets/logo.png" Width="72" Height="72" Stretch="Uniform" VerticalAlignment="Center" />
+
+                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
+                            <TextBlock Text="Version 0.1 (WinUI 3 / .NET 8)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <TextBlock Text="A lightweight, modern Windows scrobbler for Last.fm built with WinUI 3 and Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
-
-                    <TextBlock Text="A lightweight, modern Windows scrobbler for Last.fm built with WinUI 3 and Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
-                </StackPanel>
+                </Grid>
             </Border>
 
             <StackPanel Spacing="12">
