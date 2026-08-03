@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ic="using:FluentIcons.WinUI"
-    xmlns:tb="using:H.NotifyIcon"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -13,18 +12,6 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
-        <tb:TaskbarIcon
-            x:Name="AppTrayIcon"
-            ToolTipText="Fluent Scrobbler - Idle">
-            <tb:TaskbarIcon.ContextFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Text="Open Fluent Scrobbler" Click="OnOpenWindowClick" />
-                    <MenuFlyoutSeparator />
-                    <MenuFlyoutItem Text="Exit" Click="OnExitAppClick" />
-                </MenuFlyout>
-            </tb:TaskbarIcon.ContextFlyout>
-        </tb:TaskbarIcon>
-
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

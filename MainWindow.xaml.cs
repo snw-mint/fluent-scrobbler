@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Input;
+using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -26,6 +27,7 @@ namespace FluentScrobbler
         public bool IsManualColor { get; private set; } = false;
         private readonly TrayThemeService _trayThemeService = new();
         private ScrobbleStatusInfo _currentScrobbleStatus = new(ScrobbleStatus.Idle);
+        private TaskbarIcon? AppTrayIcon;
 
         public MainWindow()
         {
@@ -57,10 +59,24 @@ namespace FluentScrobbler
 
         private void InitializeTrayTheme()
         {
-            if (AppTrayIcon != null)
+            AppTrayIcon = new TaskbarIcon
             {
-                AppTrayIcon.LeftClickCommand = new TrayRelayCommand(OnTrayIconLeftClick);
-            }
+                ToolTipText = "Fluent Scrobbler - Idle",
+                LeftClickCommand = new TrayRelayCommand(OnTrayIconLeftClick)
+            };
+
+            var openItem = new MenuFlyoutItem { Text = "Open Fluent Scrobbler" };
+            openItem.Click += OnOpenWindowClick;
+
+            var exitItem = new MenuFlyoutItem { Text = "Exit" };
+            exitItem.Click += OnExitAppClick;
+
+            AppTrayIcon.ContextFlyout = new MenuFlyout
+            {
+                Items = { openItem, new MenuFlyoutSeparator(), exitItem }
+            };
+
+            AppTrayIcon.ForceCreate(enablesEfficiencyMode: false);
 
             UpdateTrayIcon();
             UpdateTrayToolTip();
