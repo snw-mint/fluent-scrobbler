@@ -27,7 +27,7 @@ jobs:
 
       - name: Publish WinUI 3 App
         run: |
-          dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None
+          dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None -p:DebugType=none -p:DebugSymbols=false
 
       - name: Install Inno Setup
         run: choco install innosetup -y
