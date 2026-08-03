@@ -158,20 +158,17 @@ namespace FluentScrobbler.Views
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var artBorder = new Border
-            {
-                Width = 52,
-                Height = 52,
-                CornerRadius = new CornerRadius(6),
-                Background = (Brush)Application.Current.Resources["LayerFillColorDefaultBrush"]
-            };
+
+            var artBorder = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(@"
+<Border xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+        Width=""52"" Height=""52"" CornerRadius=""6""
+        Background=""{ThemeResource LayerFillColorDefaultBrush}"" />");
 
             var artGrid = new Grid();
             var icon = new FluentIcons.WinUI.SymbolIcon
             {
                 Symbol = FluentIcons.Common.Symbol.MusicNote1,
                 FontSize = 24,
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -217,6 +214,7 @@ namespace FluentScrobbler.Views
             artBorder.Child = artGrid;
             Grid.SetColumn(artBorder, 0);
             grid.Children.Add(artBorder);
+
             var infoStack = new StackPanel
             {
                 VerticalAlignment = VerticalAlignment.Center,
@@ -242,6 +240,7 @@ namespace FluentScrobbler.Views
                 Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
             };
             subStack.Children.Add(artistText);
+
             if (!string.IsNullOrWhiteSpace(item.AlbumName))
             {
                 var dotText = new TextBlock
@@ -264,6 +263,7 @@ namespace FluentScrobbler.Views
 
             Grid.SetColumn(infoStack, 1);
             grid.Children.Add(infoStack);
+
             var timeText = new TextBlock
             {
                 Text = item.TimeFormatted,
@@ -273,17 +273,17 @@ namespace FluentScrobbler.Views
             };
             Grid.SetColumn(timeText, 2);
             grid.Children.Add(timeText);
-            var outerBorder = new Border
-            {
-                Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-                BorderBrush = (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(14),
-                Margin = new Thickness(0, 0, 0, 8),
-                Child = grid
-            };
 
+            var outerBorder = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(@"
+<Border xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+        Background=""{ThemeResource CardBackgroundFillColorDefaultBrush}""
+        BorderBrush=""{ThemeResource CardStrokeColorDefaultBrush}""
+        BorderThickness=""1""
+        CornerRadius=""8""
+        Padding=""14""
+        Margin=""0,0,0,8"" />");
+
+            outerBorder.Child = grid;
             return outerBorder;
         }
 

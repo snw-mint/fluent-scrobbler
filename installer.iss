@@ -2,6 +2,9 @@
 AppName=Fluent Scrobbler
 AppVersion=0.2.0
 AppPublisher=Snow Mint
+AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
+AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
+AppUpdatesURL=https://github.com/snw-mint/fluent-scrobbler/releases
 DefaultDirName={localappdata}\FluentScrobbler
 PrivilegesRequired=lowest
 DefaultGroupName=Fluent Scrobbler
