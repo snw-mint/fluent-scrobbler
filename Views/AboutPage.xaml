@@ -23,7 +23,7 @@
                     <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
                         <StackPanel Spacing="2">
                             <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                            <TextBlock Text="Version 0.1 (WinUI 3 / .NET 8)" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Name="VersionText" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
                         <TextBlock Text="A lightweight, modern Windows scrobbler for Last.fm built with WinUI 3 and Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />

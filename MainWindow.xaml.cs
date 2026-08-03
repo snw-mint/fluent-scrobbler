@@ -33,6 +33,7 @@ namespace FluentScrobbler
         {
             Current = this;
             this.InitializeComponent();
+            AppVersionText.Text = AppInfoService.FormattedVersion;
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Title = "Fluent Scrobbler";

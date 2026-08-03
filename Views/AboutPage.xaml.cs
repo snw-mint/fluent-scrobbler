@@ -18,6 +18,7 @@ namespace FluentScrobbler.Views
 
         private void AboutPage_Loaded(object sender, RoutedEventArgs e)
         {
+            VersionText.Text = $"Version {AppInfoService.Version} (WinUI 3 / .NET 8)";
             OsVersionText.Text = RuntimeInformation.OSDescription;
             ArchitectureText.Text = $"{RuntimeInformation.OSArchitecture} (Process: {RuntimeInformation.ProcessArchitecture})";
             RuntimeVersionText.Text = RuntimeInformation.FrameworkDescription;
@@ -30,7 +31,7 @@ namespace FluentScrobbler.Views
 
         private async void CopySystemInfoButton_Click(object sender, RoutedEventArgs e)
         {
-            string info = $"- App: Fluent Scrobbler v0.1\n" +
+            string info = $"- App: Fluent Scrobbler {AppInfoService.FormattedVersion}\n" +
                           $"- OS: {RuntimeInformation.OSDescription}\n" +
                           $"- Architecture: {RuntimeInformation.OSArchitecture} (Process: {RuntimeInformation.ProcessArchitecture})\n" +
                           $"- Framework: {RuntimeInformation.FrameworkDescription}\n" +
