@@ -50,12 +50,20 @@ namespace FluentScrobbler.Views
 
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
 
+            var mediaService = new WindowsMediaService();
+            bool isPrimaryArtistOnly = mediaService.IsPrimaryArtistOnlyEnabled();
+            UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
+            UsePrimaryArtistOnlyToggle.IsOn = isPrimaryArtistOnly;
+            UsePrimaryArtistOnlyStatusText.Text = isPrimaryArtistOnly ? "On" : "Off";
+            UsePrimaryArtistOnlyToggle.Toggled += UsePrimaryArtistOnlyToggle_Toggled;
+
             LoadSourceApplications();
         }
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
+            UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -149,6 +157,17 @@ namespace FluentScrobbler.Views
             };
 
             MainWindow.Current.SetAppTheme(theme);
+        }
+
+        private void UsePrimaryArtistOnlyToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (UsePrimaryArtistOnlyStatusText != null && UsePrimaryArtistOnlyToggle != null)
+            {
+                bool isOn = UsePrimaryArtistOnlyToggle.IsOn;
+                UsePrimaryArtistOnlyStatusText.Text = isOn ? "On" : "Off";
+                var mediaService = new WindowsMediaService();
+                mediaService.SetPrimaryArtistOnlyEnabled(isOn);
+            }
         }
     }
 }

@@ -120,7 +120,8 @@ namespace FluentScrobbler.Services
                 }
 
                 string title = props.Title.Trim();
-                string artist = props.Artist?.Trim() ?? string.Empty;
+                string rawArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
+                string artist = rawArtist;
                 string album = props.AlbumTitle?.Trim() ?? string.Empty;
 
                 if (_windowsMediaService.IsPrimaryArtistOnlyEnabled())

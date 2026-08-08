@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Media.Control;
 
@@ -153,27 +154,17 @@ namespace FluentScrobbler.Services
             SaveSettingsToFile(dict);
         }
 
+        private static readonly Regex PrimaryArtistRegex = new(
+            @"\s*[\(\[](?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,)\s+.*[\)\]]|\s+(?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,|x)\s+.*$|\s*[,;/\\|&].*$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled
+        );
+
         public static string FormatPrimaryArtist(string artist)
         {
             if (string.IsNullOrWhiteSpace(artist)) return artist;
 
-            string[] delimiters = new[] { " feat. ", " feat ", " ft. ", " ft ", " featuring ", " Feat. ", " Feat ", " Ft. ", " Ft ", " Featuring ", " & ", ", ", " x ", " X " };
-            foreach (var delim in delimiters)
-            {
-                int idx = artist.IndexOf(delim, StringComparison.OrdinalIgnoreCase);
-                if (idx > 0)
-                {
-                    artist = artist.Substring(0, idx);
-                }
-            }
-
-            int bracketIdx = artist.IndexOf("(feat", StringComparison.OrdinalIgnoreCase);
-            if (bracketIdx > 0)
-            {
-                artist = artist.Substring(0, bracketIdx);
-            }
-
-            return artist.Trim();
+            string cleaned = PrimaryArtistRegex.Replace(artist, string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(cleaned) ? artist.Trim() : cleaned;
         }
 
         public async Task<List<SourceAppInfo>> GetDetectedSourcesAsync()
@@ -310,7 +301,12 @@ namespace FluentScrobbler.Services
                         if (mediaProperties != null && !string.IsNullOrWhiteSpace(mediaProperties.Title))
                         {
                             string sourceName = FormatAppDisplayName(appId);
-                            return (mediaProperties.Title, mediaProperties.Artist ?? string.Empty, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
+                            string artist = !string.IsNullOrWhiteSpace(mediaProperties.Artist) ? mediaProperties.Artist.Trim() : (mediaProperties.AlbumArtist?.Trim() ?? string.Empty);
+                            if (IsPrimaryArtistOnlyEnabled())
+                            {
+                                artist = FormatPrimaryArtist(artist);
+                            }
+                            return (mediaProperties.Title, artist, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
                         }
                     }
                     catch (Exception ex)
