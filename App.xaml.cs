@@ -62,7 +62,14 @@ namespace FluentScrobbler
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
-            _window.Activate();
+
+            string[] commandLineArgs = Environment.GetCommandLineArgs();
+            bool hasMinimizedFlag = Array.Exists(commandLineArgs, arg => string.Equals(arg, "--minimized", StringComparison.OrdinalIgnoreCase));
+
+            if (!hasMinimizedFlag)
+            {
+                _window.Activate();
+            }
         }
     }
 }

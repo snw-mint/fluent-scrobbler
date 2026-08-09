@@ -98,6 +98,53 @@
                     </Grid>
                 </Border>
             </StackPanel>
+            <StackPanel Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="System &amp; Behavior" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Power" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Start on Windows startup" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Automatically launch Fluent Scrobbler when you sign in to Windows." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock x:Name="StartOnStartupStatusText" Text="Off" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" />
+                            <ToggleSwitch x:Name="StartOnStartupToggle" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" Toggled="StartOnStartupToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="PanelBottom" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Start minimized to tray" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Launch the app hidden in the system tray during Windows startup without opening the main window." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock x:Name="StartMinimizedToTrayStatusText" Text="Off" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" />
+                            <ToggleSwitch x:Name="StartMinimizedToTrayToggle" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" Toggled="StartMinimizedToTrayToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Page>

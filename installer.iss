@@ -1,6 +1,6 @@
 [Setup]
 AppName=Fluent Scrobbler
-AppVersion=0.2.0
+AppVersion=0.3.0
 AppPublisher=Snow Mint
 AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
 AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
@@ -23,7 +23,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "autostart"; Description: "Launch Fluent Scrobbler at Windows startup"; GroupDescription: "Additional options:"; Flags: unchecked
+Name: "autostart"; Description: "Start Fluent Scrobbler with Windows"; GroupDescription: "Additional options:"
 
 [Files]
 Source: "bin\Release\net8.0-windows10.0.26100.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
@@ -31,7 +31,9 @@ Source: "bin\Release\net8.0-windows10.0.26100.0\win-x64\publish\*"; DestDir: "{a
 [Icons]
 Name: "{group}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"
 Name: "{autodesktop}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"; Tasks: desktopicon
-Name: "{userstartup}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"; Tasks: autostart
+
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "FluentScrobbler"; ValueData: """{app}\FluentScrobbler.exe"" --minimized"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
 Filename: "{app}\FluentScrobbler.exe"; Description: "{cm:LaunchProgram,Fluent Scrobbler}"; Flags: nowait postinstall skipifsilent

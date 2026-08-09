@@ -57,6 +57,18 @@ namespace FluentScrobbler.Views
             UsePrimaryArtistOnlyStatusText.Text = isPrimaryArtistOnly ? "On" : "Off";
             UsePrimaryArtistOnlyToggle.Toggled += UsePrimaryArtistOnlyToggle_Toggled;
 
+            bool isStartupEnabled = StartupService.IsStartupEnabled();
+            StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
+            StartOnStartupToggle.IsOn = isStartupEnabled;
+            StartOnStartupStatusText.Text = isStartupEnabled ? "On" : "Off";
+            StartOnStartupToggle.Toggled += StartOnStartupToggle_Toggled;
+
+            bool isStartMinimized = StartupService.IsStartMinimizedToTrayEnabled();
+            StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
+            StartMinimizedToTrayToggle.IsOn = isStartMinimized;
+            StartMinimizedToTrayStatusText.Text = isStartMinimized ? "On" : "Off";
+            StartMinimizedToTrayToggle.Toggled += StartMinimizedToTrayToggle_Toggled;
+
             LoadSourceApplications();
         }
 
@@ -64,6 +76,8 @@ namespace FluentScrobbler.Views
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
+            StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
+            StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -167,6 +181,26 @@ namespace FluentScrobbler.Views
                 UsePrimaryArtistOnlyStatusText.Text = isOn ? "On" : "Off";
                 var mediaService = new WindowsMediaService();
                 mediaService.SetPrimaryArtistOnlyEnabled(isOn);
+            }
+        }
+
+        private void StartOnStartupToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (StartOnStartupStatusText != null && StartOnStartupToggle != null)
+            {
+                bool isOn = StartOnStartupToggle.IsOn;
+                StartOnStartupStatusText.Text = isOn ? "On" : "Off";
+                StartupService.SetStartup(isOn);
+            }
+        }
+
+        private void StartMinimizedToTrayToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (StartMinimizedToTrayStatusText != null && StartMinimizedToTrayToggle != null)
+            {
+                bool isOn = StartMinimizedToTrayToggle.IsOn;
+                StartMinimizedToTrayStatusText.Text = isOn ? "On" : "Off";
+                StartupService.SetStartMinimizedToTrayEnabled(isOn);
             }
         }
     }
