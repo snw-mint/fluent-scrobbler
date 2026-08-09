@@ -35,6 +35,11 @@ namespace FluentScrobbler.Views
         private string _lastNowPlayingArtist = string.Empty;
         private static bool _dashboardLoaded;
 
+        private static bool _cachedOfflineBannerOpen;
+        private static InfoBarSeverity _cachedOfflineSeverity = InfoBarSeverity.Warning;
+        private static string _cachedOfflineTitle = "Working Offline";
+        private static string _cachedOfflineMessage = "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
+
         public HomePage()
         {
             this.InitializeComponent();
@@ -47,6 +52,18 @@ namespace FluentScrobbler.Views
         {
             if (_cachedTitle != null) DashboardTitleText.Text = _cachedTitle;
             if (_cachedSubtitle != null) DashboardSubtitleText.Text = _cachedSubtitle;
+
+            if (_cachedOfflineBannerOpen)
+            {
+                OfflineStatusInfoBar.Severity = _cachedOfflineSeverity;
+                OfflineStatusInfoBar.Title = _cachedOfflineTitle;
+                OfflineStatusInfoBar.Message = _cachedOfflineMessage;
+                OfflineStatusInfoBar.IsOpen = true;
+            }
+            else
+            {
+                OfflineStatusInfoBar.IsOpen = false;
+            }
             if (_cachedScrobblesToday != null) ScrobblesTodayText.Text = _cachedScrobblesToday;
             if (_cachedScrobblesTodaySub != null) ScrobblesTodaySubtext.Text = _cachedScrobblesTodaySub;
             if (_cachedMinutesToday != null) MinutesTodayText.Text = _cachedMinutesToday;
@@ -100,6 +117,12 @@ namespace FluentScrobbler.Views
         {
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
+            System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                SetOfflineStatus(isOffline: true);
+            }
 
             if (!_dashboardLoaded)
             {
@@ -124,6 +147,25 @@ namespace FluentScrobbler.Views
         {
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
+            System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+        }
+
+        private void OnNetworkAddressChanged(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(async () =>
+            {
+                bool isAvailable = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+                if (!isAvailable)
+                {
+                    SetOfflineStatus(isOffline: true);
+                }
+                else
+                {
+                    _dashboardLoaded = false;
+                    await LoadDashboardDataAsync();
+                    _dashboardLoaded = true;
+                }
+            });
         }
 
         private async void OnNowPlayingChanged(object? sender, NowPlayingInfo? info)
@@ -204,108 +246,124 @@ namespace FluentScrobbler.Views
 
             string displayName = "User";
 
-            if (_lastFmService.IsLoggedIn())
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
             {
-                var (username, _) = _lastFmService.GetUserSession();
-                if (!string.IsNullOrEmpty(username))
+                SetOfflineStatus(isOffline: true);
+                DashboardTitleText.Text = $"{greeting}, {displayName}";
+                DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
+                CacheCurrentState();
+                return;
+            }
+
+            try
+            {
+                if (_lastFmService.IsLoggedIn())
                 {
-                    displayName = username;
-                    var userInfoTask = _lastFmService.GetUserInfoAsync(username);
-
-                    DateTime todayMidnight = DateTime.Today;
-                    long todayUts = new DateTimeOffset(todayMidnight).ToUnixTimeSeconds();
-                    var tracksTodayTask = _lastFmService.GetRecentTracksAsync(username, limit: 200, fromTimestamp: todayUts);
-
-                    await Task.WhenAll(userInfoTask, tracksTodayTask);
-
-                    var userInfo = await userInfoTask;
-                    var tracksToday = await tracksTodayTask;
-
-
-
-                    if (userInfo.HasValue)
+                    var (username, _) = _lastFmService.GetUserSession();
+                    if (!string.IsNullOrEmpty(username))
                     {
-                        if (!string.IsNullOrEmpty(userInfo.Value.Username))
+                        displayName = username;
+                        var userInfoTask = _lastFmService.GetUserInfoAsync(username);
+
+                        DateTime todayMidnight = DateTime.Today;
+                        long todayUts = new DateTimeOffset(todayMidnight).ToUnixTimeSeconds();
+                        var tracksTodayTask = _lastFmService.GetRecentTracksAsync(username, limit: 200, fromTimestamp: todayUts);
+
+                        await Task.WhenAll(userInfoTask, tracksTodayTask);
+
+                        var userInfo = await userInfoTask;
+                        var tracksToday = await tracksTodayTask;
+
+                        if (userInfo.HasValue)
                         {
-                            displayName = userInfo.Value.Username;
-                        }
-                        ScrobblesTotalText.Text = $"{userInfo.Value.ScrobbleCount:N0}";
-                        ScrobblesTotalSubtext.Text = "Lifetime scrobbles";
-                    }
-
-                    int scrobblesTodayCount = tracksToday.Count;
-                    ScrobblesTodayText.Text = $"{scrobblesTodayCount:N0}";
-                    ScrobblesTodaySubtext.Text = scrobblesTodayCount == 1 ? "1 track scrobbled" : $"{scrobblesTodayCount:N0} tracks scrobbled";
-
-                    int minutesToday = (int)Math.Round(scrobblesTodayCount * 3.5);
-                    if (minutesToday >= 60)
-                    {
-                        int hrs = minutesToday / 60;
-                        int mins = minutesToday % 60;
-                        MinutesTodayText.Text = mins > 0 ? $"{hrs}h {mins}m" : $"{hrs}h";
-                    }
-                    else
-                    {
-                        MinutesTodayText.Text = $"{minutesToday} mins";
-                    }
-                    MinutesTodaySubtext.Text = "Estimated listening time";
-
-                    if (scrobblesTodayCount == 0)
-                    {
-                        TodayVibeText.Text = "Quiet Day";
-                        TodayVibeSubtext.Text = "No scrobbles yet today";
-                    }
-                    else
-                    {
-                        var topArtistsToday = tracksToday
-                            .Where(t => !string.IsNullOrWhiteSpace(t.Artist))
-                            .GroupBy(t => t.Artist)
-                            .OrderByDescending(g => g.Count())
-                            .Take(5)
-                            .ToList();
-
-                        var tagScores = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                        var ignoredTags = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            "seen live", "favourites", "favorites", "spotify", "american", "british",
-                            "male vocalists", "female vocalists", "albums i own", "check out"
-                        };
-
-                        foreach (var group in topArtistsToday)
-                        {
-                            string artistName = group.Key;
-                            int playCount = group.Count();
-
-                            var artistTags = await _lastFmService.GetArtistTopTagsAsync(artistName, count: 5);
-                            foreach (var tag in artistTags)
+                            if (!string.IsNullOrEmpty(userInfo.Value.Username))
                             {
-                                if (ignoredTags.Contains(tag)) continue;
-
-                                if (tagScores.ContainsKey(tag))
-                                {
-                                    tagScores[tag] += playCount;
-                                }
-                                else
-                                {
-                                    tagScores[tag] = playCount;
-                                }
+                                displayName = userInfo.Value.Username;
                             }
+                            ScrobblesTotalText.Text = $"{userInfo.Value.ScrobbleCount:N0}";
+                            ScrobblesTotalSubtext.Text = "Lifetime scrobbles";
                         }
 
-                        var topTagEntry = tagScores.OrderByDescending(kv => kv.Value).FirstOrDefault();
-                        if (!string.IsNullOrEmpty(topTagEntry.Key))
+                        int scrobblesTodayCount = tracksToday.Count;
+                        ScrobblesTodayText.Text = $"{scrobblesTodayCount:N0}";
+                        ScrobblesTodaySubtext.Text = scrobblesTodayCount == 1 ? "1 track scrobbled" : $"{scrobblesTodayCount:N0} tracks scrobbled";
+
+                        int minutesToday = (int)Math.Round(scrobblesTodayCount * 3.5);
+                        if (minutesToday >= 60)
                         {
-                            string formattedTag = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(topTagEntry.Key);
-                            TodayVibeText.Text = formattedTag;
-                            TodayVibeSubtext.Text = "Top genre today";
+                            int hrs = minutesToday / 60;
+                            int mins = minutesToday % 60;
+                            MinutesTodayText.Text = mins > 0 ? $"{hrs}h {mins}m" : $"{hrs}h";
                         }
                         else
                         {
-                            TodayVibeText.Text = "Eclectic";
-                            TodayVibeSubtext.Text = "Based on today's tracks";
+                            MinutesTodayText.Text = $"{minutesToday} mins";
+                        }
+                        MinutesTodaySubtext.Text = "Estimated listening time";
+
+                        if (scrobblesTodayCount == 0)
+                        {
+                            TodayVibeText.Text = "Quiet Day";
+                            TodayVibeSubtext.Text = "No scrobbles yet today";
+                        }
+                        else
+                        {
+                            var topArtistsToday = tracksToday
+                                .Where(t => !string.IsNullOrWhiteSpace(t.Artist))
+                                .GroupBy(t => t.Artist)
+                                .OrderByDescending(g => g.Count())
+                                .Take(5)
+                                .ToList();
+
+                            var tagScores = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                            var ignoredTags = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                "seen live", "favourites", "favorites", "spotify", "american", "british",
+                                "male vocalists", "female vocalists", "albums i own", "check out"
+                            };
+
+                            foreach (var group in topArtistsToday)
+                            {
+                                string artistName = group.Key;
+                                int playCount = group.Count();
+
+                                var artistTags = await _lastFmService.GetArtistTopTagsAsync(artistName, count: 5);
+                                foreach (var tag in artistTags)
+                                {
+                                    if (ignoredTags.Contains(tag)) continue;
+
+                                    if (tagScores.ContainsKey(tag))
+                                    {
+                                        tagScores[tag] += playCount;
+                                    }
+                                    else
+                                    {
+                                        tagScores[tag] = playCount;
+                                    }
+                                }
+                            }
+
+                            var topTagEntry = tagScores.OrderByDescending(kv => kv.Value).FirstOrDefault();
+                            if (!string.IsNullOrEmpty(topTagEntry.Key))
+                            {
+                                string formattedTag = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(topTagEntry.Key);
+                                TodayVibeText.Text = formattedTag;
+                                TodayVibeSubtext.Text = "Top genre today";
+                            }
+                            else
+                            {
+                                TodayVibeText.Text = "Eclectic";
+                                TodayVibeSubtext.Text = "Based on today's tracks";
+                            }
                         }
                     }
                 }
+
+                SetOfflineStatus(isOffline: false);
+            }
+            catch (Exception)
+            {
+                SetOfflineStatus(isOffline: true);
             }
 
             DashboardTitleText.Text = $"{greeting}, {displayName}";
@@ -363,6 +421,53 @@ namespace FluentScrobbler.Views
                     }
                 }
             }
+        }
+
+        public void SetOfflineStatus(bool isOffline, int pendingCount = 0, bool isAuthError = false, string? customMessage = null)
+        {
+            if (!isOffline && !isAuthError && pendingCount == 0)
+            {
+                OfflineStatusInfoBar.IsOpen = false;
+                _cachedOfflineBannerOpen = false;
+                return;
+            }
+
+            if (isAuthError)
+            {
+                OfflineStatusInfoBar.Severity = InfoBarSeverity.Error;
+                OfflineStatusInfoBar.Title = "Authentication Error";
+                OfflineStatusInfoBar.Message = customMessage ?? "Failed to authenticate with Last.fm. Please check your credentials.";
+            }
+            else
+            {
+                OfflineStatusInfoBar.Severity = InfoBarSeverity.Warning;
+                OfflineStatusInfoBar.Title = "Working Offline";
+
+                if (pendingCount > 0)
+                {
+                    string pendingText = pendingCount == 1 ? "1 scrobble pending in local cache." : $"{pendingCount} scrobbles pending in local cache.";
+                    OfflineStatusInfoBar.Message = $"{pendingText} Connection lost. Scrobbles will sync automatically once online.";
+                }
+                else
+                {
+                    OfflineStatusInfoBar.Message = customMessage ?? "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
+                }
+            }
+
+            OfflineStatusInfoBar.IsOpen = true;
+            _cachedOfflineBannerOpen = true;
+            _cachedOfflineSeverity = OfflineStatusInfoBar.Severity;
+            _cachedOfflineTitle = OfflineStatusInfoBar.Title;
+            _cachedOfflineMessage = OfflineStatusInfoBar.Message;
+        }
+
+        private async void ForceSyncButton_Click(object sender, RoutedEventArgs e)
+        {
+            ForceSyncButton.IsEnabled = false;
+            _dashboardLoaded = false;
+            await LoadDashboardDataAsync();
+            _dashboardLoaded = true;
+            ForceSyncButton.IsEnabled = true;
         }
     }
 }

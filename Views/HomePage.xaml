@@ -16,6 +16,18 @@
                 <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
+            <InfoBar
+                x:Name="OfflineStatusInfoBar"
+                IsOpen="False"
+                Severity="Warning"
+                Title="Working Offline"
+                Message="Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online."
+                IsClosable="False">
+                <InfoBar.ActionButton>
+                    <Button x:Name="ForceSyncButton" Content="Force Sync" Click="ForceSyncButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <Grid ColumnSpacing="16" RowSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
