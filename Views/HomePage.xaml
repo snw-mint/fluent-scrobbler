@@ -19,6 +19,7 @@
             <InfoBar
                 x:Name="OfflineStatusInfoBar"
                 IsOpen="False"
+                Visibility="Collapsed"
                 Severity="Warning"
                 Title="Working Offline"
                 Message="Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online."

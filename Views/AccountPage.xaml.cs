@@ -86,8 +86,8 @@ namespace FluentScrobbler.Views
                     var userInfo = await _lastFmService.GetUserInfoAsync(username);
                     if (userInfo.HasValue)
                     {
-                        var (name, imageUrl, scrobbleCount) = userInfo.Value;
-                        AccountTitleText.Text = name;
+                        var (name, displayName, imageUrl, scrobbleCount) = userInfo.Value;
+                        AccountTitleText.Text = !string.IsNullOrEmpty(displayName) ? displayName : name;
                         AccountDetailsText.Text = $"{scrobbleCount:N0} scrobbles";
                         AccountDetailsText.Visibility = Visibility.Visible;
 

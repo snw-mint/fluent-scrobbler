@@ -39,6 +39,8 @@ namespace FluentScrobbler.Views
         private static InfoBarSeverity _cachedOfflineSeverity = InfoBarSeverity.Warning;
         private static string _cachedOfflineTitle = "Working Offline";
         private static string _cachedOfflineMessage = "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
+        private static string? _cachedOfflineButtonContent;
+        private static string? _cachedOfflineButtonTag;
 
         public HomePage()
         {
@@ -58,11 +60,15 @@ namespace FluentScrobbler.Views
                 OfflineStatusInfoBar.Severity = _cachedOfflineSeverity;
                 OfflineStatusInfoBar.Title = _cachedOfflineTitle;
                 OfflineStatusInfoBar.Message = _cachedOfflineMessage;
+                if (_cachedOfflineButtonContent != null) ForceSyncButton.Content = _cachedOfflineButtonContent;
+                if (_cachedOfflineButtonTag != null) ForceSyncButton.Tag = _cachedOfflineButtonTag;
+                OfflineStatusInfoBar.Visibility = Visibility.Visible;
                 OfflineStatusInfoBar.IsOpen = true;
             }
             else
             {
                 OfflineStatusInfoBar.IsOpen = false;
+                OfflineStatusInfoBar.Visibility = Visibility.Collapsed;
             }
             if (_cachedScrobblesToday != null) ScrobblesTodayText.Text = _cachedScrobblesToday;
             if (_cachedScrobblesTodaySub != null) ScrobblesTodaySubtext.Text = _cachedScrobblesTodaySub;
@@ -276,7 +282,11 @@ namespace FluentScrobbler.Views
 
                         if (userInfo.HasValue)
                         {
-                            if (!string.IsNullOrEmpty(userInfo.Value.Username))
+                            if (!string.IsNullOrEmpty(userInfo.Value.DisplayName))
+                            {
+                                displayName = userInfo.Value.DisplayName;
+                            }
+                            else if (!string.IsNullOrEmpty(userInfo.Value.Username))
                             {
                                 displayName = userInfo.Value.Username;
                             }
@@ -428,6 +438,7 @@ namespace FluentScrobbler.Views
             if (!isOffline && !isAuthError && pendingCount == 0)
             {
                 OfflineStatusInfoBar.IsOpen = false;
+                OfflineStatusInfoBar.Visibility = Visibility.Collapsed;
                 _cachedOfflineBannerOpen = false;
                 return;
             }
@@ -436,33 +447,46 @@ namespace FluentScrobbler.Views
             {
                 OfflineStatusInfoBar.Severity = InfoBarSeverity.Error;
                 OfflineStatusInfoBar.Title = "Authentication Error";
-                OfflineStatusInfoBar.Message = customMessage ?? "Failed to authenticate with Last.fm. Please check your credentials.";
+                OfflineStatusInfoBar.Message = customMessage ?? "Unable to submit scrobbles. Your Last.fm session may have expired. Please re-authenticate your account.";
+                ForceSyncButton.Content = "Go to Account";
+                ForceSyncButton.Tag = "AccountPage";
+            }
+            else if (pendingCount > 0)
+            {
+                OfflineStatusInfoBar.Severity = InfoBarSeverity.Warning;
+                OfflineStatusInfoBar.Title = "Unsaved Scrobbles";
+                string countText = pendingCount == 1 ? "1 scrobble" : $"{pendingCount} scrobbles";
+                OfflineStatusInfoBar.Message = customMessage ?? $"You have {countText} stored in offline cache. Click below to try sending them now.";
+                ForceSyncButton.Content = "Sync Now";
+                ForceSyncButton.Tag = "Sync";
             }
             else
             {
                 OfflineStatusInfoBar.Severity = InfoBarSeverity.Warning;
                 OfflineStatusInfoBar.Title = "Working Offline";
-
-                if (pendingCount > 0)
-                {
-                    string pendingText = pendingCount == 1 ? "1 scrobble pending in local cache." : $"{pendingCount} scrobbles pending in local cache.";
-                    OfflineStatusInfoBar.Message = $"{pendingText} Connection lost. Scrobbles will sync automatically once online.";
-                }
-                else
-                {
-                    OfflineStatusInfoBar.Message = customMessage ?? "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
-                }
+                OfflineStatusInfoBar.Message = customMessage ?? "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
+                ForceSyncButton.Content = "Force Sync";
+                ForceSyncButton.Tag = "Sync";
             }
 
+            OfflineStatusInfoBar.Visibility = Visibility.Visible;
             OfflineStatusInfoBar.IsOpen = true;
             _cachedOfflineBannerOpen = true;
             _cachedOfflineSeverity = OfflineStatusInfoBar.Severity;
             _cachedOfflineTitle = OfflineStatusInfoBar.Title;
             _cachedOfflineMessage = OfflineStatusInfoBar.Message;
+            _cachedOfflineButtonContent = ForceSyncButton.Content as string;
+            _cachedOfflineButtonTag = ForceSyncButton.Tag as string;
         }
 
         private async void ForceSyncButton_Click(object sender, RoutedEventArgs e)
         {
+            if (ForceSyncButton.Tag is string tag && tag == "AccountPage")
+            {
+                Frame?.Navigate(typeof(AccountPage));
+                return;
+            }
+
             ForceSyncButton.IsEnabled = false;
             _dashboardLoaded = false;
             await LoadDashboardDataAsync();

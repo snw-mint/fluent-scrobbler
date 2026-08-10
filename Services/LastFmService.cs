@@ -40,7 +40,7 @@ namespace FluentScrobbler.Services
         private string _lastFetchUsername = string.Empty;
         private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
 
-        private static (string Username, string ImageUrl, int ScrobbleCount)? _cachedUserInfo;
+        private static (string Username, string DisplayName, string ImageUrl, int ScrobbleCount)? _cachedUserInfo;
         private static string? _cachedUserInfoUsername;
 
         public LastFmService()
@@ -293,7 +293,7 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task<(string Username, string ImageUrl, int ScrobbleCount)?> GetUserInfoAsync(string username, bool forceRefresh = false)
+        public async Task<(string Username, string DisplayName, string ImageUrl, int ScrobbleCount)?> GetUserInfoAsync(string username, bool forceRefresh = false)
         {
             if (!forceRefresh && _cachedUserInfo.HasValue && _cachedUserInfoUsername == username)
                 return _cachedUserInfo;
@@ -311,6 +311,13 @@ namespace FluentScrobbler.Services
                     if (doc.RootElement.TryGetProperty("user", out var user))
                     {
                         string name = user.GetProperty("name").GetString() ?? username;
+                        string realName = string.Empty;
+                        if (user.TryGetProperty("realname", out var realNameElement))
+                        {
+                            realName = realNameElement.GetString() ?? string.Empty;
+                        }
+
+                        string displayName = !string.IsNullOrWhiteSpace(realName) ? realName : name;
                         int playcount = 0;
 
                         if (user.TryGetProperty("playcount", out var pcElement) && int.TryParse(pcElement.GetString(), out int pc))
@@ -330,7 +337,7 @@ namespace FluentScrobbler.Services
                             }
                         }
 
-                        var result = (name, imageUrl, playcount);
+                        var result = (name, displayName, imageUrl, playcount);
                         _cachedUserInfo = result;
                         _cachedUserInfoUsername = username;
                         return result;
