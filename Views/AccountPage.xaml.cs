@@ -30,6 +30,9 @@ namespace FluentScrobbler.Views
             {
                 await LoadAccountStateAsync();
             }
+
+            OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
+            UpdateOfflineCacheStatus(await OfflineCacheService.Instance.GetPendingCountAsync());
         }
 
         private void AccountPage_Unloaded(object sender, RoutedEventArgs e)
@@ -38,6 +41,15 @@ namespace FluentScrobbler.Views
             {
                 MainWindow.Current.Activated -= Window_Activated;
             }
+            OfflineCacheWorker.Instance.CacheCountChanged -= OnCacheCountChanged;
+        }
+
+        private void OnCacheCountChanged(object? sender, int count)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                UpdateOfflineCacheStatus(count);
+            });
         }
 
         private async void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -86,8 +98,8 @@ namespace FluentScrobbler.Views
                     var userInfo = await _lastFmService.GetUserInfoAsync(username);
                     if (userInfo.HasValue)
                     {
-                        var (name, imageUrl, scrobbleCount) = userInfo.Value;
-                        AccountTitleText.Text = name;
+                        var (name, displayName, imageUrl, scrobbleCount) = userInfo.Value;
+                        AccountTitleText.Text = !string.IsNullOrEmpty(displayName) ? displayName : name;
                         AccountDetailsText.Text = $"{scrobbleCount:N0} scrobbles";
                         AccountDetailsText.Visibility = Visibility.Visible;
 
@@ -160,6 +172,50 @@ namespace FluentScrobbler.Views
                     ActionButtonText.Text = "Complete Login";
                     await _lastFmService.OpenAuthPageInBrowserAsync(null);
                 }
+            }
+        }
+
+        public void UpdateOfflineCacheStatus(int pendingCount = 0)
+        {
+            if (OfflineCacheStatusDescription == null) return;
+
+            if (pendingCount <= 0)
+            {
+                OfflineCacheStatusDescription.Text = "No scrobbles pending in offline cache.";
+                if (SyncNowButton != null) SyncNowButton.IsEnabled = false;
+            }
+            else
+            {
+                string itemText = pendingCount == 1 ? "1 scrobble" : $"{pendingCount} scrobbles";
+                OfflineCacheStatusDescription.Text = $"{itemText} saved locally awaiting internet connection.";
+                if (SyncNowButton != null) SyncNowButton.IsEnabled = true;
+            }
+        }
+
+        private async void SyncNowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SyncNowButton == null) return;
+            SyncNowButton.IsEnabled = false;
+            await OfflineCacheWorker.Instance.ForceSyncAsync();
+        }
+
+        private async void ClearCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Clear Offline Cache?",
+                Content = "Are you sure you want to permanently delete all locally saved scrobbles?",
+                PrimaryButtonText = "Clear",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await OfflineCacheService.Instance.ClearCacheAsync();
+                await OfflineCacheWorker.Instance.UpdateCacheCountAsync();
             }
         }
     }

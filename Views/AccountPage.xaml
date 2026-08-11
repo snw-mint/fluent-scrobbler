@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24">
+        <StackPanel Spacing="24" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock Text="Manage your profile settings and scrobbler integrations" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -47,6 +47,48 @@
                     </Button>
                 </Grid>
             </Border>
+
+            <StackPanel Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="Local Data &amp; Offline Storage" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="CloudSync" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Offline Cache Status" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock x:Name="OfflineCacheStatusDescription" Text="No scrobbles pending in offline cache." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <Button x:Name="SyncNowButton" Grid.Column="2" Content="Sync Now" VerticalAlignment="Center" Click="SyncNowButton_Click" IsEnabled="False" />
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Delete" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="Clear Offline Cache" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Permanently remove all locally cached scrobbles without submitting them to Last.fm." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <Button x:Name="ClearCacheButton" Grid.Column="2" Content="Clear Cache" VerticalAlignment="Center" Click="ClearCacheButton_Click" />
+                    </Grid>
+                </Border>
+            </StackPanel>
 
         </StackPanel>
     </ScrollViewer>

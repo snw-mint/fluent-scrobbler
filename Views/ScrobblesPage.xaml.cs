@@ -27,6 +27,7 @@ namespace FluentScrobbler.Views
         private CancellationTokenSource? _cts;
 
         private static readonly SemaphoreSlim _artLoadSemaphore = new(3, 3);
+        private static readonly List<ScrobbleItem> _cachedScrobbles = new();
 
         public ScrobblesPage()
         {
@@ -42,12 +43,29 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
 
+            if (Scrobbles.Count == 0 && _cachedScrobbles.Count > 0)
+            {
+                foreach (var item in _cachedScrobbles)
+                {
+                    Scrobbles.Add(item);
+                }
+                RenderScrobblesList();
+            }
+
             await LoadDataAsync(_cts.Token, showLoading: Scrobbles.Count == 0, forceRefresh: Scrobbles.Count == 0);
 
             var currentTrack = ScrobblerBackgroundService.Instance.CurrentTrack;
             if (currentTrack != null && _cts != null && !_cts.IsCancellationRequested)
             {
+                _lastNowPlayingTrack = currentTrack.Track;
+                _lastNowPlayingArtist = currentTrack.Artist;
                 await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null, _cts.Token);
+            }
+            else
+            {
+                _lastNowPlayingTrack = string.Empty;
+                _lastNowPlayingArtist = string.Empty;
+                NowPlayingPanel.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -79,6 +97,8 @@ namespace FluentScrobbler.Views
 
                 if (info == null)
                 {
+                    _lastNowPlayingTrack = string.Empty;
+                    _lastNowPlayingArtist = string.Empty;
                     NowPlayingPanel.Visibility = Visibility.Collapsed;
                     return;
                 }
@@ -113,19 +133,34 @@ namespace FluentScrobbler.Views
             }
 
             if (ct.IsCancellationRequested) return;
-            if (recentTracks == null || recentTracks.Count == 0) return;
+            if (recentTracks == null || recentTracks.Count == 0)
+            {
+                if (Scrobbles.Count == 0 && _cachedScrobbles.Count > 0)
+                {
+                    Scrobbles.Clear();
+                    foreach (var item in _cachedScrobbles)
+                    {
+                        Scrobbles.Add(item);
+                    }
+                    RenderScrobblesList();
+                }
+                return;
+            }
 
             var historyTracks = recentTracks.Where(t => !t.IsNowPlaying).Take(5).ToList();
 
-            var historyItems = historyTracks.Select(t => new ScrobbleItem
-            {
-                TrackName = t.Name,
-                ArtistName = t.Artist,
-                AlbumName = t.Album,
-                CoverUrl = string.Empty,
-                Timestamp = t.PlayedAt?.LocalDateTime ?? DateTime.Now,
-                IsNowPlaying = false,
-                IsFavorite = t.IsLoved
+            var historyItems = historyTracks.Select(t => {
+                var cached = _cachedScrobbles.FirstOrDefault(c => c.TrackName == t.Name && c.ArtistName == t.Artist && !string.IsNullOrEmpty(c.CoverUrl));
+                return new ScrobbleItem
+                {
+                    TrackName = t.Name,
+                    ArtistName = t.Artist,
+                    AlbumName = t.Album,
+                    CoverUrl = cached?.CoverUrl ?? string.Empty,
+                    Timestamp = t.PlayedAt?.LocalDateTime ?? DateTime.Now,
+                    IsNowPlaying = false,
+                    IsFavorite = t.IsLoved
+                };
             }).ToList();
 
             if (ct.IsCancellationRequested) return;
@@ -135,6 +170,9 @@ namespace FluentScrobbler.Views
             {
                 Scrobbles.Add(item);
             }
+
+            _cachedScrobbles.Clear();
+            _cachedScrobbles.AddRange(Scrobbles);
 
             RenderScrobblesList();
             _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
@@ -329,6 +367,15 @@ namespace FluentScrobbler.Views
                 await Task.WhenAll(tasks);
             }
             catch (OperationCanceledException) { }
+
+            if (!ct.IsCancellationRequested)
+            {
+                this.DispatcherQueue?.TryEnqueue(() =>
+                {
+                    _cachedScrobbles.Clear();
+                    _cachedScrobbles.AddRange(Scrobbles);
+                });
+            }
         }
 
 

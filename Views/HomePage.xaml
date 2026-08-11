@@ -10,11 +10,24 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24">
+        <StackPanel Spacing="24" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock x:Name="DashboardTitleText" Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
+
+            <InfoBar
+                x:Name="OfflineStatusInfoBar"
+                IsOpen="False"
+                Visibility="Collapsed"
+                Severity="Warning"
+                Title="Working Offline"
+                Message="Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online."
+                IsClosable="False">
+                <InfoBar.ActionButton>
+                    <Button x:Name="ForceSyncButton" Content="Force Sync" Click="ForceSyncButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
 
             <Grid ColumnSpacing="16" RowSpacing="16">
                 <Grid.ColumnDefinitions>

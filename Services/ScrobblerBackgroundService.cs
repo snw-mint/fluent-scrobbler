@@ -106,8 +106,8 @@ namespace FluentScrobbler.Services
 
                 if (!isCurrentlyPlaying)
                 {
-                    _isPlaying = false;
-                    SetStatus(ScrobbleStatus.Idle);
+                    await CheckTrackEndedAsync();
+                    ResetStateWithoutScrobble();
                     return;
                 }
 
@@ -188,7 +188,20 @@ namespace FluentScrobbler.Services
             _hasScrobbledCurrentTrack = true;
             _lastScrobbledSignature = signature;
 
-            bool success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+            bool success = false;
+            try
+            {
+                success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+            }
+            catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is TaskCanceledException)
+            {
+                LogService.LogError("[Network Error] Scrobble failed due to network, queueing offline.", ex);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[API Error] Scrobble failed.", ex);
+            }
+
             if (success)
             {
                 SetStatus(ScrobbleStatus.Sent, _currentTrack, _currentArtist, _currentAlbum);
@@ -197,6 +210,8 @@ namespace FluentScrobbler.Services
             else
             {
                 SetStatus(ScrobbleStatus.Error, _currentTrack, _currentArtist, _currentAlbum);
+                await OfflineCacheService.Instance.AddScrobbleAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                await OfflineCacheWorker.Instance.TriggerOfflineModeAsync();
             }
         }
 

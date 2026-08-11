@@ -91,6 +91,16 @@ namespace FluentScrobbler
             {
                 this.DispatcherQueue.TryEnqueue(() => UpdateScrobbleStatus(statusInfo));
             };
+
+            OfflineCacheWorker.Instance.OfflineModeChanged += (sender, isOffline) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => { UpdateTrayIcon(); UpdateTrayToolTip(); });
+            };
+
+            OfflineCacheWorker.Instance.CacheCountChanged += (sender, count) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => { UpdateTrayIcon(); UpdateTrayToolTip(); });
+            };
         }
 
         public void UpdateScrobbleStatus(ScrobbleStatusInfo statusInfo)
@@ -107,13 +117,34 @@ namespace FluentScrobbler
             var theme = _trayThemeService.GetCurrentTheme();
             string colorSuffix = theme == TrayTheme.Dark ? "white" : "black";
             bool isActive = _currentScrobbleStatus.Status != ScrobbleStatus.Idle;
-            string statePrefix = isActive ? "active" : "idle";
-
+            bool isError = _currentScrobbleStatus.Status == ScrobbleStatus.Error || OfflineCacheWorker.Instance.OfflineMode;
+            
+            string statePrefix = isError ? "error" : (isActive ? "active" : "idle");
             string relativePath = $"ms-appx:///Assets/Tray/tray-{statePrefix}-{colorSuffix}.ico";
-            AppTrayIcon.IconSource = new BitmapImage(new Uri(relativePath));
+
+            try
+            {
+                AppTrayIcon.IconSource = new BitmapImage(new Uri(relativePath));
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError($"[Tray Icon] Failed to load tray icon: {relativePath}", ex);
+                
+                
+                string fallbackPrefix = isActive ? "active" : "idle";
+                string fallbackPath = $"ms-appx:///Assets/Tray/tray-{fallbackPrefix}-{colorSuffix}.ico";
+                try
+                {
+                    AppTrayIcon.IconSource = new BitmapImage(new Uri(fallbackPath));
+                }
+                catch
+                {
+                    
+                }
+            }
         }
 
-        private void UpdateTrayToolTip()
+        private async void UpdateTrayToolTip()
         {
             if (AppTrayIcon == null) return;
 
@@ -124,6 +155,12 @@ namespace FluentScrobbler
                 ScrobbleStatus.Error => "Error",
                 _ => "Idle"
             };
+
+            if (OfflineCacheWorker.Instance.OfflineMode)
+            {
+                int pendingCount = await OfflineCacheService.Instance.GetPendingCountAsync();
+                statusText = $"{pendingCount} pending scrobbles (Offline)";
+            }
 
             if (_currentScrobbleStatus.Status == ScrobbleStatus.Idle || 
                 (string.IsNullOrEmpty(_currentScrobbleStatus.Track) && string.IsNullOrEmpty(_currentScrobbleStatus.Artist)))
@@ -388,6 +425,7 @@ namespace FluentScrobbler
             UpdateNavigationState(isLoggedIn);
 
             ScrobblerBackgroundService.Instance.Start();
+            OfflineCacheWorker.Instance.Start();
 
             if (!isLoggedIn)
             {
