@@ -141,11 +141,24 @@ namespace FluentScrobbler.Views
             }
 
             var currentTrack = ScrobblerBackgroundService.Instance.CurrentTrack;
-            if (currentTrack != null && (_lastNowPlayingTrack != currentTrack.Track || _lastNowPlayingArtist != currentTrack.Artist))
+            if (currentTrack != null)
             {
-                _lastNowPlayingTrack = currentTrack.Track;
-                _lastNowPlayingArtist = currentTrack.Artist;
-                await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null);
+                if (_lastNowPlayingTrack != currentTrack.Track || _lastNowPlayingArtist != currentTrack.Artist || NowPlayingCard.Visibility != Visibility.Visible)
+                {
+                    _lastNowPlayingTrack = currentTrack.Track;
+                    _lastNowPlayingArtist = currentTrack.Artist;
+                    await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null);
+                }
+            }
+            else
+            {
+                _lastNowPlayingTrack = string.Empty;
+                _lastNowPlayingArtist = string.Empty;
+                NowPlayingCard.Visibility = Visibility.Collapsed;
+                _cachedNowPlayingVisible = false;
+                _cachedNowPlayingTrack = null;
+                _cachedNowPlayingArtistAlbum = null;
+                _cachedNowPlayingArtUrl = null;
             }
 
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;

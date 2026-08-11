@@ -57,7 +57,15 @@ namespace FluentScrobbler.Views
             var currentTrack = ScrobblerBackgroundService.Instance.CurrentTrack;
             if (currentTrack != null && _cts != null && !_cts.IsCancellationRequested)
             {
+                _lastNowPlayingTrack = currentTrack.Track;
+                _lastNowPlayingArtist = currentTrack.Artist;
                 await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null, _cts.Token);
+            }
+            else
+            {
+                _lastNowPlayingTrack = string.Empty;
+                _lastNowPlayingArtist = string.Empty;
+                NowPlayingPanel.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -89,6 +97,8 @@ namespace FluentScrobbler.Views
 
                 if (info == null)
                 {
+                    _lastNowPlayingTrack = string.Empty;
+                    _lastNowPlayingArtist = string.Empty;
                     NowPlayingPanel.Visibility = Visibility.Collapsed;
                     return;
                 }

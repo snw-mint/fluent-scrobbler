@@ -106,8 +106,8 @@ namespace FluentScrobbler.Services
 
                 if (!isCurrentlyPlaying)
                 {
-                    _isPlaying = false;
-                    SetStatus(ScrobbleStatus.Idle);
+                    await CheckTrackEndedAsync();
+                    ResetStateWithoutScrobble();
                     return;
                 }
 

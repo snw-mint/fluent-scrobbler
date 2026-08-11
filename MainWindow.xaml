@@ -31,6 +31,7 @@
                             IsBackButtonVisible="Collapsed"
                             IsSettingsVisible="False"
                             PaneDisplayMode="Left"
+                            OpenPaneLength="200"
                             ItemInvoked="NavView_ItemInvoked"
                             Loaded="NavView_Loaded">
 
