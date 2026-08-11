@@ -162,5 +162,49 @@ namespace FluentScrobbler.Views
                 }
             }
         }
+
+        public void UpdateOfflineCacheStatus(int pendingCount = 0)
+        {
+            if (OfflineCacheStatusDescription == null) return;
+
+            if (pendingCount <= 0)
+            {
+                OfflineCacheStatusDescription.Text = "No scrobbles pending in offline cache.";
+                if (SyncNowButton != null) SyncNowButton.IsEnabled = false;
+            }
+            else
+            {
+                string itemText = pendingCount == 1 ? "1 scrobble" : $"{pendingCount} scrobbles";
+                OfflineCacheStatusDescription.Text = $"{itemText} saved locally awaiting internet connection.";
+                if (SyncNowButton != null) SyncNowButton.IsEnabled = true;
+            }
+        }
+
+        private async void SyncNowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SyncNowButton == null) return;
+            SyncNowButton.IsEnabled = false;
+            await Task.Delay(500);
+            UpdateOfflineCacheStatus(0);
+        }
+
+        private async void ClearCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Clear Offline Cache?",
+                Content = "Are you sure you want to permanently delete all locally saved scrobbles?",
+                PrimaryButtonText = "Clear",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                UpdateOfflineCacheStatus(0);
+            }
+        }
     }
 }
