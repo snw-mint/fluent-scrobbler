@@ -147,6 +147,12 @@ namespace FluentScrobbler.Views
                 _lastNowPlayingArtist = currentTrack.Artist;
                 await ApplyNowPlayingAsync(currentTrack.Artist, currentTrack.Album, currentTrack.Track, null);
             }
+
+            OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
+            OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
+            
+            
+            SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, await OfflineCacheService.Instance.GetPendingCountAsync());
         }
 
         private void HomePage_Unloaded(object sender, RoutedEventArgs e)
@@ -154,6 +160,25 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            OfflineCacheWorker.Instance.OfflineModeChanged -= OnOfflineModeChanged;
+            OfflineCacheWorker.Instance.CacheCountChanged -= OnCacheCountChanged;
+        }
+
+        private async void OnOfflineModeChanged(object? sender, bool isOffline)
+        {
+            int count = await OfflineCacheService.Instance.GetPendingCountAsync();
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                SetOfflineStatus(isOffline, count);
+            });
+        }
+
+        private void OnCacheCountChanged(object? sender, int count)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, count);
+            });
         }
 
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
@@ -488,9 +513,7 @@ namespace FluentScrobbler.Views
             }
 
             ForceSyncButton.IsEnabled = false;
-            _dashboardLoaded = false;
-            await LoadDashboardDataAsync();
-            _dashboardLoaded = true;
+            await OfflineCacheWorker.Instance.ForceSyncAsync();
             ForceSyncButton.IsEnabled = true;
         }
     }

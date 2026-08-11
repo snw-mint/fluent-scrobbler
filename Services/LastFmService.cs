@@ -699,50 +699,89 @@ namespace FluentScrobbler.Services
                 return false;
             }
 
-            try
+            long uts = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var parameters = new Dictionary<string, string>
             {
-                long uts = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var parameters = new Dictionary<string, string>
-                {
-                    { "api_key", ApiKey },
-                    { "artist", artist },
-                    { "method", "track.scrobble" },
-                    { "sk", sessionKey },
-                    { "timestamp", uts.ToString() },
-                    { "track", track }
-                };
+                { "api_key", ApiKey },
+                { "artist", artist },
+                { "method", "track.scrobble" },
+                { "sk", sessionKey },
+                { "timestamp", uts.ToString() },
+                { "track", track }
+            };
 
-                if (!string.IsNullOrWhiteSpace(album))
+            if (!string.IsNullOrWhiteSpace(album))
+            {
+                parameters["album"] = album;
+            }
+
+            string apiSig = GenerateApiSignature(parameters, ApiSecret);
+            parameters["api_sig"] = apiSig;
+            parameters["format"] = "json";
+
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await _httpClient.PostAsync(BaseUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                bool success = !json.Contains("error");
+                if (!success)
                 {
-                    parameters["album"] = album;
+                    LogService.LogError($"[API Error] track.scrobble returned error response: {json}");
                 }
+                return success;
+            }
+            else
+            {
+                LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                throw new HttpRequestException($"HTTP Error {(int)response.StatusCode}");
+            }
+        }
 
-                string apiSig = GenerateApiSignature(parameters, ApiSecret);
-                parameters["api_sig"] = apiSig;
-                parameters["format"] = "json";
+        public async Task<bool> ScrobbleBatchAsync(List<ScrobbleEntry> entries)
+        {
+            var (_, sessionKey) = GetUserSession();
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                return false;
+            }
 
-                var content = new FormUrlEncodedContent(parameters);
-                var response = await _httpClient.PostAsync(BaseUrl, content);
+            if (entries.Count == 0) return true;
+            if (entries.Count > 50) entries = entries.Take(50).ToList();
 
-                if (response.IsSuccessStatusCode)
+            var parameters = new Dictionary<string, string>
+            {
+                { "api_key", ApiKey },
+                { "method", "track.scrobble" },
+                { "sk", sessionKey }
+            };
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                parameters[$"artist[{i}]"] = entries[i].Artist;
+                parameters[$"track[{i}]"] = entries[i].Track;
+                parameters[$"timestamp[{i}]"] = entries[i].Timestamp.ToString();
+                
+                if (!string.IsNullOrWhiteSpace(entries[i].Album))
                 {
-                    string json = await response.Content.ReadAsStringAsync();
-                    bool success = !json.Contains("error");
-                    if (!success)
-                    {
-                        LogService.LogError($"[API Error] track.scrobble returned error response: {json}");
-                    }
-                    return success;
-                }
-                else
-                {
-                    LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                    parameters[$"album[{i}]"] = entries[i].Album;
                 }
             }
-            catch (Exception ex)
+
+            string apiSig = GenerateApiSignature(parameters, ApiSecret);
+            parameters["api_sig"] = apiSig;
+            parameters["format"] = "json";
+
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await _httpClient.PostAsync(BaseUrl, content);
+
+            if (response.IsSuccessStatusCode)
             {
-                LogService.LogError("[API Error] Exception sending scrobble", ex);
+                string json = await response.Content.ReadAsStringAsync();
+                return !json.Contains("error");
             }
+
             return false;
         }
 

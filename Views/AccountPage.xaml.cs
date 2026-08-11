@@ -30,6 +30,9 @@ namespace FluentScrobbler.Views
             {
                 await LoadAccountStateAsync();
             }
+
+            OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
+            UpdateOfflineCacheStatus(await OfflineCacheService.Instance.GetPendingCountAsync());
         }
 
         private void AccountPage_Unloaded(object sender, RoutedEventArgs e)
@@ -38,6 +41,15 @@ namespace FluentScrobbler.Views
             {
                 MainWindow.Current.Activated -= Window_Activated;
             }
+            OfflineCacheWorker.Instance.CacheCountChanged -= OnCacheCountChanged;
+        }
+
+        private void OnCacheCountChanged(object? sender, int count)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                UpdateOfflineCacheStatus(count);
+            });
         }
 
         private async void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -184,8 +196,7 @@ namespace FluentScrobbler.Views
         {
             if (SyncNowButton == null) return;
             SyncNowButton.IsEnabled = false;
-            await Task.Delay(500);
-            UpdateOfflineCacheStatus(0);
+            await OfflineCacheWorker.Instance.ForceSyncAsync();
         }
 
         private async void ClearCacheButton_Click(object sender, RoutedEventArgs e)
@@ -203,7 +214,8 @@ namespace FluentScrobbler.Views
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                UpdateOfflineCacheStatus(0);
+                await OfflineCacheService.Instance.ClearCacheAsync();
+                await OfflineCacheWorker.Instance.UpdateCacheCountAsync();
             }
         }
     }
