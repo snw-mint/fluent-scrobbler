@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 using Windows.Networking.Connectivity;
 
 namespace FluentScrobbler.Services
@@ -13,7 +14,7 @@ namespace FluentScrobbler.Services
         private readonly OfflineCacheService _cacheService = OfflineCacheService.Instance;
         private readonly LastFmService _lastFmService = new();
         private System.Timers.Timer? _timer;
-        private bool _isProcessing = false;
+        private readonly SemaphoreSlim _processLock = new SemaphoreSlim(1, 1);
         private int _currentBackoffLevel = 0;
         private readonly int[] _backoffIntervals = { 60, 300, 900, 3600 };
         private bool _offlineMode;
@@ -104,8 +105,7 @@ namespace FluentScrobbler.Services
 
         private async Task ProcessCacheAsync()
         {
-            if (_isProcessing) return;
-            _isProcessing = true;
+            if (!_processLock.Wait(0)) return;
 
             try
             {
@@ -153,7 +153,7 @@ namespace FluentScrobbler.Services
                     {
                         
                         await Task.Delay(1000);
-                        _isProcessing = false;
+                        _processLock.Release();
                         await ProcessCacheAsync();
                         return; 
                     }
@@ -170,7 +170,10 @@ namespace FluentScrobbler.Services
             }
             finally
             {
-                _isProcessing = false;
+                if (_processLock.CurrentCount == 0)
+                {
+                    _processLock.Release();
+                }
             }
         }
 

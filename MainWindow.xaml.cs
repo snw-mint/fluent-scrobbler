@@ -159,7 +159,7 @@ namespace FluentScrobbler
             if (OfflineCacheWorker.Instance.OfflineMode)
             {
                 int pendingCount = await OfflineCacheService.Instance.GetPendingCountAsync();
-                statusText = $"{pendingCount} scrobbles pendentes (Offline)";
+                statusText = $"{pendingCount} pending scrobbles (Offline)";
             }
 
             if (_currentScrobbleStatus.Status == ScrobbleStatus.Idle || 
