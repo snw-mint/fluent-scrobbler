@@ -9,34 +9,34 @@
     xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
+        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock Text="Manage your profile settings and scrobbler integrations" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Manage your profile settings and scrobbler integrations" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
-                <Grid ColumnSpacing="24">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
+                <Grid ColumnSpacing="20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Width="96" Height="96" CornerRadius="48" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                    <Border Grid.Column="0" Width="80" Height="80" CornerRadius="40" Background="{ThemeResource LayerFillColorDefaultBrush}">
                         <Grid>
-                            <FontIcon x:Name="UserAvatarIcon" Glyph="&#xE77B;" FontSize="44" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            <Image x:Name="UserAvatarImage" Width="96" Height="96" Stretch="UniformToFill" Visibility="Collapsed" />
+                            <FontIcon x:Name="UserAvatarIcon" Glyph="&#xE77B;" FontSize="36" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            <Image x:Name="UserAvatarImage" Width="80" Height="80" Stretch="UniformToFill" Visibility="Collapsed" />
                         </Grid>
                     </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6" Margin="0,0,16,0">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock x:Name="AccountTitleText" Text="Login to Lastfm Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
+                            <TextBlock x:Name="AccountTitleText" Text="Login to Lastfm Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <TextBlock x:Name="AccountSubtitleText" Text="Not connected" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock x:Name="AccountDetailsText" Text="" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                        <TextBlock x:Name="AccountSubtitleText" Text="Not connected" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="AccountDetailsText" Text="" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" TextWrapping="Wrap" />
                     </StackPanel>
 
                     <Button x:Name="ActionButton" Grid.Column="2" VerticalAlignment="Center" Style="{ThemeResource AccentButtonStyle}" Padding="20,10" Click="OnActionButtonClick">
@@ -61,9 +61,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="CloudSync" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="Offline Cache Status" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock x:Name="OfflineCacheStatusDescription" Text="No scrobbles pending in offline cache." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Name="OfflineCacheStatusDescription" Text="No scrobbles pending in offline cache." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <Button x:Name="SyncNowButton" Grid.Column="2" Content="Sync Now" VerticalAlignment="Center" Click="SyncNowButton_Click" IsEnabled="False" />
@@ -80,9 +80,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="Delete" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="Clear Offline Cache" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Permanently remove all locally cached scrobbles without submitting them to Last.fm." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Permanently remove all locally cached scrobbles without submitting them to Last.fm." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <Button x:Name="ClearCacheButton" Grid.Column="2" Content="Clear Cache" VerticalAlignment="Center" Click="ClearCacheButton_Click" />

@@ -262,7 +262,8 @@ namespace FluentScrobbler.Views
             var titleText = new TextBlock
             {
                 Text = item.TrackName,
-                Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
+                Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"],
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             infoStack.Children.Add(titleText);
 
@@ -275,7 +276,8 @@ namespace FluentScrobbler.Views
             var artistText = new TextBlock
             {
                 Text = item.ArtistName,
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             subStack.Children.Add(artistText);
 
@@ -290,7 +292,8 @@ namespace FluentScrobbler.Views
                 var albumText = new TextBlock
                 {
                     Text = item.AlbumName,
-                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                    TextTrimming = TextTrimming.CharacterEllipsis
                 };
 
                 subStack.Children.Add(dotText);

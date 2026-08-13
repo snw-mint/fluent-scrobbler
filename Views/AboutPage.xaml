@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
         <StackPanel Spacing="24" MaxWidth="600" HorizontalAlignment="Center">
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
                 <Grid ColumnSpacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">

@@ -9,11 +9,11 @@
     xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
+        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock x:Name="DashboardTitleText" Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
             <InfoBar
@@ -41,10 +41,10 @@
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <ic:SymbolIcon Symbol="MusicNote1" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="Scrobbles Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Scrobbles Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <TextBlock x:Name="ScrobblesTodayText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
-                        <TextBlock x:Name="ScrobblesTodaySubtext" Text="Scrobbled today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="ScrobblesTodayText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ScrobblesTodaySubtext" Text="Scrobbled today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
 
@@ -52,10 +52,10 @@
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <ic:SymbolIcon Symbol="Timer" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="Minutes Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Minutes Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                         <TextBlock x:Name="MinutesTodayText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                        <TextBlock x:Name="MinutesTodaySubtext" Text="Estimated listening time" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="MinutesTodaySubtext" Text="Estimated listening time" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
 
@@ -63,10 +63,10 @@
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <ic:SymbolIcon Symbol="Sparkle" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="Today's Vibe" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Today's Vibe" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <TextBlock x:Name="TodayVibeText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
-                        <TextBlock x:Name="TodayVibeSubtext" Text="Top genre today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="TodayVibeText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="TodayVibeSubtext" Text="Top genre today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
 
@@ -74,10 +74,10 @@
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <ic:SymbolIcon Symbol="DataHistogram" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="Total Scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Total Scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <TextBlock x:Name="ScrobblesTotalText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" />
-                        <TextBlock x:Name="ScrobblesTotalSubtext" Text="Lifetime scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="ScrobblesTotalText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ScrobblesTotalSubtext" Text="Lifetime scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -103,8 +103,8 @@
                             </Border>
                             <TextBlock x:Name="NowPlayingSourceText" Text="Last.fm" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <TextBlock x:Name="NowPlayingTrackText" Text="Track Title" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
-                        <TextBlock x:Name="NowPlayingArtistAlbumText" Text="Artist • Album" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="NowPlayingTrackText" Text="Track Title" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="NowPlayingArtistAlbumText" Text="Artist • Album" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -132,7 +132,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="History" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Check history &amp; scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
@@ -148,7 +148,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="Settings" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="General Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="General Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Scrobbling &amp; system preferences" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
@@ -164,7 +164,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="Info" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="About" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="About" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Application info &amp; version" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
@@ -180,7 +180,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="Bug" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Report a bug" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Report a bug" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Submit an issue" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
@@ -196,7 +196,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="Sparkle" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Request a feature" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Request a feature" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Suggest new ideas" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
@@ -212,7 +212,7 @@
                             </Grid.ColumnDefinitions>
                             <ic:SymbolIcon Grid.Column="0" Symbol="Heart" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Support the development" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Support the development" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="buymeacoffee.com/snw.mint" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />

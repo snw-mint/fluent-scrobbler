@@ -30,8 +30,9 @@
                             Grid.Row="1"
                             IsBackButtonVisible="Collapsed"
                             IsSettingsVisible="False"
-                            PaneDisplayMode="Left"
+                            PaneDisplayMode="Auto"
                             OpenPaneLength="200"
+                            CompactPaneLength="48"
                             ItemInvoked="NavView_ItemInvoked"
                             Loaded="NavView_Loaded">
 

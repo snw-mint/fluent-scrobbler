@@ -10,11 +10,11 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="20" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
+        <StackPanel Spacing="20" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Scrobbles" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
             <StackPanel x:Name="NowPlayingPanel" Visibility="Collapsed" Spacing="8">

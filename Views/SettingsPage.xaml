@@ -10,11 +10,11 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36">
-        <StackPanel Spacing="24" MinWidth="800" MaxWidth="1400" HorizontalAlignment="Stretch">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
+        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock Text="Customize application appearance, themes, and preferences" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Text="Customize application appearance, themes, and preferences" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
             <StackPanel Spacing="8">
@@ -32,9 +32,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="PaintBrush" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="App Theme" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Select Light, Dark, or System Default theme mode" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Select Light, Dark, or System Default theme mode" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <ComboBox x:Name="ThemeModeComboBox" Grid.Column="2" Width="160" VerticalAlignment="Center">
@@ -60,9 +60,9 @@
 
                             <ic:SymbolIcon Grid.Column="0" Symbol="AppsList" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                                 <TextBlock Text="Source Filtering" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Only scrobble from explicitly permitted applications" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="Only scrobble from explicitly permitted applications" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
 
                             <ic:SymbolIcon x:Name="SourceFilteringChevron" Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -86,9 +86,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="Person" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="Use Primary Artist Only" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Disregard featured artists when scrobbling, submitting only the main artist." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Disregard featured artists when scrobbling, submitting only the main artist." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -112,9 +112,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="Power" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="Start on Windows startup" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Automatically launch Fluent Scrobbler when you sign in to Windows." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Automatically launch Fluent Scrobbler when you sign in to Windows." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -134,9 +134,9 @@
 
                         <ic:SymbolIcon Grid.Column="0" Symbol="PanelBottom" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
                             <TextBlock Text="Start minimized to tray" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                            <TextBlock Text="Launch the app hidden in the system tray during Windows startup without opening the main window." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Launch the app hidden in the system tray during Windows startup without opening the main window." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
