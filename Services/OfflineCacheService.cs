@@ -30,6 +30,14 @@ namespace FluentScrobbler.Services
 
         public async Task AddScrobbleAsync(string track, string artist, string album, long timestamp)
         {
+            var existing = await _db.Table<ScrobbleEntry>()
+                                    .Where(s => s.Status == "Pending" && s.Track == track && s.Artist == artist)
+                                    .ToListAsync();
+            if (existing.Any(e => Math.Abs(e.Timestamp - timestamp) <= 60))
+            {
+                return;
+            }
+
             var entry = new ScrobbleEntry
             {
                 Track = track,

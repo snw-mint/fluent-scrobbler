@@ -135,11 +135,39 @@ namespace FluentScrobbler.Services
                 var pendingScrobbles = await _cacheService.GetPendingScrobblesAsync(50);
                 if (!pendingScrobbles.Any()) return;
 
-                bool batchSuccess = await _lastFmService.ScrobbleBatchAsync(pendingScrobbles);
+                var uniqueEntries = new List<FluentScrobbler.Models.ScrobbleEntry>();
+                var duplicateIds = new List<int>();
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var s in pendingScrobbles)
+                {
+                    string key = $"{s.Artist.Trim().ToLowerInvariant()}|{s.Track.Trim().ToLowerInvariant()}|{s.Timestamp / 60}";
+                    if (seen.Add(key))
+                    {
+                        uniqueEntries.Add(s);
+                    }
+                    else
+                    {
+                        duplicateIds.Add(s.Id);
+                    }
+                }
+
+                if (duplicateIds.Count > 0)
+                {
+                    await _cacheService.RemoveScrobblesAsync(duplicateIds);
+                }
+
+                if (uniqueEntries.Count == 0)
+                {
+                    await UpdateCacheCountAsync();
+                    return;
+                }
+
+                bool batchSuccess = await _lastFmService.ScrobbleBatchAsync(uniqueEntries);
                 
                 if (batchSuccess)
                 {
-                    var ids = pendingScrobbles.Select(s => s.Id).ToList();
+                    var ids = uniqueEntries.Select(s => s.Id).ToList();
                     await _cacheService.RemoveScrobblesAsync(ids);
                     
                     _currentBackoffLevel = 0;

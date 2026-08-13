@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Media.Control;
 using Microsoft.UI.Xaml;
@@ -25,6 +27,9 @@ namespace FluentScrobbler.Services
 
         private readonly LastFmService _lastFmService = new();
         private readonly WindowsMediaService _windowsMediaService = new();
+        private readonly SemaphoreSlim _scrobbleLock = new(1, 1);
+        private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
+
         private DispatcherTimer? _timer;
 
         private string _currentTrack = string.Empty;
@@ -64,6 +69,22 @@ namespace FluentScrobbler.Services
             }
         }
 
+        private static string GetTrackKey(string artist, string track) => $"{artist.Trim().ToLowerInvariant()}|{track.Trim().ToLowerInvariant()}";
+
+        private static bool IsRecentlyScrobbled(string artist, string track, int cooldownSeconds = 60)
+        {
+            if (string.IsNullOrWhiteSpace(artist) || string.IsNullOrWhiteSpace(track)) return false;
+            string key = GetTrackKey(artist, track);
+            if (_scrobbledTracksHistory.TryGetValue(key, out var lastTime))
+            {
+                if (DateTimeOffset.UtcNow - lastTime < TimeSpan.FromSeconds(cooldownSeconds))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private async void Timer_Tick(object? sender, object e)
         {
             if (_isProcessing) return;
@@ -96,7 +117,8 @@ namespace FluentScrobbler.Services
                 if (allowedSession == null)
                 {
                     await CheckTrackEndedAsync();
-                    ResetStateWithoutScrobble();
+                    _isPlaying = false;
+                    SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
 
@@ -107,7 +129,8 @@ namespace FluentScrobbler.Services
                 if (!isCurrentlyPlaying)
                 {
                     await CheckTrackEndedAsync();
-                    ResetStateWithoutScrobble();
+                    _isPlaying = false;
+                    SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
 
@@ -115,7 +138,8 @@ namespace FluentScrobbler.Services
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
                     await CheckTrackEndedAsync();
-                    ResetStateWithoutScrobble();
+                    _isPlaying = false;
+                    SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
 
@@ -139,7 +163,7 @@ namespace FluentScrobbler.Services
                     _currentAppId = appId;
                     _trackStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                     _elapsedSeconds = 0;
-                    _hasScrobbledCurrentTrack = false;
+                    _hasScrobbledCurrentTrack = IsRecentlyScrobbled(_currentArtist, _currentTrack, 60);
                     _isPlaying = true;
 
                     CurrentTrack = new NowPlayingInfo(title, artist, album);
@@ -178,40 +202,59 @@ namespace FluentScrobbler.Services
         {
             if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
 
-            string signature = $"{_currentArtist}|{_currentTrack}|{_trackStartTime}";
-            if (_lastScrobbledSignature == signature)
-            {
-                _hasScrobbledCurrentTrack = true;
-                return;
-            }
+            if (!await _scrobbleLock.WaitAsync(0)) return;
 
-            _hasScrobbledCurrentTrack = true;
-            _lastScrobbledSignature = signature;
-
-            bool success = false;
             try
             {
-                success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-            }
-            catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is TaskCanceledException)
-            {
-                LogService.LogError("[Network Error] Scrobble failed due to network, queueing offline.", ex);
-            }
-            catch (Exception ex)
-            {
-                LogService.LogError("[API Error] Scrobble failed.", ex);
-            }
+                if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
 
-            if (success)
-            {
-                SetStatus(ScrobbleStatus.Sent, _currentTrack, _currentArtist, _currentAlbum);
-                TrackScrobbled?.Invoke(this, EventArgs.Empty);
+                if (IsRecentlyScrobbled(_currentArtist, _currentTrack, 60))
+                {
+                    _hasScrobbledCurrentTrack = true;
+                    return;
+                }
+
+                string signature = $"{_currentArtist}|{_currentTrack}|{_trackStartTime}";
+                if (_lastScrobbledSignature == signature)
+                {
+                    _hasScrobbledCurrentTrack = true;
+                    return;
+                }
+
+                _hasScrobbledCurrentTrack = true;
+                _lastScrobbledSignature = signature;
+                string trackKey = GetTrackKey(_currentArtist, _currentTrack);
+                _scrobbledTracksHistory[trackKey] = DateTimeOffset.UtcNow;
+
+                bool success = false;
+                try
+                {
+                    success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                }
+                catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is TaskCanceledException)
+                {
+                    LogService.LogError("[Network Error] Scrobble failed due to network, queueing offline.", ex);
+                }
+                catch (Exception ex)
+                {
+                    LogService.LogError("[API Error] Scrobble failed.", ex);
+                }
+
+                if (success)
+                {
+                    SetStatus(ScrobbleStatus.Sent, _currentTrack, _currentArtist, _currentAlbum);
+                    TrackScrobbled?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    SetStatus(ScrobbleStatus.Error, _currentTrack, _currentArtist, _currentAlbum);
+                    await OfflineCacheService.Instance.AddScrobbleAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                    await OfflineCacheWorker.Instance.TriggerOfflineModeAsync();
+                }
             }
-            else
+            finally
             {
-                SetStatus(ScrobbleStatus.Error, _currentTrack, _currentArtist, _currentAlbum);
-                await OfflineCacheService.Instance.AddScrobbleAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-                await OfflineCacheWorker.Instance.TriggerOfflineModeAsync();
+                _scrobbleLock.Release();
             }
         }
 
@@ -219,7 +262,14 @@ namespace FluentScrobbler.Services
         {
             if (_isPlaying && !_hasScrobbledCurrentTrack && !string.IsNullOrEmpty(_currentTrack) && _elapsedSeconds >= 30)
             {
-                await ExecuteScrobbleAsync();
+                if (!IsRecentlyScrobbled(_currentArtist, _currentTrack, 60))
+                {
+                    await ExecuteScrobbleAsync();
+                }
+                else
+                {
+                    _hasScrobbledCurrentTrack = true;
+                }
             }
         }
 

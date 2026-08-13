@@ -34,6 +34,7 @@ namespace FluentScrobbler.Services
         );
 
         private readonly HttpClient _httpClient;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _lastFmSubmittedScrobbles = new(StringComparer.OrdinalIgnoreCase);
 
         private List<ScrobbleTrack>? _cachedRecentTracks;
         private DateTime _lastFetchTime = DateTime.MinValue;
@@ -45,7 +46,10 @@ namespace FluentScrobbler.Services
 
         public LastFmService()
         {
-            _httpClient = new HttpClient();
+            _httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(15)
+            };
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler-WindowsApp/1.0");
 
             var secrets = LoadSecrets();
@@ -699,6 +703,15 @@ namespace FluentScrobbler.Services
                 return false;
             }
 
+            string dedupeKey = $"{artist.Trim().ToLowerInvariant()}|{track.Trim().ToLowerInvariant()}";
+            if (_lastFmSubmittedScrobbles.TryGetValue(dedupeKey, out var lastSubmissionTime))
+            {
+                if (DateTimeOffset.UtcNow - lastSubmissionTime < TimeSpan.FromSeconds(30))
+                {
+                    return true;
+                }
+            }
+
             long uts = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var parameters = new Dictionary<string, string>
             {
@@ -726,7 +739,11 @@ namespace FluentScrobbler.Services
             {
                 string json = await response.Content.ReadAsStringAsync();
                 bool success = !json.Contains("error");
-                if (!success)
+                if (success)
+                {
+                    _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
+                }
+                else
                 {
                     LogService.LogError($"[API Error] track.scrobble returned error response: {json}");
                 }
