@@ -63,6 +63,12 @@
                 </NavigationView.MenuItems>
 
                 <NavigationView.FooterMenuItems>
+                    <NavigationViewItem Content="Contribute" Tag="ContributePage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Heart" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
                     <NavigationViewItem Content="About" Tag="AboutPage">
                         <NavigationViewItem.Icon>
                             <ic:SymbolIcon Symbol="Info" />

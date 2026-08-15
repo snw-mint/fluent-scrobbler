@@ -112,18 +112,14 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="Quick Actions" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
 
-                    <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ScrobblesPage" Click="QuickAction_Click">
+                    <Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ScrobblesPage" Click="QuickAction_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -139,7 +135,7 @@
                         </Grid>
                     </Button>
 
-                    <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
+                    <Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -155,7 +151,7 @@
                         </Grid>
                     </Button>
 
-                    <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="AboutPage" Click="QuickAction_Click">
+                    <Button Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="AboutPage" Click="QuickAction_Click">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -168,54 +164,6 @@
                                 <TextBlock Text="Application info &amp; version" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                             <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
-
-                    <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml" Click="ExternalLink_Click">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ic:SymbolIcon Grid.Column="0" Symbol="Bug" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Report a bug" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="Submit an issue" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                            <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
-
-                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml" Click="ExternalLink_Click">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ic:SymbolIcon Grid.Column="0" Symbol="Sparkle" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Request a feature" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="Suggest new ideas" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                            <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
-
-                    <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="https://buymeacoffee.com/snw.mint" Click="ExternalLink_Click">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ic:SymbolIcon Grid.Column="0" Symbol="Heart" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                <TextBlock Text="Support the development" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="buymeacoffee.com/snw.mint" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                            <ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                 </Grid>

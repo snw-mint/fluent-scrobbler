@@ -214,6 +214,7 @@ namespace FluentScrobbler
                     nameof(ScrobblesPage) => "ScrobblesPage",
                     nameof(SettingsPage) => "SettingsPage",
                     nameof(AccountPage) => "AccountPage",
+                    nameof(ContributePage) => "ContributePage",
                     nameof(AboutPage) => "AboutPage",
                     _ => null
                 };
@@ -410,7 +411,7 @@ namespace FluentScrobbler
                 if (item is NavigationViewItem navItem)
                 {
                     string tag = navItem.Tag?.ToString() ?? "";
-                    if (tag != "AboutPage")
+                    if (tag != "AboutPage" && tag != "ContributePage")
                     {
                         navItem.IsEnabled = isLoggedIn;
                     }
@@ -476,6 +477,7 @@ namespace FluentScrobbler
                     "ScrobblesPage" => typeof(ScrobblesPage),
                     "SettingsPage" => typeof(SettingsPage),
                     "AccountPage" => typeof(AccountPage),
+                    "ContributePage" => typeof(ContributePage),
                     "AboutPage" => typeof(AboutPage),
                     _ => null
                 };
