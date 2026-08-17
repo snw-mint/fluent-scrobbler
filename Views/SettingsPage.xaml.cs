@@ -207,12 +207,22 @@ namespace FluentScrobbler.Views
         private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (MainContentPanel == null) return;
-            const double maxContentWidth = 1400;
-            const double horizontalPadding = 64;
-            if (e.NewSize.Width > maxContentWidth + horizontalPadding)
+            double width = e.NewSize.Width;
+
+            if (width > 3200)
             {
                 MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
-                MainContentPanel.Width = maxContentWidth;
+                MainContentPanel.Width = 1100;
+            }
+            else if (width > 2200)
+            {
+                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
+                MainContentPanel.Width = 1180;
+            }
+            else if (width > 1464)
+            {
+                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
+                MainContentPanel.Width = 1260;
             }
             else
             {
