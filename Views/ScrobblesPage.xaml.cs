@@ -132,7 +132,7 @@ namespace FluentScrobbler.Views
                 LoadingRing.IsActive = true;
             }
 
-            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 6, forceRefresh: forceRefresh);
+            var recentTracks = await _lastFmService.GetRecentTracksAsync(username, limit: 16, forceRefresh: forceRefresh);
 
             if (showLoading)
             {
@@ -155,7 +155,7 @@ namespace FluentScrobbler.Views
                 return;
             }
 
-            var historyTracks = recentTracks.Where(t => !t.IsNowPlaying).Take(5).ToList();
+            var historyTracks = recentTracks.Where(t => !t.IsNowPlaying).Take(15).ToList();
 
             var historyItems = historyTracks.Select(t => {
                 var cached = _cachedScrobbles.FirstOrDefault(c => c.TrackName == t.Name && c.ArtistName == t.Artist && !string.IsNullOrEmpty(c.CoverUrl));

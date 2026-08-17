@@ -120,6 +120,13 @@
             </StackPanel>
 
             <StackPanel Spacing="12">
+                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+                <StackPanel x:Name="RecentScrobblesContainer" Spacing="8">
+                    <TextBlock x:Name="NoRecentScrobblesText" Text="No recent scrobbles yet." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="12">
                 <TextBlock Text="Quick Actions" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
                 <Grid ColumnSpacing="16">

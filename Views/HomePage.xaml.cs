@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using FluentScrobbler.Models;
 using FluentScrobbler.Services;
 using FluentScrobbler.Services.Media;
 
@@ -14,6 +16,8 @@ namespace FluentScrobbler.Views
         private readonly LastFmService _lastFmService = new();
         private readonly MediaArtResolver _mediaArtResolver = new();
         private readonly WindowsMediaService _windowsMediaService = new();
+
+        private static readonly List<ScrobbleItem> _cachedRecentScrobbles = new();
 
         private static string? _cachedTitle;
         private static string? _cachedSubtitle;
@@ -109,6 +113,11 @@ namespace FluentScrobbler.Views
             else
             {
                 SetNowPlayingIdle();
+            }
+
+            if (_cachedRecentScrobbles.Count > 0)
+            {
+                RenderRecentScrobbles(_cachedRecentScrobbles);
             }
         }
 
@@ -325,11 +334,33 @@ namespace FluentScrobbler.Views
                         DateTime todayMidnight = DateTime.Today;
                         long todayUts = new DateTimeOffset(todayMidnight).ToUnixTimeSeconds();
                         var tracksTodayTask = _lastFmService.GetRecentTracksAsync(username, limit: 200, fromTimestamp: todayUts);
+                        var recentHistoryTask = _lastFmService.GetRecentTracksAsync(username, limit: 5);
 
-                        await Task.WhenAll(userInfoTask, tracksTodayTask);
+                        await Task.WhenAll(userInfoTask, tracksTodayTask, recentHistoryTask);
 
                         var userInfo = await userInfoTask;
                         var tracksToday = await tracksTodayTask;
+                        var recentHistory = await recentHistoryTask;
+
+                        var historyTracks = recentHistory.Where(t => !t.IsNowPlaying).Take(3).ToList();
+                        var historyItems = historyTracks.Select(t => {
+                            var cached = _cachedRecentScrobbles.FirstOrDefault(c => c.TrackName == t.Name && c.ArtistName == t.Artist && !string.IsNullOrEmpty(c.CoverUrl));
+                            return new ScrobbleItem
+                            {
+                                TrackName = t.Name,
+                                ArtistName = t.Artist,
+                                AlbumName = t.Album,
+                                CoverUrl = cached?.CoverUrl ?? string.Empty,
+                                Timestamp = t.PlayedAt?.LocalDateTime ?? DateTime.Now,
+                                IsNowPlaying = false,
+                                IsFavorite = t.IsLoved
+                            };
+                        }).ToList();
+
+                        _cachedRecentScrobbles.Clear();
+                        _cachedRecentScrobbles.AddRange(historyItems);
+                        RenderRecentScrobbles(historyItems);
+                        _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList());
 
                         if (userInfo.HasValue)
                         {
@@ -541,6 +572,193 @@ namespace FluentScrobbler.Views
             ForceSyncButton.IsEnabled = false;
             await OfflineCacheWorker.Instance.ForceSyncAsync();
             ForceSyncButton.IsEnabled = true;
+        }
+
+        private void RenderRecentScrobbles(List<ScrobbleItem> items)
+        {
+            if (RecentScrobblesContainer == null) return;
+            RecentScrobblesContainer.Children.Clear();
+
+            if (items.Count == 0)
+            {
+                NoRecentScrobblesText.Visibility = Visibility.Visible;
+                RecentScrobblesContainer.Children.Add(NoRecentScrobblesText);
+                return;
+            }
+
+            NoRecentScrobblesText.Visibility = Visibility.Collapsed;
+            foreach (var item in items)
+            {
+                var card = CreateScrobbleCardUI(item);
+                RecentScrobblesContainer.Children.Add(card);
+            }
+        }
+
+        private Border CreateScrobbleCardUI(ScrobbleItem item)
+        {
+            var grid = new Grid { ColumnSpacing = 16 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var artBorder = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(@"
+<Border xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+        Width=""52"" Height=""52"" CornerRadius=""6""
+        Background=""{ThemeResource LayerFillColorDefaultBrush}"" />");
+
+            var artGrid = new Grid();
+            var icon = new FluentIcons.WinUI.SymbolIcon
+            {
+                Symbol = FluentIcons.Common.Symbol.MusicNote1,
+                FontSize = 24,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            artGrid.Children.Add(icon);
+
+            var img = new Image
+            {
+                Width = 52,
+                Height = 52,
+                Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill,
+                Visibility = Visibility.Collapsed
+            };
+
+            Action updateImageAction = () =>
+            {
+                if (!string.IsNullOrEmpty(item.CoverUrl))
+                {
+                    try
+                    {
+                        img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                        img.Visibility = Visibility.Visible;
+                        icon.Visibility = Visibility.Collapsed;
+                    }
+                    catch
+                    {
+                        img.Visibility = Visibility.Collapsed;
+                        icon.Visibility = Visibility.Visible;
+                    }
+                }
+            };
+
+            updateImageAction();
+
+            item.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ScrobbleItem.CoverUrl))
+                {
+                    this.DispatcherQueue?.TryEnqueue(() => updateImageAction());
+                }
+            };
+
+            artGrid.Children.Add(img);
+            artBorder.Child = artGrid;
+            Grid.SetColumn(artBorder, 0);
+            grid.Children.Add(artBorder);
+
+            var infoStack = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Spacing = 2
+            };
+
+            var titleText = new TextBlock
+            {
+                Text = item.TrackName,
+                Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"],
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+            infoStack.Children.Add(titleText);
+
+            var subStack = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 4
+            };
+
+            var artistText = new TextBlock
+            {
+                Text = item.ArtistName,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+            subStack.Children.Add(artistText);
+
+            if (!string.IsNullOrWhiteSpace(item.AlbumName))
+            {
+                var dotText = new TextBlock
+                {
+                    Text = "•",
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]
+                };
+
+                var albumText = new TextBlock
+                {
+                    Text = item.AlbumName,
+                    Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                };
+
+                subStack.Children.Add(dotText);
+                subStack.Children.Add(albumText);
+            }
+
+            infoStack.Children.Add(subStack);
+
+            Grid.SetColumn(infoStack, 1);
+            grid.Children.Add(infoStack);
+
+            var timeText = new TextBlock
+            {
+                Text = item.TimeFormatted,
+                VerticalAlignment = VerticalAlignment.Center,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Margin = new Thickness(8, 0, 8, 0)
+            };
+            Grid.SetColumn(timeText, 2);
+            grid.Children.Add(timeText);
+
+            var outerBorder = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(@"
+<Border xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+        Background=""{ThemeResource CardBackgroundFillColorDefaultBrush}""
+        BorderBrush=""{ThemeResource CardStrokeColorDefaultBrush}""
+        BorderThickness=""1""
+        CornerRadius=""8""
+        Padding=""14""
+        Margin=""0,0,0,8"" />");
+
+            outerBorder.Child = grid;
+            return outerBorder;
+        }
+
+        private async Task LoadArtProgressivelyAsync(
+            List<ScrobbleItem> items,
+            List<(string Artist, string? Album, string Name, string? AlbumArtUrl)> trackInfos)
+        {
+            var dq = this.DispatcherQueue;
+            for (int i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var (artist, album, name, artUrl) = trackInfos[i];
+                if (!string.IsNullOrEmpty(item.CoverUrl)) continue;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        string? resolved = await _mediaArtResolver.ResolveAlbumArtAsync(artist, album ?? string.Empty, name, artUrl);
+                        if (!string.IsNullOrEmpty(resolved) && dq != null)
+                        {
+                            dq.TryEnqueue(() =>
+                            {
+                                item.CoverUrl = resolved;
+                            });
+                        }
+                    }
+                    catch { }
+                });
+            }
         }
     }
 }
