@@ -5,7 +5,7 @@
 ---
 
 > [!NOTE]
-> **Beta Release Available!**
+> **Beta Release Available!**  
 > Fluent Scrobbler is currently in **Initial Beta**. Core features are functional, but you may encounter minor bugs or UI polish issues. Feedback and bug reports are greatly appreciated!
 
 ## Features
@@ -18,7 +18,7 @@
 
 ## Installation & Setup
 
-1. **Download**: Visit the [Releases](https://github.com/snw-mint/fluent-scrobbler/releases) page and download the setup installer (`Fluent Scrobbler-Setup.exe`).
+1. **Download**: Visit the [Releases](https://github.com/snw-mint/fluent-scrobbler/releases) page and download the setup installer (`FluentScrobbler-Setup.exe`).
 2. **Install**: Run the installer and follow the on-screen instructions.
 3. **Connect Account**: Open Fluent Scrobbler, navigate to the **Account** section, and click **Connect to Last.fm** to authorize the application.
 4. **Start Scrobbling**: Play music in any Windows media player or web browser, and your listening history will scrobble automatically.

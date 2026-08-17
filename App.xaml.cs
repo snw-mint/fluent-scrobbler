@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppNotifications;
-using Fluent Scrobbler.Services;
+using FluentScrobbler.Services;
 
-namespace Fluent Scrobbler
+namespace FluentScrobbler
 {
     public partial class App : Application
     {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Fluent Scrobbler.Models
+namespace FluentScrobbler.Models
 {
     public class LastFmAuthTokenResponse
     {

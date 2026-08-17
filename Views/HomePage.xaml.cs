@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Fluent Scrobbler.Models;
-using Fluent Scrobbler.Services;
-using Fluent Scrobbler.Services.Media;
+using FluentScrobbler.Models;
+using FluentScrobbler.Services;
+using FluentScrobbler.Services.Media;
 
-namespace Fluent Scrobbler.Views
+namespace FluentScrobbler.Views
 {
     public sealed partial class HomePage : Page
     {
@@ -189,8 +189,8 @@ namespace Fluent Scrobbler.Views
 
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
             OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
-
-
+            
+            
             SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, await OfflineCacheService.Instance.GetPendingCountAsync());
         }
 

@@ -2,13 +2,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Fluent Scrobbler.Services
+namespace FluentScrobbler.Services
 {
     public static class LogService
     {
         private static readonly string LogFolderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Fluent Scrobbler",
+            "FluentScrobbler",
             "Logs"
         );
 

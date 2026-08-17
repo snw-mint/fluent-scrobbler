@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
 
-namespace Fluent Scrobbler.Views
+namespace FluentScrobbler.Views
 {
     public sealed partial class MainPage : Page
     {

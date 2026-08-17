@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "Fluent Scrobbler (Package)": {
+    "FluentScrobbler (Package)": {
       "commandName": "MsixPackage"
     },
-    "Fluent Scrobbler (Unpackaged)": {
+    "FluentScrobbler (Unpackaged)": {
       "commandName": "Project"
     }
   }

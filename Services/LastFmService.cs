@@ -8,9 +8,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.System;
-using Fluent Scrobbler.Models;
+using FluentScrobbler.Models;
 
-namespace Fluent Scrobbler.Services
+namespace FluentScrobbler.Services
 {
     public class LastFmService
     {
@@ -23,13 +23,13 @@ namespace Fluent Scrobbler.Services
 
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Fluent Scrobbler",
+            "FluentScrobbler",
             "settings.json"
         );
 
         private static readonly string LocalSecretsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Fluent Scrobbler",
+            "FluentScrobbler",
             "secrets.json"
         );
 
@@ -50,7 +50,7 @@ namespace Fluent Scrobbler.Services
             {
                 Timeout = TimeSpan.FromSeconds(15)
             };
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Fluent Scrobbler-WindowsApp/1.0");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler-WindowsApp/1.0");
 
             var secrets = LoadSecrets();
             ApiKey = secrets.TryGetValue("ApiKey", out var k) && !string.IsNullOrEmpty(k) ? k : DefaultApiKey;
@@ -506,19 +506,19 @@ namespace Fluent Scrobbler.Services
             {
                 string url = $"{BaseUrl}?method=album.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&album={Uri.EscapeDataString(album)}&format=json";
                 var response = await _httpClient.GetAsync(url);
-
+                
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
                     using var doc = JsonDocument.Parse(json);
-
-                    if (doc.RootElement.TryGetProperty("album", out var albumElement) &&
-                        albumElement.TryGetProperty("image", out var imagesProp) &&
+                    
+                    if (doc.RootElement.TryGetProperty("album", out var albumElement) && 
+                        albumElement.TryGetProperty("image", out var imagesProp) && 
                         imagesProp.ValueKind == JsonValueKind.Array)
                     {
                         string? mediumImage = null;
                         string? largeImage = null;
-
+                        
                         foreach (var img in imagesProp.EnumerateArray())
                         {
                             if (img.TryGetProperty("size", out var sizeProp))
@@ -534,9 +534,9 @@ namespace Fluent Scrobbler.Services
                                 }
                             }
                         }
-
+                        
                         string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
-
+                        
                         if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
                         {
                             return selectedImage;
@@ -557,20 +557,20 @@ namespace Fluent Scrobbler.Services
             {
                 string url = $"{BaseUrl}?method=track.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&track={Uri.EscapeDataString(track)}&format=json";
                 var response = await _httpClient.GetAsync(url);
-
+                
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
                     using var doc = JsonDocument.Parse(json);
-
+                    
                     if (doc.RootElement.TryGetProperty("track", out var trackElement) &&
-                        trackElement.TryGetProperty("album", out var albumElement) &&
-                        albumElement.TryGetProperty("image", out var imagesProp) &&
+                        trackElement.TryGetProperty("album", out var albumElement) && 
+                        albumElement.TryGetProperty("image", out var imagesProp) && 
                         imagesProp.ValueKind == JsonValueKind.Array)
                     {
                         string? mediumImage = null;
                         string? largeImage = null;
-
+                        
                         foreach (var img in imagesProp.EnumerateArray())
                         {
                             if (img.TryGetProperty("size", out var sizeProp))
@@ -586,9 +586,9 @@ namespace Fluent Scrobbler.Services
                                 }
                             }
                         }
-
+                        
                         string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
-
+                        
                         if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
                         {
                             return selectedImage;
@@ -779,7 +779,7 @@ namespace Fluent Scrobbler.Services
                 parameters[$"artist[{i}]"] = entries[i].Artist;
                 parameters[$"track[{i}]"] = entries[i].Track;
                 parameters[$"timestamp[{i}]"] = entries[i].Timestamp.ToString();
-
+                
                 if (!string.IsNullOrWhiteSpace(entries[i].Album))
                 {
                     parameters[$"album[{i}]"] = entries[i].Album;

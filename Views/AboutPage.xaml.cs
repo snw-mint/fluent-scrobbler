@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Fluent Scrobbler.Services;
+using FluentScrobbler.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace Fluent Scrobbler.Views
+namespace FluentScrobbler.Views
 {
     public sealed partial class AboutPage : Page
     {

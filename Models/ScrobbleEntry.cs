@@ -1,7 +1,7 @@
 using System;
 using SQLite;
 
-namespace Fluent Scrobbler.Models
+namespace FluentScrobbler.Models
 {
     [Table("ScrobbleEntries")]
     public class ScrobbleEntry
@@ -10,13 +10,13 @@ namespace Fluent Scrobbler.Models
         public int Id { get; set; }
 
         public string Track { get; set; } = string.Empty;
-
+        
         public string Artist { get; set; } = string.Empty;
-
+        
         public string Album { get; set; } = string.Empty;
-
+        
         public long Timestamp { get; set; }
-
+        
         public string Status { get; set; } = "Pending";
     }
 }

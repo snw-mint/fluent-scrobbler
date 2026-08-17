@@ -8,11 +8,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Fluent Scrobbler.Models;
-using Fluent Scrobbler.Services;
-using Fluent Scrobbler.Services.Media;
+using FluentScrobbler.Models;
+using FluentScrobbler.Services;
+using FluentScrobbler.Services.Media;
 
-namespace Fluent Scrobbler.Views
+namespace FluentScrobbler.Views
 {
     public sealed partial class ScrobblesPage : Page
     {
@@ -434,8 +434,8 @@ namespace Fluent Scrobbler.Views
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingTrack.Text = track;
 
-            string artistAlbumStr = string.IsNullOrWhiteSpace(album)
-                ? (artist ?? string.Empty)
+            string artistAlbumStr = string.IsNullOrWhiteSpace(album) 
+                ? (artist ?? string.Empty) 
                 : $"{artist} • {album}";
 
             NowPlayingArtist.Text = artistAlbumStr;

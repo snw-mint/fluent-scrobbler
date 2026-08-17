@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Windows.Networking.Connectivity;
 
-namespace Fluent Scrobbler.Services
+namespace FluentScrobbler.Services
 {
     public class OfflineCacheWorker
     {
@@ -18,7 +18,7 @@ namespace Fluent Scrobbler.Services
         private int _currentBackoffLevel = 0;
         private readonly int[] _backoffIntervals = { 60, 300, 900, 3600 };
         private bool _offlineMode;
-        public bool OfflineMode
+        public bool OfflineMode 
         {
             get => _offlineMode;
             private set
@@ -42,13 +42,13 @@ namespace Fluent Scrobbler.Services
         public void Start()
         {
             if (_timer != null) return;
-
+            
             _timer = new System.Timers.Timer();
             SetTimerInterval();
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
 
-
+            
             _ = ProcessCacheAsync();
         }
 
@@ -122,20 +122,20 @@ namespace Fluent Scrobbler.Services
 
                 OfflineMode = true;
 
-
+                
                 var profile = NetworkInformation.GetInternetConnectionProfile();
                 if (profile == null || profile.GetNetworkConnectivityLevel() != NetworkConnectivityLevel.InternetAccess)
                 {
-
+                    
                     IncreaseBackoff();
                     return;
                 }
 
-
+                
                 var pendingScrobbles = await _cacheService.GetPendingScrobblesAsync(50);
                 if (!pendingScrobbles.Any()) return;
 
-                var uniqueEntries = new List<Fluent Scrobbler.Models.ScrobbleEntry>();
+                var uniqueEntries = new List<FluentScrobbler.Models.ScrobbleEntry>();
                 var duplicateIds = new List<int>();
                 var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -164,26 +164,26 @@ namespace Fluent Scrobbler.Services
                 }
 
                 bool batchSuccess = await _lastFmService.ScrobbleBatchAsync(uniqueEntries);
-
+                
                 if (batchSuccess)
                 {
                     var ids = uniqueEntries.Select(s => s.Id).ToList();
                     await _cacheService.RemoveScrobblesAsync(ids);
-
+                    
                     _currentBackoffLevel = 0;
                     SetTimerInterval();
-
+                    
                     await UpdateCacheCountAsync();
 
-
+                    
                     int remaining = await _cacheService.GetPendingCountAsync();
                     if (remaining > 0)
                     {
-
+                        
                         await Task.Delay(1000);
                         _processLock.Release();
                         await ProcessCacheAsync();
-                        return;
+                        return; 
                     }
                 }
                 else

@@ -39,7 +39,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Output/Fluent Scrobbler-Setup.exe
+          files: Output/FluentScrobbler-Setup.exe
           draft: true
           prerelease: true
         env:

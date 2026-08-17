@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Media.Control;
 
-namespace Fluent Scrobbler.Services
+namespace FluentScrobbler.Services
 {
     public class SourceAppInfo
     {
@@ -28,7 +28,7 @@ namespace Fluent Scrobbler.Services
 
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Fluent Scrobbler",
+            "FluentScrobbler",
             "media_settings.json"
         );
 

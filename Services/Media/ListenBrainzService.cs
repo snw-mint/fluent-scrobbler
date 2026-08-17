@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Fluent Scrobbler.Services.Media
+namespace FluentScrobbler.Services.Media
 {
     public class ListenBrainzService
     {
@@ -20,7 +20,7 @@ namespace Fluent Scrobbler.Services.Media
 
         private static readonly string DiskCachePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Fluent Scrobbler",
+            "FluentScrobbler",
             "art_cache.json"
         );
 
@@ -32,7 +32,7 @@ namespace Fluent Scrobbler.Services.Media
         public ListenBrainzService()
         {
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Fluent Scrobbler/1.0 (contact@snw-mint.app)");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler/1.0 (contact@snw-mint.app)");
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
             EnsureDiskCacheLoaded();
         }
