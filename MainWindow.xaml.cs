@@ -23,7 +23,7 @@ namespace FluentScrobbler
     {
         public static new MainWindow? Current { get; private set; }
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
-        public Windows.UI.Color CurrentAccentColor { get; private set; } = Windows.UI.Color.FromArgb(255, 0, 120, 212);
+        public Windows.UI.Color CurrentAccentColor { get; private set; }
         public bool IsManualColor { get; private set; } = false;
         private readonly TrayThemeService _trayThemeService = new();
         private ScrobbleStatusInfo _currentScrobbleStatus = new(ScrobbleStatus.Idle);
@@ -48,7 +48,6 @@ namespace FluentScrobbler
                 appWindow.SetIcon(iconPath);
             }
 
-            SetAccentColor(Windows.UI.Color.FromArgb(255, 0, 120, 212));
             LoadSavedTheme();
             InitializeTrayTheme();
 
