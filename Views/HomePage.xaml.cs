@@ -81,7 +81,9 @@ namespace FluentScrobbler.Views
 
             if (_cachedNowPlayingVisible)
             {
-                NowPlayingCard.Visibility = Visibility.Visible;
+                NowPlayingActiveContainer.Visibility = Visibility.Visible;
+                NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
+                NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
                 if (_cachedNowPlayingTrack != null) NowPlayingTrackText.Text = _cachedNowPlayingTrack;
                 if (_cachedNowPlayingArtistAlbum != null) NowPlayingArtistAlbumText.Text = _cachedNowPlayingArtistAlbum;
                 if (!string.IsNullOrEmpty(_cachedNowPlayingArtUrl))
@@ -98,11 +100,32 @@ namespace FluentScrobbler.Views
                         NowPlayingFallbackIcon.Visibility = Visibility.Visible;
                     }
                 }
+                else
+                {
+                    NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+                    NowPlayingFallbackIcon.Visibility = Visibility.Visible;
+                }
             }
             else
             {
-                NowPlayingCard.Visibility = Visibility.Collapsed;
+                SetNowPlayingIdle();
             }
+        }
+
+        private void SetNowPlayingIdle()
+        {
+            _lastNowPlayingTrack = string.Empty;
+            _lastNowPlayingArtist = string.Empty;
+            _cachedNowPlayingVisible = false;
+            _cachedNowPlayingTrack = null;
+            _cachedNowPlayingArtistAlbum = null;
+            _cachedNowPlayingArtUrl = null;
+
+            NowPlayingActiveContainer.Visibility = Visibility.Collapsed;
+            NowPlayingIdleContainer.Visibility = Visibility.Visible;
+            NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+            NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
+            NowPlayingIdleIcon.Visibility = Visibility.Visible;
         }
 
         private void CacheCurrentState()
@@ -143,7 +166,7 @@ namespace FluentScrobbler.Views
             var currentTrack = ScrobblerBackgroundService.Instance.CurrentTrack;
             if (currentTrack != null)
             {
-                if (_lastNowPlayingTrack != currentTrack.Track || _lastNowPlayingArtist != currentTrack.Artist || NowPlayingCard.Visibility != Visibility.Visible)
+                if (_lastNowPlayingTrack != currentTrack.Track || _lastNowPlayingArtist != currentTrack.Artist || NowPlayingActiveContainer.Visibility != Visibility.Visible)
                 {
                     _lastNowPlayingTrack = currentTrack.Track;
                     _lastNowPlayingArtist = currentTrack.Artist;
@@ -152,13 +175,7 @@ namespace FluentScrobbler.Views
             }
             else
             {
-                _lastNowPlayingTrack = string.Empty;
-                _lastNowPlayingArtist = string.Empty;
-                NowPlayingCard.Visibility = Visibility.Collapsed;
-                _cachedNowPlayingVisible = false;
-                _cachedNowPlayingTrack = null;
-                _cachedNowPlayingArtistAlbum = null;
-                _cachedNowPlayingArtUrl = null;
+                SetNowPlayingIdle();
             }
 
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
@@ -218,17 +235,11 @@ namespace FluentScrobbler.Views
             {
                 if (info == null)
                 {
-                    _lastNowPlayingTrack = string.Empty;
-                    _lastNowPlayingArtist = string.Empty;
-                    NowPlayingCard.Visibility = Visibility.Collapsed;
-                    _cachedNowPlayingVisible = false;
-                    _cachedNowPlayingTrack = null;
-                    _cachedNowPlayingArtistAlbum = null;
-                    _cachedNowPlayingArtUrl = null;
+                    SetNowPlayingIdle();
                     return;
                 }
 
-                if (info.Track == _lastNowPlayingTrack && info.Artist == _lastNowPlayingArtist) return;
+                if (info.Track == _lastNowPlayingTrack && info.Artist == _lastNowPlayingArtist && NowPlayingActiveContainer.Visibility == Visibility.Visible) return;
 
                 _lastNowPlayingTrack = info.Track;
                 _lastNowPlayingArtist = info.Artist;
@@ -248,7 +259,9 @@ namespace FluentScrobbler.Views
 
         private async Task ApplyNowPlayingAsync(string artist, string album, string track, string? lastFmArtUrl)
         {
-            NowPlayingCard.Visibility = Visibility.Visible;
+            NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
+            NowPlayingActiveContainer.Visibility = Visibility.Visible;
+            NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingTrackText.Text = track;
             string artistAlbumStr = string.IsNullOrEmpty(album) ? artist : $"{artist} • {album}";
             NowPlayingArtistAlbumText.Text = artistAlbumStr;

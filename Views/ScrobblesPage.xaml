@@ -17,12 +17,12 @@
                 <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
             </StackPanel>
 
-            <StackPanel x:Name="NowPlayingPanel" Visibility="Collapsed" Spacing="8">
+            <StackPanel x:Name="NowPlayingPanel" Spacing="8">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
                 
                 <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
-                        BorderThickness="2"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
                         CornerRadius="8"
                         Padding="20">
                     <Grid ColumnSpacing="16">
@@ -33,12 +33,13 @@
 
                         <Border Grid.Column="0" Width="88" Height="88" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
                             <Grid>
-                                <ic:SymbolIcon x:Name="NowPlayingFallbackIcon" Symbol="MusicNote1" FontSize="38" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <ic:SymbolIcon x:Name="NowPlayingFallbackIcon" Symbol="MusicNote1" FontSize="38" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                                <ic:SymbolIcon x:Name="NowPlayingIdleIcon" Symbol="Snooze" FontSize="38" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <Image x:Name="NowPlayingAlbumArtImage" Width="88" Height="88" Stretch="UniformToFill" Visibility="Collapsed" />
                             </Grid>
                         </Border>
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                        <StackPanel x:Name="NowPlayingActiveContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="6" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock x:Name="NowPlayingTrack" Text="" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
@@ -46,6 +47,11 @@
                                 </Border>
                             </StackPanel>
                             <TextBlock x:Name="NowPlayingArtist" Text="" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="NowPlayingIdleContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <TextBlock Text="Silence is golden... but music is better" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="Play something to start scrobbling." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                     </Grid>
                 </Border>

@@ -63,10 +63,20 @@ namespace FluentScrobbler.Views
             }
             else
             {
-                _lastNowPlayingTrack = string.Empty;
-                _lastNowPlayingArtist = string.Empty;
-                NowPlayingPanel.Visibility = Visibility.Collapsed;
+                SetNowPlayingIdle();
             }
+        }
+
+        private void SetNowPlayingIdle()
+        {
+            _lastNowPlayingTrack = string.Empty;
+            _lastNowPlayingArtist = string.Empty;
+
+            NowPlayingActiveContainer.Visibility = Visibility.Collapsed;
+            NowPlayingIdleContainer.Visibility = Visibility.Visible;
+            NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
+            NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
+            NowPlayingIdleIcon.Visibility = Visibility.Visible;
         }
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
@@ -97,13 +107,11 @@ namespace FluentScrobbler.Views
 
                 if (info == null)
                 {
-                    _lastNowPlayingTrack = string.Empty;
-                    _lastNowPlayingArtist = string.Empty;
-                    NowPlayingPanel.Visibility = Visibility.Collapsed;
+                    SetNowPlayingIdle();
                     return;
                 }
 
-                if (info.Track == _lastNowPlayingTrack && info.Artist == _lastNowPlayingArtist) return;
+                if (info.Track == _lastNowPlayingTrack && info.Artist == _lastNowPlayingArtist && NowPlayingActiveContainer.Visibility == Visibility.Visible) return;
 
                 _lastNowPlayingTrack = info.Track;
                 _lastNowPlayingArtist = info.Artist;
@@ -415,13 +423,15 @@ namespace FluentScrobbler.Views
 
             if (string.IsNullOrEmpty(track))
             {
-                NowPlayingPanel.Visibility = Visibility.Collapsed;
+                SetNowPlayingIdle();
                 return;
             }
 
             if (ct.IsCancellationRequested) return;
 
-            NowPlayingPanel.Visibility = Visibility.Visible;
+            NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
+            NowPlayingActiveContainer.Visibility = Visibility.Visible;
+            NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingTrack.Text = track;
 
             string artistAlbumStr = string.IsNullOrWhiteSpace(album) 
