@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
-        <StackPanel Spacing="20" MaxWidth="1400" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="20" MaxWidth="1400" HorizontalAlignment="Center">
             <StackPanel Spacing="4">
                 <TextBlock Text="Scrobbles" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock Text="Your recent listening history and current playing track" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
