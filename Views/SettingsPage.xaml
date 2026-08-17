@@ -10,8 +10,8 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
-        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Center">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24" SizeChanged="ScrollViewer_SizeChanged">
+        <StackPanel x:Name="MainContentPanel" Spacing="24" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock Text="Customize application appearance, themes, and preferences" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />

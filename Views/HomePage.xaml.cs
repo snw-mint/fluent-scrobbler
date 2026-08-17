@@ -760,5 +760,22 @@ namespace FluentScrobbler.Views
                 });
             }
         }
+
+        private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (MainContentPanel == null) return;
+            const double maxContentWidth = 1400;
+            const double horizontalPadding = 64;
+            if (e.NewSize.Width > maxContentWidth + horizontalPadding)
+            {
+                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
+                MainContentPanel.Width = maxContentWidth;
+            }
+            else
+            {
+                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
+                MainContentPanel.Width = double.NaN;
+            }
+        }
     }
 }

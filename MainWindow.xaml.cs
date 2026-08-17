@@ -329,6 +329,9 @@ namespace FluentScrobbler
             Windows.UI.Color dark2 = DarkenColor(color, 0.30f);
             Windows.UI.Color dark3 = DarkenColor(color, 0.45f);
 
+            double luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255.0;
+            Windows.UI.Color textOnAccentColor = luminance > 0.55 ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White;
+
             UpdateResourceColor("SystemAccentColor", color);
             UpdateResourceColor("SystemAccentColorLight1", light1);
             UpdateResourceColor("SystemAccentColorLight2", light2);
@@ -336,11 +339,13 @@ namespace FluentScrobbler
             UpdateResourceColor("SystemAccentColorDark1", dark1);
             UpdateResourceColor("SystemAccentColorDark2", dark2);
             UpdateResourceColor("SystemAccentColorDark3", dark3);
+            UpdateResourceColor("TextOnAccentFillColorPrimary", textOnAccentColor);
 
             UpdateResourceBrush("AccentFillColorDefaultBrush", color);
             UpdateResourceBrush("AccentFillColorSecondaryBrush", light1);
             UpdateResourceBrush("AccentFillColorTertiaryBrush", light2);
             UpdateResourceBrush("AccentTextFillColorPrimaryBrush", color);
+            UpdateResourceBrush("TextOnAccentFillColorPrimaryBrush", textOnAccentColor);
             UpdateResourceBrush("ToggleSwitchFillOn", color);
             UpdateResourceBrush("ToggleSwitchFillOnPointerOver", light1);
             UpdateResourceBrush("ToggleSwitchFillOnPressed", dark1);
@@ -351,6 +356,7 @@ namespace FluentScrobbler
                 root.Resources["AccentFillColorDefaultBrush"] = Application.Current.Resources["AccentFillColorDefaultBrush"];
                 root.Resources["AccentFillColorSecondaryBrush"] = Application.Current.Resources["AccentFillColorSecondaryBrush"];
                 root.Resources["AccentFillColorTertiaryBrush"] = Application.Current.Resources["AccentFillColorTertiaryBrush"];
+                root.Resources["TextOnAccentFillColorPrimaryBrush"] = Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"];
 
                 var current = root.RequestedTheme;
                 root.RequestedTheme = ElementTheme.Default;

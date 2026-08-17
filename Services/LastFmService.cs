@@ -53,58 +53,35 @@ namespace FluentScrobbler.Services
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler-WindowsApp/1.0");
 
             var secrets = LoadSecrets();
-            ApiKey = secrets.TryGetValue("ApiKey", out var k) && !string.IsNullOrEmpty(k)
-                ? k
-                : (secrets.TryGetValue("api_key", out var k2) && !string.IsNullOrEmpty(k2) ? k2 : DefaultApiKey);
-            ApiSecret = secrets.TryGetValue("ApiSecret", out var s) && !string.IsNullOrEmpty(s)
-                ? s
-                : (secrets.TryGetValue("api_secret", out var s2) && !string.IsNullOrEmpty(s2) ? s2 : DefaultApiSecret);
+            ApiKey = secrets.TryGetValue("ApiKey", out var k) && !string.IsNullOrEmpty(k) ? k : DefaultApiKey;
+            ApiSecret = secrets.TryGetValue("ApiSecret", out var s) && !string.IsNullOrEmpty(s) ? s : DefaultApiSecret;
         }
 
         private static Dictionary<string, string> LoadSecrets()
         {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            var candidatePaths = new List<string>
+            try
             {
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "secrets.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "secrets.json"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "secrets.json"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "secrets.json"),
-                LocalSecretsFilePath,
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fluent Scrobbler", "secrets.json")
-            };
-
-            foreach (var path in candidatePaths)
-            {
-                try
+                string baseDirSecrets = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "secrets.json");
+                if (File.Exists(baseDirSecrets))
                 {
-                    string fullPath = Path.GetFullPath(path);
-                    if (File.Exists(fullPath))
-                    {
-                        string json = File.ReadAllText(fullPath);
-                        using var doc = JsonDocument.Parse(json);
-                        foreach (var prop in doc.RootElement.EnumerateObject())
-                        {
-                            string val = prop.Value.GetString() ?? string.Empty;
-                            if (!string.IsNullOrEmpty(val) && !val.Contains("YOUR_API_KEY_HERE") && !val.Contains("YOUR_API_SECRET_HERE"))
-                            {
-                                result[prop.Name] = val;
-                            }
-                        }
-
-                        if (result.ContainsKey("ApiKey") || result.ContainsKey("api_key"))
-                        {
-                            return result;
-                        }
-                    }
+                    string json = File.ReadAllText(baseDirSecrets);
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
-                catch
+                if (File.Exists("secrets.json"))
                 {
+                    string json = File.ReadAllText("secrets.json");
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
+                }
+                if (File.Exists(LocalSecretsFilePath))
+                {
+                    string json = File.ReadAllText(LocalSecretsFilePath);
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString) ?? new Dictionary<string, string>();
                 }
             }
-
-            return result;
+            catch
+            {
+            }
+            return new Dictionary<string, string>();
         }
 
         private static Dictionary<string, string> LoadSettingsFromFile()

@@ -9,8 +9,8 @@
     xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
-        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Center">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24" SizeChanged="ScrollViewer_SizeChanged">
+        <StackPanel x:Name="MainContentPanel" Spacing="24" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock x:Name="DashboardTitleText" Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -103,7 +103,7 @@
                         <StackPanel x:Name="NowPlayingActiveContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="6" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="NOW PLAYING" FontSize="10" FontWeight="Bold" Foreground="White" />
+                                    <TextBlock Text="NOW PLAYING" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
                                 </Border>
                                 <TextBlock x:Name="NowPlayingSourceText" Text="Last.fm" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>

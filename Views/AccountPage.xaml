@@ -9,8 +9,8 @@
     xmlns:ic="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24">
-        <StackPanel Spacing="24" MaxWidth="1400" HorizontalAlignment="Center">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24" SizeChanged="ScrollViewer_SizeChanged">
+        <StackPanel x:Name="MainContentPanel" Spacing="24" HorizontalAlignment="Stretch">
             <StackPanel Spacing="4">
                 <TextBlock Text="Account" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock Text="Manage your profile settings and scrobbler integrations" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />

@@ -1,6 +1,6 @@
 [Setup]
 AppName=Fluent Scrobbler
-AppVersion=0.3.1
+AppVersion=0.4.0
 AppPublisher=Snow Mint
 AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
 AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
