@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace FluentScrobbler.Models
+namespace Fluent Scrobbler.Models
 {
     public class ScrobbleItem : INotifyPropertyChanged
     {

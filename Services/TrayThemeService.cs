@@ -1,7 +1,7 @@
 using System;
 using Windows.UI.ViewManagement;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public enum TrayTheme
     {
@@ -17,8 +17,8 @@ namespace FluentScrobbler.Services
         {
             var background = _uiSettings.GetColorValue(UIColorType.Background);
 
-            return (background.R + background.G + background.B) < 384 
-                ? TrayTheme.Dark 
+            return (background.R + background.G + background.B) < 384
+                ? TrayTheme.Dark
                 : TrayTheme.Light;
         }
 

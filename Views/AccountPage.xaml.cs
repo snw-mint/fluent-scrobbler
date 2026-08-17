@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using FluentScrobbler.Services;
+using Fluent Scrobbler.Services;
 
-namespace FluentScrobbler.Views
+namespace Fluent Scrobbler.Views
 {
     public sealed partial class AccountPage : Page
     {

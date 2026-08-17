@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using FluentScrobbler.Services.Media;
+using Fluent Scrobbler.Services.Media;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     [JsonSerializable(typeof(Dictionary<string, string>))]
     [JsonSerializable(typeof(Dictionary<string, ListenBrainzService.DiskCacheEntry>))]

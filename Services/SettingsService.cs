@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public static class SettingsService
     {
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FluentScrobbler",
+            "Fluent Scrobbler",
             "settings.json"
         );
 

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace FluentScrobbler.Views
+namespace Fluent Scrobbler.Views
 {
     public sealed partial class ContributePage : Page
     {

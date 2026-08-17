@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using SQLite;
-using FluentScrobbler.Models;
+using Fluent Scrobbler.Models;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public class OfflineCacheService
     {
@@ -14,16 +14,16 @@ namespace FluentScrobbler.Services
         public static OfflineCacheService Instance => _instance ??= new OfflineCacheService();
 
         private readonly SQLiteAsyncConnection _db;
-        
+
         private OfflineCacheService()
         {
-            var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FluentScrobbler", "Data", "offline_cache.db");
+            var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fluent Scrobbler", "Data", "offline_cache.db");
             var dir = Path.GetDirectoryName(dbPath);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-            
+
             _db = new SQLiteAsyncConnection(dbPath);
             _db.CreateTableAsync<ScrobbleEntry>().Wait();
         }

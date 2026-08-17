@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Media.Control;
 using Microsoft.UI.Xaml;
-using FluentScrobbler.Services.Media;
+using Fluent Scrobbler.Services.Media;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public record NowPlayingInfo(string Track, string Artist, string Album);
 

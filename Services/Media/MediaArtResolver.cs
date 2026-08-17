@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace FluentScrobbler.Services.Media
+namespace Fluent Scrobbler.Services.Media
 {
     public class MediaArtResolver
     {

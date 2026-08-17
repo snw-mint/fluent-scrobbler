@@ -1,6 +1,6 @@
 using System;
 
-namespace FluentScrobbler.Models
+namespace Fluent Scrobbler.Models
 {
     public class ScrobbleTrack
     {

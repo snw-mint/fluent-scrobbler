@@ -5,17 +5,17 @@ AppPublisher=Snow Mint
 AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
 AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
 AppUpdatesURL=https://github.com/snw-mint/fluent-scrobbler/releases
-DefaultDirName={localappdata}\FluentScrobbler
+DefaultDirName={localappdata}\Fluent Scrobbler
 PrivilegesRequired=lowest
 DefaultGroupName=Fluent Scrobbler
-UninstallDisplayIcon={app}\FluentScrobbler.exe
+UninstallDisplayIcon={app}\Fluent Scrobbler.exe
 Compression=lzma2/ultra64
 SolidCompression=yes
 OutputDir=.\Output
-OutputBaseFilename=FluentScrobbler-Setup
+OutputBaseFilename=Fluent Scrobbler-Setup
 WizardStyle=modern
 CloseApplications=yes
-CloseApplicationsFilter=FluentScrobbler.exe
+CloseApplicationsFilter=Fluent Scrobbler.exe
 SetupIconFile=Assets\AppIcon.ico
 
 [Languages]
@@ -29,11 +29,11 @@ Name: "autostart"; Description: "Start Fluent Scrobbler with Windows"; GroupDesc
 Source: "bin\Release\net8.0-windows10.0.26100.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 [Icons]
-Name: "{group}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"
-Name: "{autodesktop}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"; Tasks: desktopicon
+Name: "{group}\Fluent Scrobbler"; Filename: "{app}\Fluent Scrobbler.exe"
+Name: "{autodesktop}\Fluent Scrobbler"; Filename: "{app}\Fluent Scrobbler.exe"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "FluentScrobbler"; ValueData: """{app}\FluentScrobbler.exe"" --minimized"; Tasks: autostart; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Fluent Scrobbler"; ValueData: """{app}\Fluent Scrobbler.exe"" --minimized"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\FluentScrobbler.exe"; Description: "{cm:LaunchProgram,Fluent Scrobbler}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Fluent Scrobbler.exe"; Description: "{cm:LaunchProgram,Fluent Scrobbler}"; Flags: nowait postinstall skipifsilent

@@ -1,12 +1,12 @@
 using System;
 using Microsoft.Win32;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public static class StartupService
     {
         private const string RegistryRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string ValueName = "FluentScrobbler";
+        private const string ValueName = "Fluent Scrobbler";
         private const string StartMinimizedSettingKey = "StartMinimizedToTray";
 
         public static bool IsStartupEnabled()

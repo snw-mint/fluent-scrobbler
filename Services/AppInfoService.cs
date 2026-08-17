@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Windows.ApplicationModel;
 
-namespace FluentScrobbler.Services
+namespace Fluent Scrobbler.Services
 {
     public static class AppInfoService
     {
@@ -27,7 +27,7 @@ namespace FluentScrobbler.Services
                     }
 
                     var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-                    return assemblyVersion != null 
+                    return assemblyVersion != null
                         ? $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}"
                         : "0.2.0";
                 }
