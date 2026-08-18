@@ -20,7 +20,7 @@
             <StackPanel x:Name="NowPlayingPanel" Spacing="8">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
                 
-                <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="8"

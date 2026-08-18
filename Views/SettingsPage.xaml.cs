@@ -207,19 +207,7 @@ namespace FluentScrobbler.Views
         private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (MainContentPanel == null) return;
-            double width = e.NewSize.Width;
-
-            if (width > 3200)
-            {
-                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
-                MainContentPanel.Width = 1100;
-            }
-            else if (width > 2200)
-            {
-                MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
-                MainContentPanel.Width = 1180;
-            }
-            else if (width > 1464)
+            if (e.NewSize.Width > 1324)
             {
                 MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
                 MainContentPanel.Width = 1260;

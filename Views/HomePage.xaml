@@ -85,7 +85,7 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <Border x:Name="NowPlayingCard" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                <Border x:Name="NowPlayingCard" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                     <Grid ColumnSpacing="20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
