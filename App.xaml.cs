@@ -27,17 +27,39 @@ namespace FluentScrobbler
 
         private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
         {
-            if (args.Arguments.TryGetValue("action", out var action) && action == "open_source_settings")
+            if (args.Arguments.TryGetValue("action", out var action))
             {
-                MainWindow.Current?.DispatcherQueue.TryEnqueue(() =>
+                if (action == "open_source_settings")
                 {
-                    if (MainWindow.Current != null)
+                    MainWindow.Current?.DispatcherQueue.TryEnqueue(() =>
                     {
-                        MainWindow.Current.AppWindow.Show();
-                        MainWindow.Current.Activate();
-                        MainWindow.Current.NavigateToSourceSettings();
-                    }
-                });
+                        if (MainWindow.Current != null)
+                        {
+                            MainWindow.Current.AppWindow.Show();
+                            MainWindow.Current.Activate();
+                            MainWindow.Current.NavigateToSourceSettings();
+                        }
+                    });
+                }
+                else if (action == "open_home")
+                {
+                    MainWindow.Current?.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (MainWindow.Current != null)
+                        {
+                            if (MainWindow.Current.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
+                            {
+                                if (presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized)
+                                {
+                                    presenter.Restore();
+                                }
+                            }
+                            MainWindow.Current.AppWindow.Show();
+                            MainWindow.Current.Activate();
+                            MainWindow.Current.NavigateToHome();
+                        }
+                    });
+                }
             }
         }
 

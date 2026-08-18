@@ -189,15 +189,17 @@ namespace FluentScrobbler.Views
 
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
             OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
-            
-            
+            ScrobblerBackgroundService.Instance.NewSourceDetected += OnNewSourceDetected;
+
             SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, await OfflineCacheService.Instance.GetPendingCountAsync());
+            await CheckUnconfiguredSourcesAsync();
         }
 
         private void HomePage_Unloaded(object sender, RoutedEventArgs e)
         {
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
+            ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
             OfflineCacheWorker.Instance.OfflineModeChanged -= OnOfflineModeChanged;
             OfflineCacheWorker.Instance.CacheCountChanged -= OnCacheCountChanged;
@@ -218,6 +220,63 @@ namespace FluentScrobbler.Views
             {
                 SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, count);
             });
+        }
+
+        private void SetNewSourceBanner(bool isOpen, string? message = null)
+        {
+            if (NewSourceInfoBar == null) return;
+            if (isOpen)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    NewSourceInfoBar.Message = message;
+                }
+                NewSourceInfoBar.Visibility = Visibility.Visible;
+                NewSourceInfoBar.IsOpen = true;
+            }
+            else
+            {
+                NewSourceInfoBar.IsOpen = false;
+                NewSourceInfoBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void NewSourceInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
+        {
+            sender.Visibility = Visibility.Collapsed;
+        }
+
+        private async Task CheckUnconfiguredSourcesAsync()
+        {
+            try
+            {
+                var sources = await _windowsMediaService.GetDetectedSourcesAsync();
+                if (sources != null && sources.Exists(s => !s.IsAllowed))
+                {
+                    var unallowed = sources.Where(s => !s.IsAllowed).Select(s => s.DisplayName).ToList();
+                    string names = string.Join(", ", unallowed);
+                    SetNewSourceBanner(true, $"New media {(unallowed.Count > 1 ? "apps" : "app")} ({names}) detected. Enable in Source Filtering to scrobble.");
+                }
+                else
+                {
+                    SetNewSourceBanner(false);
+                }
+            }
+            catch { }
+        }
+
+        private void OnNewSourceDetected(object? sender, string appName)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                SetNewSourceBanner(true, $"A new media app ({appName}) was detected. Enable it in Source Filtering to start scrobbling.");
+            });
+        }
+
+        private void ConfigureSourceButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetNewSourceBanner(false);
+            MainWindow.Current?.NavigateToSourceSettings();
         }
 
         private void OnNetworkAddressChanged(object? sender, EventArgs e)

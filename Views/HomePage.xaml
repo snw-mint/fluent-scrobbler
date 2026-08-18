@@ -29,6 +29,20 @@
                 </InfoBar.ActionButton>
             </InfoBar>
 
+            <InfoBar
+                x:Name="NewSourceInfoBar"
+                IsOpen="False"
+                Visibility="Collapsed"
+                Severity="Informational"
+                Title="New source detected"
+                Message="A new media app was detected. Enable it in Source Filtering to start scrobbling."
+                IsClosable="True"
+                Closed="NewSourceInfoBar_Closed">
+                <InfoBar.ActionButton>
+                    <Button Content="Configure" Click="ConfigureSourceButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <Grid ColumnSpacing="16" RowSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />

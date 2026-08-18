@@ -167,6 +167,11 @@ namespace FluentScrobbler.Services
             return string.IsNullOrWhiteSpace(cleaned) ? artist.Trim() : cleaned;
         }
 
+        public List<string> GetKnownSources()
+        {
+            return GetStoredList(LocalSettingsKnownKey);
+        }
+
         public async Task<List<SourceAppInfo>> GetDetectedSourcesAsync()
         {
             var knownSources = GetStoredList(LocalSettingsKnownKey);

@@ -29,6 +29,7 @@ namespace FluentScrobbler.Services
         private readonly WindowsMediaService _windowsMediaService = new();
         private readonly SemaphoreSlim _scrobbleLock = new(1, 1);
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
+        private readonly System.Collections.Generic.HashSet<string> _notifiedNewInstances = new(StringComparer.OrdinalIgnoreCase);
 
         private DispatcherTimer? _timer;
 
@@ -46,6 +47,7 @@ namespace FluentScrobbler.Services
         public event EventHandler? TrackScrobbled;
         public event EventHandler<NowPlayingInfo?>? NowPlayingChanged;
         public event EventHandler<ScrobbleStatusInfo>? StatusChanged;
+        public event EventHandler<string>? NewSourceDetected;
 
         public NowPlayingInfo? CurrentTrack { get; private set; }
         public ScrobbleStatusInfo CurrentStatus { get; private set; } = new(ScrobbleStatus.Idle);
@@ -106,7 +108,20 @@ namespace FluentScrobbler.Services
                 {
                     foreach (var s in sessions)
                     {
-                        if (_windowsMediaService.IsSourceAllowed(s.SourceAppUserModelId))
+                        string sAppId = s.SourceAppUserModelId;
+                        if (_lastFmService.IsLoggedIn() && !string.IsNullOrWhiteSpace(sAppId))
+                        {
+                            var knownSources = _windowsMediaService.GetKnownSources();
+                            if (!knownSources.Contains(sAppId) && !_notifiedNewInstances.Contains(sAppId))
+                            {
+                                _notifiedNewInstances.Add(sAppId);
+                                string displayName = WindowsMediaService.FormatAppDisplayName(sAppId);
+                                NotificationService.ShowNewInstanceNotification(displayName);
+                                NewSourceDetected?.Invoke(this, displayName);
+                            }
+                        }
+
+                        if (_windowsMediaService.IsSourceAllowed(sAppId))
                         {
                             allowedSession = s;
                             break;

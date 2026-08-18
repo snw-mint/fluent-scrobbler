@@ -12,6 +12,7 @@ namespace FluentScrobbler.Views
         private readonly LastFmService _lastFmService = new();
         private string? _currentAuthToken;
         private bool _dataLoaded;
+        private System.Threading.CancellationTokenSource? _authPollCts;
 
         public AccountPage()
         {
@@ -37,6 +38,7 @@ namespace FluentScrobbler.Views
 
         private void AccountPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            StopAuthPolling();
             if (MainWindow.Current != null)
             {
                 MainWindow.Current.Activated -= Window_Activated;
@@ -60,6 +62,52 @@ namespace FluentScrobbler.Views
             }
         }
 
+        private void StopAuthPolling()
+        {
+            _authPollCts?.Cancel();
+            _authPollCts?.Dispose();
+            _authPollCts = null;
+        }
+
+        private void StartAuthPolling(string token)
+        {
+            StopAuthPolling();
+            _authPollCts = new System.Threading.CancellationTokenSource();
+            var ct = _authPollCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await Task.Delay(2000, ct);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+
+                    if (ct.IsCancellationRequested) break;
+
+                    string? sessionKey = await _lastFmService.FetchSessionKeyAsync(token);
+                    if (!string.IsNullOrEmpty(sessionKey))
+                    {
+                        _currentAuthToken = null;
+                        _dataLoaded = false;
+                        var (username, _) = _lastFmService.GetUserSession();
+                        NotificationService.ShowAuthSuccessNotification(username ?? "User");
+
+                        this.DispatcherQueue?.TryEnqueue(async () =>
+                        {
+                            await LoadAccountStateAsync();
+                        });
+                        break;
+                    }
+                }
+            }, ct);
+        }
+
         private async Task TryCompleteAuthAsync()
         {
             if (string.IsNullOrEmpty(_currentAuthToken)) return;
@@ -67,8 +115,11 @@ namespace FluentScrobbler.Views
             string? sessionKey = await _lastFmService.FetchSessionKeyAsync(_currentAuthToken);
             if (!string.IsNullOrEmpty(sessionKey))
             {
+                StopAuthPolling();
                 _currentAuthToken = null;
                 _dataLoaded = false;
+                var (username, _) = _lastFmService.GetUserSession();
+                NotificationService.ShowAuthSuccessNotification(username ?? "User");
                 await LoadAccountStateAsync();
             }
             else
@@ -139,6 +190,7 @@ namespace FluentScrobbler.Views
         {
             if (_lastFmService.IsLoggedIn())
             {
+                StopAuthPolling();
                 _lastFmService.ClearUserSession();
                 _currentAuthToken = null;
                 _dataLoaded = false;
@@ -151,8 +203,11 @@ namespace FluentScrobbler.Views
                     string? sessionKey = await _lastFmService.FetchSessionKeyAsync(_currentAuthToken);
                     if (!string.IsNullOrEmpty(sessionKey))
                     {
+                        StopAuthPolling();
                         _currentAuthToken = null;
                         _dataLoaded = false;
+                        var (username, _) = _lastFmService.GetUserSession();
+                        NotificationService.ShowAuthSuccessNotification(username ?? "User");
                         await LoadAccountStateAsync();
                         return;
                     }
@@ -165,6 +220,7 @@ namespace FluentScrobbler.Views
                     AccountSubtitleText.Text = "Authorize in browser, then click Complete Login";
                     ActionButtonText.Text = "Complete Login";
                     await _lastFmService.OpenAuthPageInBrowserAsync(_currentAuthToken);
+                    StartAuthPolling(_currentAuthToken);
                 }
                 else
                 {

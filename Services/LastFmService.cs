@@ -281,7 +281,10 @@ namespace FluentScrobbler.Services
                     }
                     else if (doc.RootElement.TryGetProperty("error", out var errElement))
                     {
-                        LogService.LogError($"[Auth Error] auth.getSession error code: {errElement}");
+                        if (!errElement.TryGetInt32(out int errCode) || errCode != 14)
+                        {
+                            LogService.LogError($"[Auth Error] auth.getSession error code: {errElement}");
+                        }
                     }
                 }
                 else

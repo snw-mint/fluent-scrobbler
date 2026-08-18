@@ -445,6 +445,12 @@ namespace FluentScrobbler
             }
         }
 
+        public void NavigateToHome()
+        {
+            ContentFrame.Navigate(typeof(HomePage));
+            SetSelectedItemByTag("HomePage");
+        }
+
         public void NavigateToSourceSettings()
         {
             ContentFrame.Navigate(typeof(SettingsPage), "ExpandSourceFiltering");
