@@ -1,19 +1,20 @@
 using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using H.NotifyIcon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using FluentScrobbler.Services;
-using FluentScrobbler.Views;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using FluentScrobbler.Services;
+using FluentScrobbler.Views;
 
 namespace FluentScrobbler
 {
@@ -28,6 +29,9 @@ namespace FluentScrobbler
 
     public sealed partial class MainWindow : Window
     {
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
         public static new MainWindow? Current { get; private set; }
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
         public Windows.UI.Color CurrentAccentColor { get; private set; }
@@ -60,6 +64,72 @@ namespace FluentScrobbler
 
             ContentFrame.Navigated += ContentFrame_Navigated;
             this.Closed += MainWindow_Closed;
+
+            this.RootGrid.KeyDown += async (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.F12)
+                {
+                    await CapturarMarketing4KAsync();
+                }
+            };
+        }
+
+        public async Task CapturarMarketing4KAsync(string nomeArquivo = "FluentScrobbler_Marketing_4K.png")
+        {
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            SizeInt32 tamanhoOriginal = this.AppWindow.Size;
+
+            int larguraBase = 1920;
+            int alturaBase = 1080;
+            int larguraFinal4K = 3840;
+            int alturaFinal4K = 2160;
+
+            try
+            {
+                SetWindowPos(hWnd, IntPtr.Zero, 0, 0, larguraBase, alturaBase, 0x0004 | 0x0010);
+
+                this.RootGrid.Width = larguraBase;
+                this.RootGrid.Height = alturaBase;
+
+                await Task.Delay(300);
+                this.RootGrid.UpdateLayout();
+
+                var renderBitmap = new RenderTargetBitmap();
+                await renderBitmap.RenderAsync(this.RootGrid, larguraFinal4K, alturaFinal4K);
+
+                IBuffer pixelBuffer = await renderBitmap.GetPixelsAsync();
+                byte[] pixels = pixelBuffer.ToArray();
+
+                StorageFolder pastaImagens = KnownFolders.PicturesLibrary;
+                StorageFile arquivo = await pastaImagens.CreateFileAsync(
+                    nomeArquivo,
+                    CreationCollisionOption.GenerateUniqueName
+                );
+
+                using (IRandomAccessStream stream = await arquivo.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+                    encoder.SetPixelData(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Premultiplied,
+                        (uint)renderBitmap.PixelWidth,
+                        (uint)renderBitmap.PixelHeight,
+                        96,
+                        96,
+                        pixels);
+
+                    await encoder.FlushAsync();
+                }
+            }
+            finally
+            {
+
+                this.RootGrid.ClearValue(FrameworkElement.WidthProperty);
+                this.RootGrid.ClearValue(FrameworkElement.HeightProperty);
+
+                SetWindowPos(hWnd, IntPtr.Zero, 0, 0, tamanhoOriginal.Width, tamanhoOriginal.Height, 0x0004 | 0x0010);
+                this.RootGrid.UpdateLayout();
+            }
         }
 
         #region Tray Icon Logic
@@ -136,7 +206,6 @@ namespace FluentScrobbler
             {
                 LogService.LogError($"[Tray Icon] Failed to load tray icon: {relativePath}", ex);
 
-
                 string fallbackPrefix = isActive ? "active" : "idle";
                 string fallbackPath = $"ms-appx:///Assets/Tray/tray-{fallbackPrefix}-{colorSuffix}.ico";
                 try
@@ -145,7 +214,6 @@ namespace FluentScrobbler
                 }
                 catch
                 {
-
                 }
             }
         }
@@ -350,7 +418,7 @@ namespace FluentScrobbler
 
             UpdateResourceBrush("AccentFillColorDefaultBrush", color);
             UpdateResourceBrush("AccentFillColorSecondaryBrush", light1);
-            UpdateResourceBrush("AccentFillColorTertiaryBrush", light2);
+            UpdateResourceBrush("AccentFillColorTertrush", light2);
             UpdateResourceBrush("AccentTextFillColorPrimaryBrush", color);
             UpdateResourceBrush("TextOnAccentFillColorPrimaryBrush", textOnAccentColor);
             UpdateResourceBrush("ToggleSwitchFillOn", color);
