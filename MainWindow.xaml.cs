@@ -7,6 +7,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using FluentScrobbler.Services;
 using FluentScrobbler.Views;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Graphics;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace FluentScrobbler
 {
@@ -117,7 +124,7 @@ namespace FluentScrobbler
             string colorSuffix = theme == TrayTheme.Dark ? "white" : "black";
             bool isActive = _currentScrobbleStatus.Status != ScrobbleStatus.Idle;
             bool isError = _currentScrobbleStatus.Status == ScrobbleStatus.Error || OfflineCacheWorker.Instance.OfflineMode;
-            
+
             string statePrefix = isError ? "error" : (isActive ? "active" : "idle");
             string relativePath = $"ms-appx:///Assets/Tray/tray-{statePrefix}-{colorSuffix}.ico";
 
@@ -128,8 +135,8 @@ namespace FluentScrobbler
             catch (Exception ex)
             {
                 LogService.LogError($"[Tray Icon] Failed to load tray icon: {relativePath}", ex);
-                
-                
+
+
                 string fallbackPrefix = isActive ? "active" : "idle";
                 string fallbackPath = $"ms-appx:///Assets/Tray/tray-{fallbackPrefix}-{colorSuffix}.ico";
                 try
@@ -138,7 +145,7 @@ namespace FluentScrobbler
                 }
                 catch
                 {
-                    
+
                 }
             }
         }
@@ -161,7 +168,7 @@ namespace FluentScrobbler
                 statusText = $"{pendingCount} pending scrobbles (Offline)";
             }
 
-            if (_currentScrobbleStatus.Status == ScrobbleStatus.Idle || 
+            if (_currentScrobbleStatus.Status == ScrobbleStatus.Idle ||
                 (string.IsNullOrEmpty(_currentScrobbleStatus.Track) && string.IsNullOrEmpty(_currentScrobbleStatus.Artist)))
             {
                 AppTrayIcon.ToolTipText = $"Fluent Scrobbler\n{statusText}";
@@ -170,7 +177,7 @@ namespace FluentScrobbler
             {
                 string track = _currentScrobbleStatus.Track ?? string.Empty;
                 string artist = _currentScrobbleStatus.Artist ?? string.Empty;
-                
+
                 string header = !string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(track)
                     ? $"{artist} · {track}"
                     : (!string.IsNullOrEmpty(track) ? track : artist);
@@ -284,8 +291,8 @@ namespace FluentScrobbler
                     }
                     else
                     {
-                        actualTheme = Application.Current.RequestedTheme == ApplicationTheme.Dark 
-                            ? ElementTheme.Dark 
+                        actualTheme = Application.Current.RequestedTheme == ApplicationTheme.Dark
+                            ? ElementTheme.Dark
                             : ElementTheme.Light;
                     }
                 }
