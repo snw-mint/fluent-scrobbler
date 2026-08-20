@@ -41,5 +41,24 @@ namespace FluentScrobbler.Services
                 LogService.LogError("[Notification] Failed to show new instance notification", ex);
             }
         }
+
+        public static void ShowUpdateAvailableNotification(string version, string releaseUrl)
+        {
+            try
+            {
+                var notification = new AppNotificationBuilder()
+                    .AddText("Update Available")
+                    .AddText($"Fluent Scrobbler {version} is available for download.")
+                    .AddArgument("action", "open_update_url")
+                    .AddArgument("url", releaseUrl)
+                    .BuildNotification();
+
+                AppNotificationManager.Default.Show(notification);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Notification] Failed to show update available notification", ex);
+            }
+        }
     }
 }

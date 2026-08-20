@@ -440,6 +440,13 @@ namespace FluentScrobbler
             ScrobblerBackgroundService.Instance.Start();
             OfflineCacheWorker.Instance.Start();
 
+            UpdateService.Instance.UpdateStatusChanged += (s, e) =>
+            {
+                this.DispatcherQueue.TryEnqueue(UpdateStatusUi);
+            };
+            UpdateStatusUi();
+            _ = UpdateService.Instance.CheckForUpdatesAsync();
+
             if (!isLoggedIn)
             {
                 ContentFrame.Navigate(typeof(AccountPage));
@@ -482,6 +489,29 @@ namespace FluentScrobbler
                     NavView.SelectedItem = navItem;
                     return;
                 }
+            }
+        }
+
+        private void StatusButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentFrame.CurrentSourcePageType != typeof(AboutPage))
+            {
+                ContentFrame.Navigate(typeof(AboutPage));
+            }
+            SetSelectedItemByTag("AboutPage");
+        }
+
+        private void UpdateStatusUi()
+        {
+            if (UpdateService.Instance.IsUpdateAvailable)
+            {
+                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/update.png"));
+                ToolTipService.SetToolTip(StatusButton, $"Update available: {UpdateService.Instance.LatestVersion}");
+            }
+            else
+            {
+                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/updated.png"));
+                ToolTipService.SetToolTip(StatusButton, "Updated");
             }
         }
 

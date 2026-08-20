@@ -21,44 +21,35 @@
                     <Image Grid.Column="0" Source="ms-appx:///Assets/logo.png" Width="72" Height="72" Stretch="Uniform" VerticalAlignment="Center" />
 
                     <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
-                        <StackPanel Spacing="2">
-                            <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
-                            <TextBlock x:Name="VersionText" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
-
+                        <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
                         <TextBlock Text="A lightweight, modern Windows scrobbler for Last.fm built with WinUI 3 and Fluent Design." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <StackPanel Spacing="12">
-                <TextBlock Text="Developer &amp; Project" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
-
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                    <StackPanel Spacing="12">
-                        <Grid>
-                            <TextBlock Text="Developer" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                            <HyperlinkButton Content="Snow mint" NavigateUri="https://github.com/snw-mint" Padding="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                        </Grid>
-                        <MenuFlyoutSeparator />
-                        <Grid>
-                            <TextBlock Text="Repository" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                            <HyperlinkButton Content="snw-mint/fluent-scrobbler" NavigateUri="https://github.com/snw-mint/fluent-scrobbler" Padding="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                        </Grid>
-                        <MenuFlyoutSeparator />
-                        <Grid>
-                            <TextBlock Text="License" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                            <TextBlock Text="GPL-3.0 License" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-
-            <StackPanel Spacing="12">
                 <TextBlock Text="Application Info" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <StackPanel Spacing="12">
+                        <Grid>
+                            <TextBlock Text="App Version" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock x:Name="AppVersionText" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                <Image x:Name="StatusIconImage" Source="ms-appx:///Assets/Status/updated.png" Width="14" Height="14" VerticalAlignment="Center" />
+                                <TextBlock x:Name="StatusText" Text="Updated" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                <Button x:Name="UpdateNowButton"
+                                        Style="{ThemeResource AccentButtonStyle}"
+                                        Content="Update Now"
+                                        Click="UpdateNowButton_Click"
+                                        Visibility="Collapsed"
+                                        Margin="4,0,0,0"
+                                        Padding="10,4"
+                                        FontSize="12"
+                                        VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                        <MenuFlyoutSeparator />
                         <Grid>
                             <TextBlock Text="Framework" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
                             <TextBlock Text="Windows App SDK 1.5 / WinUI 3" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
@@ -82,6 +73,29 @@
                                     <TextBlock Text="Open Logs" />
                                 </StackPanel>
                             </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Developer &amp; Project" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <TextBlock Text="Developer" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            <HyperlinkButton Content="Snow mint" NavigateUri="https://github.com/snw-mint" Padding="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        </Grid>
+                        <MenuFlyoutSeparator />
+                        <Grid>
+                            <TextBlock Text="Repository" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            <HyperlinkButton Content="snw-mint/fluent-scrobbler" NavigateUri="https://github.com/snw-mint/fluent-scrobbler" Padding="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        </Grid>
+                        <MenuFlyoutSeparator />
+                        <Grid>
+                            <TextBlock Text="License" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            <TextBlock Text="GPL-3.0 License" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                         </Grid>
                     </StackPanel>
                 </Border>

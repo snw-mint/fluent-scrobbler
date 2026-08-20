@@ -60,6 +60,14 @@ namespace FluentScrobbler
                         }
                     });
                 }
+                else if (action == "open_update_url")
+                {
+                    string targetUrl = args.Arguments.TryGetValue("url", out var url) && !string.IsNullOrEmpty(url)
+                        ? url
+                        : UpdateService.DefaultReleasesUrl;
+
+                    _ = Windows.System.Launcher.LaunchUriAsync(new Uri(targetUrl));
+                }
             }
         }
 
