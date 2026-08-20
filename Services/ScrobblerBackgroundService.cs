@@ -96,6 +96,13 @@ namespace FluentScrobbler.Services
             {
                 if (!_lastFmService.IsLoggedIn())
                 {
+                    bool wasPlaying = _isPlaying || CurrentTrack != null;
+                    _isPlaying = false;
+                    if (wasPlaying)
+                    {
+                        CurrentTrack = null;
+                        NowPlayingChanged?.Invoke(this, null);
+                    }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
@@ -132,7 +139,13 @@ namespace FluentScrobbler.Services
                 if (allowedSession == null)
                 {
                     await CheckTrackEndedAsync();
+                    bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
+                    if (wasPlaying)
+                    {
+                        CurrentTrack = null;
+                        NowPlayingChanged?.Invoke(this, null);
+                    }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
@@ -144,7 +157,13 @@ namespace FluentScrobbler.Services
                 if (!isCurrentlyPlaying)
                 {
                     await CheckTrackEndedAsync();
+                    bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
+                    if (wasPlaying)
+                    {
+                        CurrentTrack = null;
+                        NowPlayingChanged?.Invoke(this, null);
+                    }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
@@ -153,7 +172,13 @@ namespace FluentScrobbler.Services
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
                     await CheckTrackEndedAsync();
+                    bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
+                    if (wasPlaying)
+                    {
+                        CurrentTrack = null;
+                        NowPlayingChanged?.Invoke(this, null);
+                    }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
@@ -190,6 +215,12 @@ namespace FluentScrobbler.Services
                 else
                 {
                     _isPlaying = true;
+                    if (CurrentTrack == null)
+                    {
+                        CurrentTrack = new NowPlayingInfo(_currentTrack, _currentArtist, _currentAlbum);
+                        NowPlayingChanged?.Invoke(this, CurrentTrack);
+                        SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                    }
                     _elapsedSeconds += 2;
 
                     int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
