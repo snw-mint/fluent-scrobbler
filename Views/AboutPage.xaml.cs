@@ -44,14 +44,34 @@ namespace FluentScrobbler.Views
             if (UpdateService.Instance.IsUpdateAvailable)
             {
                 StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/update.png"));
-                StatusText.Text = $"Update Available ({UpdateService.Instance.LatestVersion})";
                 UpdateNowButton.Visibility = Visibility.Visible;
+                CheckNowButton.Visibility = Visibility.Collapsed;
             }
             else
             {
                 StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/updated.png"));
-                StatusText.Text = "Updated";
                 UpdateNowButton.Visibility = Visibility.Collapsed;
+                CheckNowButton.Visibility = Visibility.Visible;
+                CheckNowButton.IsEnabled = true;
+                CheckNowButton.Content = "Check now";
+            }
+        }
+
+        private async void CheckNowButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CheckNowButton.IsEnabled = false;
+                CheckNowButton.Content = "Checking...";
+                LogService.LogInfo("[AboutPage] User requested manual update check.");
+                await UpdateService.Instance.CheckForUpdatesAsync(force: true);
+                UpdateStatusUi();
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[AboutPage] Error during manual update check", ex);
+                CheckNowButton.IsEnabled = true;
+                CheckNowButton.Content = "Check now";
             }
         }
 

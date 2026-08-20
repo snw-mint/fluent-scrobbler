@@ -11,12 +11,15 @@ namespace FluentScrobbler.Services
         public static UpdateService Instance => _instance.Value;
 
         private readonly HttpClient _httpClient;
-        private const string ReleasesApiUrl = "https://api.github.com/repos/snw-mint/fluent-scrobbler/releases/latest";
+        private const string ReleasesApiUrl = "https://api.github.com/repos/snw-mint/fluent-scrobbler/releases";
         public const string DefaultReleasesUrl = "https://github.com/snw-mint/fluent-scrobbler/releases";
+        private const string LastCheckKey = "LastUpdateCheckUtc";
+        private static readonly TimeSpan Cooldown = TimeSpan.FromHours(24);
 
         public bool IsUpdateAvailable { get; private set; }
         public string LatestVersion { get; private set; } = string.Empty;
         public string ReleaseUrl { get; private set; } = DefaultReleasesUrl;
+        public DateTime? LastCheckTime { get; private set; }
 
         public event EventHandler? UpdateStatusChanged;
 
@@ -28,37 +31,101 @@ namespace FluentScrobbler.Services
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
+            LoadLastCheckTime();
         }
 
-        public async Task CheckForUpdatesAsync()
+        private void LoadLastCheckTime()
         {
             try
             {
+                string? saved = SettingsService.GetSetting(LastCheckKey);
+                if (!string.IsNullOrEmpty(saved) && DateTime.TryParse(saved, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dt))
+                {
+                    LastCheckTime = dt;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[UpdateService] Failed to load last update check time", ex);
+            }
+        }
+
+        public async Task CheckForUpdatesAsync(bool force = false)
+        {
+            if (!force && LastCheckTime.HasValue)
+            {
+                if (DateTime.UtcNow - LastCheckTime.Value < Cooldown)
+                {
+                    LogService.LogInfo($"[UpdateService] Skipping update check (cooldown active, last check: {LastCheckTime.Value:u})");
+                    return;
+                }
+            }
+
+            try
+            {
+                LogService.LogInfo($"[UpdateService] Checking for updates (force: {force})...");
                 using var response = await _httpClient.GetAsync(ReleasesApiUrl);
-                if (!response.IsSuccessStatusCode) return;
+                if (!response.IsSuccessStatusCode)
+                {
+                    LogService.LogWarning($"[UpdateService] GitHub releases API returned status {response.StatusCode}");
+                    return;
+                }
 
                 string json = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
-                string tagName = root.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? string.Empty : string.Empty;
-                if (string.IsNullOrEmpty(tagName) && root.TryGetProperty("name", out var nameProp))
+                string bestTagName = string.Empty;
+                string bestHtmlUrl = string.Empty;
+
+                if (root.ValueKind == JsonValueKind.Array)
                 {
-                    tagName = nameProp.GetString() ?? string.Empty;
+                    foreach (var release in root.EnumerateArray())
+                    {
+                        if (release.TryGetProperty("draft", out var draftProp) && draftProp.GetBoolean())
+                        {
+                            continue;
+                        }
+
+                        string tag = release.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? string.Empty : string.Empty;
+                        if (string.IsNullOrEmpty(tag) && release.TryGetProperty("name", out var nameProp))
+                        {
+                            tag = nameProp.GetString() ?? string.Empty;
+                        }
+
+                        string url = release.TryGetProperty("html_url", out var urlProp) ? urlProp.GetString() ?? string.Empty : string.Empty;
+
+                        if (string.IsNullOrEmpty(bestTagName) || IsNewerVersion(tag, bestTagName))
+                        {
+                            bestTagName = tag;
+                            bestHtmlUrl = url;
+                        }
+                    }
+                }
+                else if (root.ValueKind == JsonValueKind.Object)
+                {
+                    bestTagName = root.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? string.Empty : string.Empty;
+                    if (string.IsNullOrEmpty(bestTagName) && root.TryGetProperty("name", out var nameProp))
+                    {
+                        bestTagName = nameProp.GetString() ?? string.Empty;
+                    }
+                    bestHtmlUrl = root.TryGetProperty("html_url", out var urlProp) ? urlProp.GetString() ?? string.Empty : string.Empty;
                 }
 
-                string htmlUrl = root.TryGetProperty("html_url", out var urlProp) ? urlProp.GetString() ?? string.Empty : string.Empty;
-
-                if (!string.IsNullOrEmpty(htmlUrl))
+                if (!string.IsNullOrEmpty(bestHtmlUrl))
                 {
-                    ReleaseUrl = htmlUrl;
+                    ReleaseUrl = bestHtmlUrl;
                 }
+
+                LastCheckTime = DateTime.UtcNow;
+                SettingsService.SetSetting(LastCheckKey, LastCheckTime.Value.ToString("o"));
 
                 string currentVersion = AppInfoService.Version;
-                if (IsNewerVersion(tagName, currentVersion))
+                if (!string.IsNullOrEmpty(bestTagName) && IsNewerVersion(bestTagName, currentVersion))
                 {
                     IsUpdateAvailable = true;
-                    LatestVersion = tagName.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? tagName : $"v{tagName}";
+                    LatestVersion = bestTagName.StartsWith("v", StringComparison.OrdinalIgnoreCase) ? bestTagName : $"v{bestTagName}";
+                    LogService.LogInfo($"[UpdateService] New update available: {LatestVersion} (current: v{currentVersion})");
                     UpdateStatusChanged?.Invoke(this, EventArgs.Empty);
 
                     if (!_hasNotified)
@@ -66,6 +133,12 @@ namespace FluentScrobbler.Services
                         _hasNotified = true;
                         NotificationService.ShowUpdateAvailableNotification(LatestVersion, ReleaseUrl);
                     }
+                }
+                else
+                {
+                    IsUpdateAvailable = false;
+                    LogService.LogInfo($"[UpdateService] App is up to date (current: v{currentVersion}, latest: {bestTagName})");
+                    UpdateStatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
             catch (Exception ex)

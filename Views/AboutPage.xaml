@@ -37,13 +37,17 @@
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock x:Name="AppVersionText" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                                 <Image x:Name="StatusIconImage" Source="ms-appx:///Assets/Status/updated.png" Width="14" Height="14" VerticalAlignment="Center" />
-                                <TextBlock x:Name="StatusText" Text="Updated" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                <Button x:Name="CheckNowButton"
+                                        Content="Check now"
+                                        Click="CheckNowButton_Click"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        VerticalAlignment="Center" />
                                 <Button x:Name="UpdateNowButton"
                                         Style="{ThemeResource AccentButtonStyle}"
                                         Content="Update Now"
                                         Click="UpdateNowButton_Click"
                                         Visibility="Collapsed"
-                                        Margin="4,0,0,0"
                                         Padding="10,4"
                                         FontSize="12"
                                         VerticalAlignment="Center" />
