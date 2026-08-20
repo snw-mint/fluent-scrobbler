@@ -32,12 +32,34 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="secrets.json" Condition="Exists('secrets.json')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+  <PropertyGroup>
+    <LastFmApiKey Condition="'$(LastFmApiKey)' == ''">YOUR_API_KEY_HERE</LastFmApiKey>
+    <LastFmApiSecret Condition="'$(LastFmApiSecret)' == ''">YOUR_API_SECRET_HERE</LastFmApiSecret>
+  </PropertyGroup>
+
+  <Target Name="GenerateAppSecrets" BeforeTargets="BeforeBuild">
+    <PropertyGroup Condition="Exists('secrets.json')">
+      <_RawSecretsJson>$([System.IO.File]::ReadAllText('secrets.json'))</_RawSecretsJson>
+      <LastFmApiKey>$([System.Text.RegularExpressions.Regex]::Match($(_RawSecretsJson), '"ApiKey"\s*:\s*"([^"]+)"').Groups[1].Value)</LastFmApiKey>
+      <LastFmApiSecret>$([System.Text.RegularExpressions.Regex]::Match($(_RawSecretsJson), '"ApiSecret"\s*:\s*"([^"]+)"').Groups[1].Value)</LastFmApiSecret>
+    </PropertyGroup>
+    <ItemGroup>
+      <_SecretsLines Include="namespace FluentScrobbler.Services%3B" />
+      <_SecretsLines Include="internal static class AppSecrets" />
+      <_SecretsLines Include="{" />
+      <_SecretsLines Include="    internal const string ApiKey = &quot;$(LastFmApiKey)&quot;%3B" />
+      <_SecretsLines Include="    internal const string ApiSecret = &quot;$(LastFmApiSecret)&quot;%3B" />
+      <_SecretsLines Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)AppSecrets.g.cs"
+      Lines="@(_SecretsLines)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)AppSecrets.g.cs" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -54,6 +76,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.3.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.5.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

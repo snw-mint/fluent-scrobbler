@@ -21,13 +21,9 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Create secrets.json
-        run: |
-          Set-Content -Path secrets.json -Value '{"ApiKey": "${{ secrets.LASTFM_API_KEY }}", "ApiSecret": "${{ secrets.LASTFM_API_SECRET }}"}'
-
       - name: Publish WinUI 3 App
         run: |
-          dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None -p:DebugType=none -p:DebugSymbols=false
+          dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None -p:DebugType=none -p:DebugSymbols=false -p:LastFmApiKey="${{ secrets.LASTFM_API_KEY }}" -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}"
 
       - name: Install Inno Setup
         run: choco install innosetup -y

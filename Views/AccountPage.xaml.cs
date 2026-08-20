@@ -224,9 +224,9 @@ namespace FluentScrobbler.Views
                 }
                 else
                 {
-                    AccountSubtitleText.Text = "Authorize in browser, then click Complete Login";
-                    ActionButtonText.Text = "Complete Login";
-                    await _lastFmService.OpenAuthPageInBrowserAsync(null);
+                    AccountSubtitleText.Text = "Network error: Failed to request token. Try again.";
+                    ActionButtonText.Text = "Retry Login";
+                    _currentAuthToken = null;
                 }
             }
         }
