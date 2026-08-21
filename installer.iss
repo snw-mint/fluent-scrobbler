@@ -1,6 +1,10 @@
+#ifndef MyAppVersion
+  #define MyAppVersion "0.4.0"
+#endif
+
 [Setup]
 AppName=Fluent Scrobbler
-AppVersion=0.4.0
+AppVersion={#MyAppVersion}
 AppPublisher=Snow Mint
 AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
 AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
@@ -26,7 +30,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "autostart"; Description: "Start Fluent Scrobbler with Windows"; GroupDescription: "Additional options:"
 
 [Files]
-Source: "bin\Release\net8.0-windows10.0.26100.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,*.deps.json"
 
 [Icons]
 Name: "{group}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"

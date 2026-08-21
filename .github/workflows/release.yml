@@ -22,15 +22,22 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish WinUI 3 App
-        run: |
-          dotnet publish -c Release -r win-x64 --self-contained true -p:WindowsPackageType=None -p:DebugType=none -p:DebugSymbols=false -p:LastFmApiKey="${{ secrets.LASTFM_API_KEY }}" -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}"
+        run: >
+          dotnet publish -c Release -r win-x64 --self-contained true
+          -p:WindowsPackageType=None
+          -p:DebugType=none
+          -p:DebugSymbols=false
+          -p:LastFmApiKey="${{ secrets.LASTFM_API_KEY }}"
+          -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}"
+          -o ./publish
 
       - name: Install Inno Setup
         run: choco install innosetup -y
 
       - name: Compile Inno Setup Installer
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion="$version" installer.iss
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
