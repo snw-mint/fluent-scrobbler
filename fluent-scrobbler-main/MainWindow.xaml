@@ -1,0 +1,100 @@
+<Window
+    x:Class="FluentScrobbler.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="AppTitleBar" Height="40" Padding="16,0" Background="Transparent" Grid.Row="0">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/logo.png" Width="24" Height="24" VerticalAlignment="Center" />
+                    <TextBlock Text="Fluent Scrobbler" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock x:Name="AppVersionText" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
+                    <Button x:Name="StatusButton"
+                            Click="StatusButton_Click"
+                            Padding="0"
+                            Width="20"
+                            Height="20"
+                            MinHeight="0"
+                            MinWidth="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="4"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="-2,1,0,0"
+                            ToolTipService.ToolTip="Updated">
+                        <Image x:Name="StatusIconImage" Source="ms-appx:///Assets/Status/updated.png" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <NavigationView x:Name="NavView"
+                            Grid.Row="1"
+                            IsBackButtonVisible="Collapsed"
+                            IsSettingsVisible="False"
+                            PaneDisplayMode="Auto"
+                            OpenPaneLength="200"
+                            CompactPaneLength="48"
+                            ItemInvoked="NavView_ItemInvoked"
+                            Loaded="NavView_Loaded">
+
+                <NavigationView.MenuItems>
+                    <NavigationViewItem Content="Dashboard" Tag="HomePage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Home" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Scrobbles" Tag="ScrobblesPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="History" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Settings" Tag="SettingsPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Settings" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="Account" Tag="AccountPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Person" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem Content="Contribute" Tag="ContributePage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Heart" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+
+                    <NavigationViewItem Content="About" Tag="AboutPage">
+                        <NavigationViewItem.Icon>
+                            <ic:SymbolIcon Symbol="Info" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
+
+                <Frame x:Name="ContentFrame" />
+            </NavigationView>
+        </Grid>
+    </Grid>
+</Window>

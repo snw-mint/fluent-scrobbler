@@ -1,0 +1,217 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
+using Windows.Networking.Connectivity;
+
+namespace FluentScrobbler.Services
+{
+    public class OfflineCacheWorker
+    {
+        private static OfflineCacheWorker? _instance;
+        public static OfflineCacheWorker Instance => _instance ??= new OfflineCacheWorker();
+        private readonly OfflineCacheService _cacheService = OfflineCacheService.Instance;
+        private readonly LastFmService _lastFmService = new();
+        private System.Timers.Timer? _timer;
+        private readonly SemaphoreSlim _processLock = new SemaphoreSlim(1, 1);
+        private int _currentBackoffLevel = 0;
+        private readonly int[] _backoffIntervals = { 60, 300, 900, 3600 };
+        private bool _offlineMode;
+        public bool OfflineMode 
+        {
+            get => _offlineMode;
+            private set
+            {
+                if (_offlineMode != value)
+                {
+                    _offlineMode = value;
+                    OfflineModeChanged?.Invoke(this, _offlineMode);
+                }
+            }
+        }
+
+        public event EventHandler<bool>? OfflineModeChanged;
+        public event EventHandler<int>? CacheCountChanged;
+
+        private OfflineCacheWorker()
+        {
+            NetworkInformation.NetworkStatusChanged += NetworkInformation_NetworkStatusChanged;
+        }
+
+        public void Start()
+        {
+            if (_timer != null) return;
+            
+            _timer = new System.Timers.Timer();
+            SetTimerInterval();
+            _timer.Elapsed += Timer_Elapsed;
+            _timer.Start();
+
+            
+            _ = ProcessCacheAsync();
+        }
+
+        private void SetTimerInterval()
+        {
+            if (_timer != null)
+            {
+                int intervalSeconds = _backoffIntervals[_currentBackoffLevel];
+                _timer.Interval = TimeSpan.FromSeconds(intervalSeconds).TotalMilliseconds;
+            }
+        }
+
+        private async void NetworkInformation_NetworkStatusChanged(object sender)
+        {
+            var profile = NetworkInformation.GetInternetConnectionProfile();
+            if (profile != null && profile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess)
+            {
+                _currentBackoffLevel = 0;
+                SetTimerInterval();
+                await ProcessCacheAsync();
+            }
+        }
+
+        private async void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            await ProcessCacheAsync();
+        }
+
+        public async Task ForceSyncAsync()
+        {
+            _currentBackoffLevel = 0;
+            SetTimerInterval();
+            await ProcessCacheAsync();
+        }
+
+        public async Task TriggerOfflineModeAsync()
+        {
+            OfflineMode = true;
+            await UpdateCacheCountAsync();
+        }
+
+        public async Task UpdateCacheCountAsync()
+        {
+            int count = await _cacheService.GetPendingCountAsync();
+            CacheCountChanged?.Invoke(this, count);
+
+            if (count == 0 && OfflineMode)
+            {
+                OfflineMode = false;
+                _currentBackoffLevel = 0;
+                SetTimerInterval();
+            }
+        }
+
+        private async Task ProcessCacheAsync()
+        {
+            if (!_processLock.Wait(0)) return;
+
+            try
+            {
+                int count = await _cacheService.GetPendingCountAsync();
+                CacheCountChanged?.Invoke(this, count);
+
+                if (count == 0)
+                {
+                    OfflineMode = false;
+                    _currentBackoffLevel = 0;
+                    SetTimerInterval();
+                    return;
+                }
+
+                OfflineMode = true;
+
+                
+                var profile = NetworkInformation.GetInternetConnectionProfile();
+                if (profile == null || profile.GetNetworkConnectivityLevel() != NetworkConnectivityLevel.InternetAccess)
+                {
+                    
+                    IncreaseBackoff();
+                    return;
+                }
+
+                
+                var pendingScrobbles = await _cacheService.GetPendingScrobblesAsync(50);
+                if (!pendingScrobbles.Any()) return;
+
+                var uniqueEntries = new List<FluentScrobbler.Models.ScrobbleEntry>();
+                var duplicateIds = new List<int>();
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var s in pendingScrobbles)
+                {
+                    string key = $"{s.Artist.Trim().ToLowerInvariant()}|{s.Track.Trim().ToLowerInvariant()}|{s.Timestamp / 60}";
+                    if (seen.Add(key))
+                    {
+                        uniqueEntries.Add(s);
+                    }
+                    else
+                    {
+                        duplicateIds.Add(s.Id);
+                    }
+                }
+
+                if (duplicateIds.Count > 0)
+                {
+                    await _cacheService.RemoveScrobblesAsync(duplicateIds);
+                }
+
+                if (uniqueEntries.Count == 0)
+                {
+                    await UpdateCacheCountAsync();
+                    return;
+                }
+
+                bool batchSuccess = await _lastFmService.ScrobbleBatchAsync(uniqueEntries);
+                
+                if (batchSuccess)
+                {
+                    var ids = uniqueEntries.Select(s => s.Id).ToList();
+                    await _cacheService.RemoveScrobblesAsync(ids);
+                    
+                    _currentBackoffLevel = 0;
+                    SetTimerInterval();
+                    
+                    await UpdateCacheCountAsync();
+
+                    
+                    int remaining = await _cacheService.GetPendingCountAsync();
+                    if (remaining > 0)
+                    {
+                        
+                        await Task.Delay(1000);
+                        _processLock.Release();
+                        await ProcessCacheAsync();
+                        return; 
+                    }
+                }
+                else
+                {
+                    IncreaseBackoff();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[OfflineWorker Error] Failed to process cache", ex);
+                IncreaseBackoff();
+            }
+            finally
+            {
+                if (_processLock.CurrentCount == 0)
+                {
+                    _processLock.Release();
+                }
+            }
+        }
+
+        private void IncreaseBackoff()
+        {
+            if (_currentBackoffLevel < _backoffIntervals.Length - 1)
+            {
+                _currentBackoffLevel++;
+                SetTimerInterval();
+            }
+        }
+    }
+}

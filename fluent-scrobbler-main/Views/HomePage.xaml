@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="FluentScrobbler.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FluentScrobbler"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ic="using:FluentIcons.WinUI"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32,24" SizeChanged="ScrollViewer_SizeChanged">
+        <StackPanel x:Name="MainContentPanel" Spacing="24" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="DashboardTitleText" Text="Dashboard" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" />
+                <TextBlock x:Name="DashboardSubtitleText" Text="Welcome back! Here is a summary of your activity today." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <InfoBar
+                x:Name="OfflineStatusInfoBar"
+                IsOpen="False"
+                Visibility="Collapsed"
+                Severity="Warning"
+                Title="Working Offline"
+                Message="Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online."
+                IsClosable="False">
+                <InfoBar.ActionButton>
+                    <Button x:Name="ForceSyncButton" Content="Force Sync" Click="ForceSyncButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <InfoBar
+                x:Name="NewSourceInfoBar"
+                IsOpen="False"
+                Visibility="Collapsed"
+                Severity="Informational"
+                Title="New source detected"
+                Message="A new media app was detected. Enable it in Source Filtering to start scrobbling."
+                IsClosable="True"
+                Closed="NewSourceInfoBar_Closed">
+                <InfoBar.ActionButton>
+                    <Button Content="Configure" Click="ConfigureSourceButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="MusicNote1" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Scrobbles Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <TextBlock x:Name="ScrobblesTodayText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ScrobblesTodaySubtext" Text="Scrobbled today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="Timer" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Minutes Today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <TextBlock x:Name="MinutesTodayText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="MinutesTodaySubtext" Text="Estimated listening time" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="Sparkle" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Today's Vibe" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <TextBlock x:Name="TodayVibeText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="TodayVibeSubtext" Text="Top genre today" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ic:SymbolIcon Symbol="DataHistogram" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Total Scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <TextBlock x:Name="ScrobblesTotalText" Text="--" Style="{ThemeResource TitleLargeTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ScrobblesTotalSubtext" Text="Lifetime scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+
+                <Border x:Name="NowPlayingCard" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="80" Height="80" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                            <Grid>
+                                <ic:SymbolIcon x:Name="NowPlayingFallbackIcon" Symbol="MusicNote1" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                                <ic:SymbolIcon x:Name="NowPlayingIdleIcon" Symbol="Snooze" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <Image x:Name="NowPlayingAlbumArtImage" Width="80" Height="80" Stretch="UniformToFill" Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+
+                        <StackPanel x:Name="NowPlayingActiveContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="6" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="NOW PLAYING" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                </Border>
+                                <TextBlock x:Name="NowPlayingSourceText" Text="Last.fm" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock x:Name="NowPlayingTrackText" Text="Track Title" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="NowPlayingArtistAlbumText" Text="Artist • Album" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="NowPlayingIdleContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                            <TextBlock Text="Silence is golden... but music is better" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="Play something to start scrobbling." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+                <StackPanel x:Name="RecentScrobblesContainer" Spacing="8">
+                    <TextBlock x:Name="NoRecentScrobblesText" Text="No recent scrobbles yet." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Quick Actions" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="ScrobblesPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ic:SymbolIcon Grid.Column="0" Symbol="History" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="Check history &amp; scrobbles" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="SettingsPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Settings" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="General Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="Scrobbling &amp; system preferences" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="16,20" MinHeight="84" Tag="AboutPage" Click="QuickAction_Click">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Info" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="About" Style="{ThemeResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="Application info &amp; version" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
