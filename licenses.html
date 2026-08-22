@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Source Licenses - Fluent Scrobbler</title>
+    <meta name="title" content="Open Source Licenses - Fluent Scrobbler" />
+    <meta
+      name="description"
+      content="Open source licenses and third-party software notices used by Fluent Scrobbler."
+    />
+    <meta name="author" content="snw-mint" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0f6cbd" />
+    <link
+      rel="canonical"
+      href="https://snw-mint.github.io/fluent-scrobbler/licenses.html"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Fluent Scrobbler" />
+    <meta
+      property="og:title"
+      content="Open Source Licenses - Fluent Scrobbler"
+    />
+    <meta
+      property="og:description"
+      content="Open source licenses and third-party software notices used by Fluent Scrobbler."
+    />
+    <meta
+      property="og:url"
+      content="https://snw-mint.github.io/fluent-scrobbler/licenses.html"
+    />
+    <meta
+      property="og:image"
+      content="https://snw-mint.github.io/fluent-scrobbler/assets/main.webp"
+    />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:title"
+      content="Open Source Licenses - Fluent Scrobbler"
+    />
+    <meta
+      property="twitter:description"
+      content="Open source licenses and third-party software notices used by Fluent Scrobbler."
+    />
+    <meta
+      property="twitter:image"
+      content="https://snw-mint.github.io/fluent-scrobbler/assets/main.webp"
+    />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <style>
+      :root {
+        --color-bg: #faf9f8;
+        --color-surface: #ffffff;
+        --color-primary: #0f6cbd;
+        --color-primary-hover: #115ea3;
+        --color-text-main: #242424;
+        --color-text-muted: #616161;
+        --color-border: #e0e0e0;
+        --font-stack:
+          "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-bg: #0b0c0f;
+          --color-surface: #11131a;
+          --color-primary: #3796ff;
+          --color-primary-hover: #2a7dd6;
+          --color-text-main: #f3f4f6;
+          --color-text-muted: #b6b9c3;
+          --color-border: #2a2d36;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-stack);
+        background-color: var(--color-bg);
+        color: var(--color-text-main);
+        line-height: 1.6;
+        padding: 2.5rem 1.5rem;
+      }
+
+      .container {
+        max-width: 48rem;
+        margin: 0 auto;
+        background-color: var(--color-surface);
+        padding: 3rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--color-border);
+      }
+
+      .header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 1.25rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        color: var(--color-text-muted);
+        font-size: 0.95rem;
+      }
+
+      .nav-back {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      .nav-back:hover {
+        text-decoration: underline;
+      }
+
+      .license-item {
+        padding: 1.25rem 0;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .license-item:last-child {
+        border-bottom: none;
+      }
+
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .item-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .license-badge {
+        font-size: 0.8rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        background-color: rgba(15, 108, 189, 0.1);
+        color: var(--color-primary);
+        font-weight: 600;
+      }
+
+      .item-desc {
+        color: var(--color-text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .item-link {
+        font-size: 0.9rem;
+        color: var(--color-primary);
+        text-decoration: none;
+      }
+
+      .item-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 37.5rem) {
+        body {
+          padding: 1rem;
+        }
+
+        .container {
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="index.html" class="nav-back">&larr; Back to Home</a>
+
+      <header class="header">
+        <h1>Open Source Licenses</h1>
+        <p class="subtitle">
+          Fluent Scrobbler is made possible thanks to the following open source
+          projects and libraries.
+        </p>
+      </header>
+
+      <main class="license-list">
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">Fluent Scrobbler</h2>
+            <span class="license-badge">GPL-3.0</span>
+          </div>
+          <p class="item-desc">
+            A native Last.fm scrobbler desktop application for Windows 11.
+          </p>
+          <a
+            href="https://github.com/snw-mint/fluent-scrobbler"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">Microsoft.WindowsAppSDK</h2>
+            <span class="license-badge">MIT License</span>
+          </div>
+          <p class="item-desc">
+            Provides a unified set of modern Windows APIs and WinUI 3 controls.
+          </p>
+          <a
+            href="https://github.com/microsoft/WindowsAppSDK"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">FluentIcons.WinUI</h2>
+            <span class="license-badge">MIT License</span>
+          </div>
+          <p class="item-desc">
+            Fluent System Icons library controls and glyphs for WinUI 3.
+          </p>
+          <a
+            href="https://github.com/Dmitriy-Sh/FluentIcons"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">H.NotifyIcon.WinUI</h2>
+            <span class="license-badge">MIT License</span>
+          </div>
+          <p class="item-desc">
+            Tray icon, taskbar integration, and notifications for WinUI 3
+            applications.
+          </p>
+          <a
+            href="https://github.com/HavenDV/H.NotifyIcon"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">sqlite-net-pcl</h2>
+            <span class="license-badge">Apache-2.0 / MIT</span>
+          </div>
+          <p class="item-desc">
+            Lightweight, fast, and local SQLite database library for .NET.
+          </p>
+          <a
+            href="https://github.com/praeclarum/sqlite-net"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">
+              System.Security.Cryptography.ProtectedData
+            </h2>
+            <span class="license-badge">MIT License</span>
+          </div>
+          <p class="item-desc">
+            Provides access to Data Protection API (DPAPI) for protecting
+            sensitive local data.
+          </p>
+          <a
+            href="https://github.com/dotnet/runtime"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+
+        <article class="license-item">
+          <div class="item-header">
+            <h2 class="item-title">.NET Runtime</h2>
+            <span class="license-badge">MIT License</span>
+          </div>
+          <p class="item-desc">
+            The .NET 8.0 cross-platform runtime and standard libraries by the
+            .NET Foundation.
+          </p>
+          <a
+            href="https://github.com/dotnet/runtime"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="item-link"
+            >View Project & License &rarr;</a
+          >
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

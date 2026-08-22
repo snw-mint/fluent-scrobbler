@@ -15,11 +15,14 @@
   --color-text-main: #000000;
   --color-text-muted: #616161;
   --color-border: #e0e0e0;
-  --shadow-card: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.04), 0 0 0.125rem rgba(0, 0, 0, 0.06);
+  --shadow-card:
+    0 0.125rem 0.25rem rgba(0, 0, 0, 0.04), 0 0 0.125rem rgba(0, 0, 0, 0.06);
   --shadow-float: 0 0.5rem 1rem rgba(0, 0, 0, 0.14);
   --radius-card: 0.5rem;
   --radius-button: 0.25rem;
-  --font-stack: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-stack:
+    "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    sans-serif;
 }
 
 :root[data-theme="dark"] {
@@ -189,14 +192,24 @@ body {
   background-color: var(--color-surface);
 }
 
-.hero {
-  background: radial-gradient(112.37% 96.84% at 50% 3.16%, #fff 55%, #f4fafd 81.63%);
+.hero,
+.download-hero {
+  background: radial-gradient(
+    112.37% 96.84% at 50% 3.16%,
+    #ffffff 55%,
+    #f4fafd 81.63%
+  );
   padding: 5rem 0;
   text-align: center;
 }
 
-[data-theme="dark"] .hero {
-  background: transparent;
+[data-theme="dark"] .hero,
+[data-theme="dark"] .download-hero {
+  background: radial-gradient(
+    112.37% 96.84% at 50% 3.16%,
+    #0b0c0f 55%,
+    #0f1724 81.63%
+  );
 }
 
 .hero-content {
@@ -222,28 +235,29 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #0A77D3, #8562C5);
+  background: linear-gradient(135deg, #0a77d3, #8562c5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .main-download-btn {
-background-color: #0f6cbd;
-    color: #ffffff;
-    border: none;
-    box-shadow: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    font-size: 20px;
-    font-weight: 500;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    transition: background-color 0.2s;
+  background-color: #0f6cbd;
+  color: #ffffff;
+  border: none;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 20px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
 }
 
 .main-download-btn:hover {
@@ -302,11 +316,10 @@ background-color: #0f6cbd;
 }
 
 .btn-primary {
-  background-color: #0078D4;
+  background-color: #0078d4;
   color: #ffffff;
   border: none;
-  box-shadow:
-    none;
+  box-shadow: none;
 }
 
 .btn-primary:hover {
@@ -338,7 +351,7 @@ background-color: #0f6cbd;
 }
 
 .feature-showcase-section.alt-bg {
-  background-color: #F4FAFD;
+  background-color: #f4fafd;
 }
 
 [data-theme="dark"] .feature-showcase-section.alt-bg {
@@ -415,7 +428,7 @@ background-color: #0f6cbd;
   justify-content: center;
   width: 30px;
   height: 30px;
-  background-color: #0078D4;
+  background-color: #0078d4;
   border-radius: 7px;
   flex-shrink: 0;
   transition: background-color 0.2s ease;
@@ -427,7 +440,7 @@ background-color: #0f6cbd;
 }
 
 .cta-text {
-  color: #0078D4;
+  color: #0078d4;
   font-size: 16px;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -452,8 +465,44 @@ background-color: #0f6cbd;
   margin-right: auto;
 }
 
+.beta-disclaimer {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.beta-disclaimer strong {
+  color: var(--color-text-main);
+}
+
+.beta-disclaimer-box {
+  max-width: 54rem;
+  margin: 0 auto 2rem;
+  padding: 0.85rem 1.25rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.beta-disclaimer-box svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.beta-disclaimer-box strong {
+  color: var(--color-text-main);
+}
+
 .download-disclaimer a {
-  color: #0F6CBD;
+  color: #0f6cbd;
   text-decoration: underline;
 }
 
@@ -498,8 +547,6 @@ background-color: #0f6cbd;
   justify-content: center;
   margin-bottom: 1rem;
 }
-
-
 
 .site-footer {
   background-color: var(--color-surface);
@@ -879,7 +926,13 @@ background-color: #0f6cbd;
   max-width: 56.25rem;
   margin: 0 auto;
   overflow: hidden;
-  -webkit-mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
+  -webkit-mask: linear-gradient(
+    90deg,
+    transparent,
+    white 15%,
+    white 85%,
+    transparent
+  );
   mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
 }
 
@@ -1142,7 +1195,6 @@ background-color: #0f6cbd;
   transform: translateX(0) !important;
 }
 
-
 .review-stars svg {
   opacity: 0;
   transform: scale(0.5);
@@ -1301,8 +1353,6 @@ background-color: #0f6cbd;
   pointer-events: auto;
 }
 
-
-
 .showcase-img.show-dark {
   position: absolute;
   top: 0;
@@ -1385,4 +1435,3 @@ background-color: #0f6cbd;
     white-space: nowrap;
   }
 }
-

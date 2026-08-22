@@ -9,6 +9,7 @@
 *.userosscache
 *.sln.docstates
 artifacts/
+fluent-scrobbler-main
 
 # Build logs
 [Ll]og/

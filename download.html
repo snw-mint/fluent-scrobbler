@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Download Fluent Scrobbler - Native Last.fm Scrobbler for Windows
+    </title>
+    <meta
+      name="title"
+      content="Download Fluent Scrobbler - Native Last.fm Scrobbler for Windows"
+    />
+    <meta
+      name="description"
+      content="Download Fluent Scrobbler for Windows 10 and 11. Free, open source, and privacy-first Last.fm scrobbler with WinUI 3 aesthetics."
+    />
+    <meta
+      name="keywords"
+      content="download fluent scrobbler, fluent scrobbler installer, last.fm windows download, winui 3 scrobbler exe, windows 11 scrobbler"
+    />
+    <meta name="author" content="snw-mint" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="theme-color" content="#0f6cbd" />
+    <link
+      rel="canonical"
+      href="https://snw-mint.github.io/fluent-scrobbler/download.html"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://snw-mint.github.io/fluent-scrobbler/download.html"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fluent Scrobbler" />
+    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:title"
+      content="Download Fluent Scrobbler - Native Last.fm Scrobbler for Windows"
+    />
+    <meta
+      property="og:description"
+      content="Download Fluent Scrobbler for Windows 10 and 11. Free, open source, and privacy-first Last.fm scrobbler."
+    />
+    <meta
+      property="og:url"
+      content="https://snw-mint.github.io/fluent-scrobbler/download.html"
+    />
+    <meta
+      property="og:image"
+      content="https://snw-mint.github.io/fluent-scrobbler/assets/main.webp"
+    />
+    <meta property="og:image:alt" content="Fluent Scrobbler desktop app" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:title"
+      content="Download Fluent Scrobbler - Native Last.fm Scrobbler for Windows"
+    />
+    <meta
+      property="twitter:description"
+      content="Download Fluent Scrobbler for Windows 10 and 11. Free, open source, and privacy-first Last.fm scrobbler."
+    />
+    <meta
+      property="twitter:image"
+      content="https://snw-mint.github.io/fluent-scrobbler/assets/main.webp"
+    />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Fluent Scrobbler",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Windows 10, Windows 11",
+        "description": "Download Fluent Scrobbler for Windows. Free, native, open-source Last.fm scrobbler.",
+        "url": "https://snw-mint.github.io/fluent-scrobbler/download.html",
+        "downloadUrl": "https://github.com/snw-mint/fluent-scrobbler/releases",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+    <style>
+      .download-meta-bar {
+        max-width: 54rem;
+        margin: 0 auto 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        padding: 0 0.25rem;
+      }
+
+      .download-meta-version {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .download-meta-version strong {
+        color: var(--color-text-main);
+        font-weight: 600;
+      }
+
+      .download-meta-changelog {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        transition: color 0.15s ease;
+      }
+
+      .download-meta-changelog:hover {
+        text-decoration: underline;
+        color: var(--color-primary-hover);
+      }
+
+      .download-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: 1.5rem;
+        max-width: 54rem;
+        margin: 0 auto 3rem;
+      }
+
+      .download-card {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 1rem;
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          border-color 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+      }
+
+      .download-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .download-card-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .download-card-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .download-card-desc {
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        line-height: 1.5;
+      }
+
+      .download-card-btn {
+        margin-top: auto;
+        padding: 0.65rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--color-primary);
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .download-card-btn:hover {
+        background-color: var(--color-primary-hover);
+      }
+
+      .download-card.disabled .download-card-btn {
+        background-color: rgba(0, 0, 0, 0.1);
+        color: var(--color-text-muted);
+        cursor: not-allowed;
+      }
+
+      [data-theme="dark"] .download-card.disabled .download-card-btn {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-muted);
+      }
+
+      .req-box {
+        max-width: 54rem;
+        margin: 0 auto 3rem;
+        padding: 2rem;
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 1rem;
+      }
+
+      .req-box h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .req-box ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        color: var(--color-text-muted);
+        font-size: 1rem;
+      }
+
+      .security-box {
+        max-width: 54rem;
+        margin: 0 auto 4rem;
+        background-color: #fdf3f2;
+        border: 1px solid #d13438;
+        border-left: 4px solid #d13438;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+      }
+
+      .security-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #a80000;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .security-box p {
+        color: #5a1111;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        margin: 0;
+      }
+
+      [data-theme="dark"] .security-box {
+        background-color: rgba(209, 52, 56, 0.1);
+        border-color: rgba(209, 52, 56, 0.4);
+      }
+
+      [data-theme="dark"] .security-header {
+        color: #ff8b8e;
+      }
+
+      [data-theme="dark"] .security-box p {
+        color: #fcdbdc;
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="container nav-content">
+        <div class="nav-left">
+          <a
+            href="index.html"
+            class="logo"
+            style="text-decoration: none; color: inherit"
+          >
+            <img
+              class="logo-mark"
+              src="logo.webp"
+              alt="Fluent Scrobbler logo"
+            />
+            <span>Fluent Scrobbler</span>
+          </a>
+          <div class="nav-divider"></div>
+          <div class="nav-links">
+            <a href="index.html">Overview</a>
+            <a href="download.html">Download</a>
+            <a
+              href="https://buymeacoffee.com/snw.mint"
+              target="_blank"
+              rel="noopener"
+              >Buy Me a Coffee</a
+            >
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler"
+              target="_blank"
+              rel="noopener"
+              >GitHub</a
+            >
+          </div>
+        </div>
+        <div class="nav-right">
+          <button
+            id="theme-switcher"
+            class="theme-switch"
+            aria-label="Toggle Dark Mode"
+          >
+            <span class="theme-icon light-icon">
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20.026 17.001c-2.762 4.784-8.879 6.423-13.663 3.661a9.964 9.964 0 0 1-3.234-2.983.75.75 0 0 1 .365-1.131c3.767-1.348 5.785-2.911 6.956-5.146 1.232-2.353 1.551-4.93.689-8.464a.75.75 0 0 1 .769-.926 9.961 9.961 0 0 1 4.457 1.327C21.149 6.1 22.788 12.217 20.025 17Zm-8.248-4.903c-1.25 2.388-3.31 4.099-6.817 5.499a8.492 8.492 0 0 0 2.152 1.766 8.501 8.501 0 1 0 8.502-14.725 8.485 8.485 0 0 0-2.792-1.016c.647 3.384.23 6.044-1.045 8.476Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            <span class="theme-icon dark-icon">
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11.996 19.01a.75.75 0 0 1 .743.649l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.101v-1.5a.75.75 0 0 1 .75-.75Zm6.022-2.072 1.06 1.06a.75.75 0 1 1-1.06 1.061l-1.06-1.06a.75.75 0 0 1 1.06-1.061Zm-10.983 0a.75.75 0 0 1 0 1.06L5.974 19.06a.75.75 0 0 1-1.06-1.06l1.06-1.061a.75.75 0 0 1 1.06 0ZM12 6.475a5.525 5.525 0 1 1 0 11.05 5.525 5.525 0 0 1 0-11.05Zm0 1.5a4.025 4.025 0 1 0 0 8.05 4.025 4.025 0 0 0 0-8.05Zm9.25 3.293a.75.75 0 0 1 .102 1.493l-.102.007h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm-17-.029a.75.75 0 0 1 .102 1.494l-.102.006h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm1.64-6.37.084.072 1.06 1.06a.75.75 0 0 1-.976 1.134l-.084-.073-1.06-1.06a.75.75 0 0 1 .976-1.134Zm13.188.072a.75.75 0 0 1 .073.977l-.073.084-1.06 1.06a.75.75 0 0 1-1.133-.976l.072-.084 1.06-1.061a.75.75 0 0 1 1.061 0ZM12 1.99a.75.75 0 0 1 .743.648l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.102v-1.5a.75.75 0 0 1 .75-.75Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+          </button>
+          <button
+            id="mobile-menu-toggle"
+            class="mobile-menu-toggle"
+            aria-label="Toggle navigation menu"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 6h16M4 12h16M4 18h16"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <header class="download-hero">
+      <div class="container hero-content">
+        <h1 class="title">
+          Download <span class="gradient-text">Fluent Scrobbler</span>
+        </h1>
+        <p class="subtitle">
+          Choose the setup package for your Windows architecture. Free, open
+          source, and built for Windows 10 & 11.
+        </p>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top: 2rem">
+      <div class="download-meta-bar">
+        <div class="download-meta-version">
+          <span>Latest release:</span>
+          <strong id="latest-version">v0.4.0-beta</strong>
+        </div>
+        <a
+          href="https://github.com/snw-mint/fluent-scrobbler/releases"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="download-meta-changelog"
+        >
+          <span>View changelog</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8.47 4.22a.75.75 0 0 0 0 1.06L15.19 12l-6.72 6.72a.75.75 0 1 0 1.06 1.06l7.25-7.25a.75.75 0 0 0 0-1.06L9.53 4.22a.75.75 0 0 0-1.06 0Z"
+              fill="currentColor"
+            />
+          </svg>
+        </a>
+      </div>
+
+      <section class="download-grid">
+        <a
+          href="https://github.com/snw-mint/fluent-scrobbler/releases/download/v0.4.0-beta/FluentScrobbler-Setup-x64.exe"
+          class="download-card highlighted"
+          download
+        >
+          <svg
+            class="download-card-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 256 256"
+          >
+            <path
+              fill="#0078d4"
+              d="M0 0h121.329v121.329H0zm134.671 0H256v121.329H134.671zM0 134.671h121.329V256H0zm134.671 0H256V256H134.671z"
+            />
+          </svg>
+          <h2 class="download-card-title">Windows x64</h2>
+          <p class="download-card-desc">
+            Standard 64-bit executable installer for Windows 10 and 11.
+          </p>
+          <span class="download-card-btn">Download .exe</span>
+        </a>
+
+        <div class="download-card disabled" aria-disabled="true">
+          <svg
+            class="download-card-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 256 256"
+          >
+            <path
+              fill="#0078d4"
+              d="M0 0h121.329v121.329H0zm134.671 0H256v121.329H134.671zM0 134.671h121.329V256H0zm134.671 0H256V256H134.671z"
+            />
+          </svg>
+          <h2 class="download-card-title">Windows x86</h2>
+          <p class="download-card-desc">32-bit package for legacy systems.</p>
+          <span class="download-card-btn">Coming Soon</span>
+        </div>
+
+        <div class="download-card disabled" aria-disabled="true">
+          <svg
+            class="download-card-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 256 256"
+          >
+            <path
+              fill="#0078d4"
+              d="M0 0h121.329v121.329H0zm134.671 0H256v121.329H134.671zM0 134.671h121.329V256H0zm134.671 0H256V256H134.671z"
+            />
+          </svg>
+          <h2 class="download-card-title">Windows ARM64</h2>
+          <p class="download-card-desc">
+            Optimized native binary for ARM-based Windows devices.
+          </p>
+          <span class="download-card-btn">Coming Soon</span>
+        </div>
+      </section>
+
+      <div class="beta-disclaimer-box">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm0-4a1 1 0 0 1-2 0V8a1 1 0 0 1 2 0Z"
+            fill="currentColor"
+          />
+        </svg>
+        <span
+          >Fluent Scrobbler is in <strong>Beta</strong>. Core features are
+          functional, but you may encounter minor issues. Feedback and bug
+          reports are welcome.</span
+        >
+      </div>
+
+      <section class="req-box">
+        <h3>System Requirements</h3>
+        <ul>
+          <li>
+            <strong>Operating System:</strong> Windows 10 (version 1809 or
+            higher) or Windows 11
+          </li>
+          <li><strong>Architecture:</strong> x64</li>
+          <li>
+            <strong>Framework:</strong> Windows App SDK 1.5+ (.NET 8.0 Desktop
+            Runtime included)
+          </li>
+        </ul>
+      </section>
+
+      <section class="security-box">
+        <div class="security-header">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M13 17a.999.999 0 1 0-1.998 0 .999.999 0 0 0 1.997 0m-.26-7.853a.75.75 0 0 0-1.493.103l.004 4.501.007.102a.75.75 0 0 0 1.493-.103l-.004-4.502zm1.23-5.488c-.857-1.548-3.082-1.548-3.938 0L2.286 17.66c-.83 1.5.255 3.34 1.97 3.34h15.49c1.714 0 2.799-1.84 1.969-3.34zm-2.626.726a.75.75 0 0 1 1.313 0l7.746 14.002a.75.75 0 0 1-.657 1.113H4.256a.75.75 0 0 1-.657-1.113z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Official Security Notice</span>
+        </div>
+        <p>
+          Always download Fluent Scrobbler exclusively from this page or our
+          official GitHub Releases repository. We take no responsibility for
+          packages obtained from third-party websites.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <img
+              class="logo-mark"
+              src="logo.webp"
+              alt="Fluent Scrobbler logo"
+            />
+            <span>Fluent Scrobbler</span>
+          </div>
+          <p class="footer-description">
+            Fluent Scrobbler is an independent open-source project and is not
+            affiliated with, endorsed by, or sponsored by Microsoft Corporation
+            or Last.fm.
+          </p>
+        </div>
+
+        <div class="footer-nav">
+          <div class="footer-column">
+            <h4>Overview</h4>
+            <a href="index.html">Home</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Use</a>
+            <a href="licenses.html">Licenses</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Support</h4>
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml"
+              >Report a Bug</a
+            >
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml"
+              >Request a Feature</a
+            >
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/discussions/new/choose"
+              >Ask a Question</a
+            >
+            <a href="mailto:snowmint.dev@gmail.com">Contact</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Community</h4>
+            <a href="https://github.com/snw-mint/fluent-scrobbler"
+              >Source Code</a
+            >
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/blob/main/CONTRIBUTING.md"
+              >Contributing</a
+            >
+            <a
+              href="https://buymeacoffee.com/snw.mint"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Support the Project</a
+            >
+          </div>
+
+          <div class="footer-column">
+            <h4>Download</h4>
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/releases/download/v0.4.0-beta/FluentScrobbler-Setup-x64.exe"
+              download
+              >Windows x64 (.exe)</a
+            >
+            <a
+              href="https://github.com/snw-mint/fluent-scrobbler/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              >All Releases</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="container footer-bottom">
+        <p>
+          &copy; 2026 Fluent Scrobbler. Created by
+          <a
+            href="https://github.com/snw-mint"
+            target="_blank"
+            rel="noopener noreferrer"
+            >snow mint</a
+          >.
+        </p>
+      </div>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const url =
+          "https://raw.githubusercontent.com/snw-mint/fluent-scrobbler/refs/heads/main/FluentScrobbler.csproj";
+        const el = document.getElementById("latest-version");
+        if (!el) return;
+
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const txt = await res.text();
+          const match = txt.match(/<Version>(.*?)<\/Version>/i);
+          if (match && match[1]) {
+            const ver = match[1].trim();
+            el.textContent = ver.startsWith("v") ? ver : `v${ver}`;
+          }
+        } catch {}
+      });
+    </script>
+  </body>
+</html>
