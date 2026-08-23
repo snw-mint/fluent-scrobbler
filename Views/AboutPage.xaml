@@ -35,8 +35,8 @@
                         <Grid>
                             <TextBlock Text="App Version" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <ic:SymbolIcon x:Name="StatusIcon" Symbol="Checkmark" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                                 <TextBlock x:Name="AppVersionText" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                                <Image x:Name="StatusIconImage" Source="ms-appx:///Assets/Status/updated.png" Width="14" Height="14" VerticalAlignment="Center" />
                                 <Button x:Name="CheckNowButton"
                                         Content="Check now"
                                         Click="CheckNowButton_Click"

@@ -43,13 +43,15 @@ namespace FluentScrobbler.Views
         {
             if (UpdateService.Instance.IsUpdateAvailable)
             {
-                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/update.png"));
+                StatusIcon.Symbol = FluentIcons.Common.Symbol.ArrowSync;
+                StatusIcon.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"];
                 UpdateNowButton.Visibility = Visibility.Visible;
                 CheckNowButton.Visibility = Visibility.Collapsed;
             }
             else
             {
-                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/updated.png"));
+                StatusIcon.Symbol = FluentIcons.Common.Symbol.Checkmark;
+                StatusIcon.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"];
                 UpdateNowButton.Visibility = Visibility.Collapsed;
                 CheckNowButton.Visibility = Visibility.Visible;
                 CheckNowButton.IsEnabled = true;

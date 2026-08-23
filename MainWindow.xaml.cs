@@ -574,13 +574,14 @@ namespace FluentScrobbler
         {
             if (UpdateService.Instance.IsUpdateAvailable)
             {
-                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/update.png"));
+                StatusIcon.Symbol = FluentIcons.Common.Symbol.ArrowSync;
+                StatusIcon.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"];
                 ToolTipService.SetToolTip(StatusButton, $"Update available: {UpdateService.Instance.LatestVersion}");
+                StatusButton.Visibility = Visibility.Visible;
             }
             else
             {
-                StatusIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Status/updated.png"));
-                ToolTipService.SetToolTip(StatusButton, "Updated");
+                StatusButton.Visibility = Visibility.Collapsed;
             }
         }
 

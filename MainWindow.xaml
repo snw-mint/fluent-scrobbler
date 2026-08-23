@@ -36,9 +36,9 @@
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             VerticalAlignment="Center"
-                            Margin="-2,1,0,0"
-                            ToolTipService.ToolTip="Updated">
-                        <Image x:Name="StatusIconImage" Source="ms-appx:///Assets/Status/updated.png" Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            Margin="-2,0,0,0"
+                            Visibility="Collapsed">
+                        <ic:SymbolIcon x:Name="StatusIcon" Symbol="ArrowSync" FontSize="13" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                     </Button>
                 </StackPanel>
             </Grid>
