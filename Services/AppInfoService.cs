@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using Windows.ApplicationModel;
 
@@ -6,6 +7,17 @@ namespace FluentScrobbler.Services
 {
     public static class AppInfoService
     {
+#if DEBUG
+        public const string AppDataFolderName = "FluentScrobblerDev";
+#else
+        public const string AppDataFolderName = "FluentScrobbler";
+#endif
+
+        public static string AppDataPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppDataFolderName
+        );
+
         public static string Version
         {
             get

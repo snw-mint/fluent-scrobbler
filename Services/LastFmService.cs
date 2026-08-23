@@ -95,7 +95,7 @@ namespace FluentScrobbler.Services
             try
             {
                 var vault = new PasswordVault();
-                var cred = vault.Retrieve("FluentScrobbler", username);
+                var cred = vault.Retrieve(AppInfoService.AppDataFolderName, username);
                 cred.RetrievePassword();
                 return (username, cred.Password);
             }
@@ -119,7 +119,7 @@ namespace FluentScrobbler.Services
             try
             {
                 var vault = new PasswordVault();
-                vault.Add(new PasswordCredential("FluentScrobbler", username, sessionKey));
+                vault.Add(new PasswordCredential(AppInfoService.AppDataFolderName, username, sessionKey));
             }
             catch (Exception ex)
             {
@@ -137,7 +137,7 @@ namespace FluentScrobbler.Services
                 try
                 {
                     var vault = new PasswordVault();
-                    var cred = vault.Retrieve("FluentScrobbler", username);
+                    var cred = vault.Retrieve(AppInfoService.AppDataFolderName, username);
                     vault.Remove(cred);
                 }
                 catch { }

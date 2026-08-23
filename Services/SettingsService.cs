@@ -8,8 +8,7 @@ namespace FluentScrobbler.Services
     public static class SettingsService
     {
         private static readonly string SettingsFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FluentScrobbler",
+            AppInfoService.AppDataPath,
             "settings.json"
         );
 

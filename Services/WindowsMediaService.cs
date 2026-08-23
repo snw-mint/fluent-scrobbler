@@ -27,8 +27,7 @@ namespace FluentScrobbler.Services
         private const string MaxTimeThresholdKey = "MaximumTimeThresholdSeconds";
 
         private static readonly string SettingsFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FluentScrobbler",
+            AppInfoService.AppDataPath,
             "media_settings.json"
         );
 

@@ -19,8 +19,7 @@ namespace FluentScrobbler.Services.Media
         private static readonly SemaphoreSlim _diskCacheLock = new(1, 1);
 
         private static readonly string DiskCachePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FluentScrobbler",
+            AppInfoService.AppDataPath,
             "art_cache.json"
         );
 

@@ -6,7 +6,7 @@ namespace FluentScrobbler.Services
     public static class StartupService
     {
         private const string RegistryRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string ValueName = "FluentScrobbler";
+        private static readonly string ValueName = AppInfoService.AppDataFolderName;
         private const string StartMinimizedSettingKey = "StartMinimizedToTray";
 
         public static bool IsStartupEnabled()

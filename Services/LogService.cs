@@ -7,8 +7,7 @@ namespace FluentScrobbler.Services
     public static class LogService
     {
         private static readonly string LogFolderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FluentScrobbler",
+            AppInfoService.AppDataPath,
             "Logs"
         );
 

@@ -17,7 +17,7 @@ namespace FluentScrobbler.Services
         
         private OfflineCacheService()
         {
-            var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FluentScrobbler", "Data", "offline_cache.db");
+            var dbPath = Path.Combine(AppInfoService.AppDataPath, "Data", "offline_cache.db");
             var dir = Path.GetDirectoryName(dbPath);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
