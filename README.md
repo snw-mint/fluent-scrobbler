@@ -1,11 +1,23 @@
 # <img src="Assets/logo.png" width="50" align="center"> Fluent Scrobbler &nbsp; [ ![lastest version](<https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsnw-mint%2Ffluent-scrobbler%2Frefs%2Fheads%2Fmain%2Fapp.manifest&query=%2F*%5Blocal-name()%3D'assembly'%5D%2F*%5Blocal-name()%3D'assemblyIdentity'%5D%2F%40version&style=plastic&label=version>) ](https://github.com/snw-mint/fluent-scrobbler/releases) [ ![last commit](https://img.shields.io/github/last-commit/snw-mint/fluent-scrobbler?color=%230078D4&style=plastic) ](https://github.com/snw-mint/fluent-scrobbler/activity) [ ![license](https://img.shields.io/badge/GPLv3-message?style=flat&label=license&color=%230078D4&style=plastic) ](https://github.com/snw-mint/fluent-scrobbler?tab=GPL-3.0-1-ov-file)
 
-![Fluent Scrobbler](https://raw.githubusercontent.com/snw-mint/fluent-scrobbler/refs/heads/main/Repo/main.png)
+![Fluent Scrobbler](repo/main.webp)
+
+<p align="center">
+  <strong>A Lightweight, and Modern Scrobbler for Windows 11</strong>
+</p>
+
+<p align="center">
+  <a href="https://snw-mint.github.io/fluent-scrobbler/">Overview</a> •
+  <a href="https://github.com/snw-mint/fluent-scrobbler/releases">Installation</a> •
+  <a href="https://snw-mint.github.io/fluent-scrobbler/privacy.html">Privacy</a> •
+  <a href="https://snw-mint.github.io/fluent-scrobbler/terms.html">Terms</a> •
+  <a href=".github/CONTRIBUTING.md">Contributing</a> •
+</p>
 
 ---
 
 > [!NOTE]
-> **Beta Release Available!**  
+> **Beta Release Available!**
 > Fluent Scrobbler is currently in **Initial Beta**. Core features are functional, but you may encounter minor bugs or UI polish issues. Feedback and bug reports are greatly appreciated!
 
 ## Features
@@ -38,11 +50,7 @@
 
 ## Privacy
 
-I value your privacy. Fluent Scrobbler is built around the following principles:
-
-- **No Data Collection**: I do not collect, track, or share any telemetry or usage metrics.
-- **Local Credentials**: Authentication tokens and application settings are stored strictly locally on your machine.
-- **Direct Requests**: All API calls occur directly between your device and official Last.fm endpoints over HTTPS.
+I value your privacy. Please read the [Privacy Policy](https://snw-mint.github.io/fluent-scrobbler/privacy.html) to more information.
 
 ## Feedback & Bug Reports
 
@@ -57,8 +65,8 @@ This project is licensed under the **GNU General Public License v3.0** - see the
 
 ### Legal Disclaimer
 
-Fluent Scrobbler is an independent open-source application developed by me. It is not affiliated with, endorsed by, or sponsored by Last.fm, CBS Interactive, or Paramount Global. All trademarks and brand names belong to their respective owners.
+Fluent Scrobbler is an independent open-source application developed by me. It is not affiliated with, endorsed by, or sponsored by Last.fm, CBS Interactive. All trademarks and brand names belong to their respective owners.
 
 ---
 
-by [Snow Mint](https://github.com/snw-mint/fluent-scrobbler/releases)
+by [Snow Mint](https://github.com/snw-mint/fluent-scrobbler)
