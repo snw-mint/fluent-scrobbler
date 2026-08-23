@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
@@ -9,7 +9,7 @@
   <Identity
     Name="SnowMint.FluentScrobbler"
     Publisher="CN=F1453FA1-AD03-43D6-B338-B09F9D23593A"
-    Version="0.5..0" />
+    Version="0.5.0.0" />
 
   <Properties>
     <DisplayName>FluentScrobbler</DisplayName>
