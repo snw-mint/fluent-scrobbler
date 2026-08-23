@@ -290,6 +290,7 @@ namespace FluentScrobbler
                     nameof(AccountPage) => "AccountPage",
                     nameof(ContributePage) => "ContributePage",
                     nameof(AboutPage) => "AboutPage",
+                    nameof(LicensesPage) => "AboutPage",
                     _ => null
                 };
 

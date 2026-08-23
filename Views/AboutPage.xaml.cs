@@ -104,5 +104,10 @@ namespace FluentScrobbler.Views
             await Task.Delay(2000);
             CopyButtonText.Text = "Copy System Info for Bug Report";
         }
+
+        private void OpenLicensesButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame?.Navigate(typeof(LicensesPage));
+        }
     }
 }

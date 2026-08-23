@@ -101,6 +101,13 @@
                             <TextBlock Text="License" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
                             <TextBlock Text="GPL-3.0 License" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                         </Grid>
+                        <MenuFlyoutSeparator />
+                        <Button x:Name="OpenLicensesButton" Click="OpenLicensesButton_Click" HorizontalAlignment="Stretch" Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <ic:SymbolIcon Symbol="Code" FontSize="16" />
+                                <TextBlock Text="Open Source Licenses" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </StackPanel>
