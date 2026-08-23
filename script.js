@@ -11,15 +11,9 @@
     document.documentElement.setAttribute("data-theme", theme);
     themeToggle.classList.toggle("is-dark", theme === "dark");
     themeToggle.setAttribute("aria-pressed", theme === "dark");
-    themeToggle.setAttribute(
-      "aria-label",
-      theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
-    );
+    themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
     if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        "content",
-        theme === "dark" ? "#0b0c0f" : "#0f6cbd",
-      );
+      metaThemeColor.setAttribute("content", theme === "dark" ? "#0b0c0f" : "#0f6cbd");
     }
     if (persist) {
       localStorage.setItem("theme-preference", theme);
@@ -37,24 +31,21 @@
   });
 
   themeToggle.addEventListener("click", () => {
-    const isDark =
-      document.documentElement.getAttribute("data-theme") === "dark";
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     applyTheme(isDark ? "light" : "dark");
   });
 })();
 
-document
-  .querySelectorAll(".feature-card, .minor-card, .support-card")
-  .forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+document.querySelectorAll(".feature-card, .minor-card, .support-card").forEach((card) => {
+  card.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-      card.style.setProperty("--mouse-x", `${x}px`);
-      card.style.setProperty("--mouse-y", `${y}px`);
-    });
+    card.style.setProperty("--mouse-x", `${x}px`);
+    card.style.setProperty("--mouse-y", `${y}px`);
   });
+});
 
 const observerOptions = {
   root: null,
@@ -70,11 +61,9 @@ const observer = new IntersectionObserver((entries, observer) => {
   });
 }, observerOptions);
 
-document
-  .querySelectorAll(".showcase-image-wrapper, .showcase-card")
-  .forEach((el) => {
-    observer.observe(el);
-  });
+document.querySelectorAll(".showcase-image-wrapper, .showcase-card").forEach((el) => {
+  observer.observe(el);
+});
 
 const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
 const navLinks = document.querySelector(".nav-links");

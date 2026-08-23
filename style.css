@@ -15,14 +15,11 @@
   --color-text-main: #000000;
   --color-text-muted: #616161;
   --color-border: #e0e0e0;
-  --shadow-card:
-    0 0.125rem 0.25rem rgba(0, 0, 0, 0.04), 0 0 0.125rem rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.04), 0 0 0.125rem rgba(0, 0, 0, 0.06);
   --shadow-float: 0 0.5rem 1rem rgba(0, 0, 0, 0.14);
   --radius-card: 0.5rem;
   --radius-button: 0.25rem;
-  --font-stack:
-    "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont,
-    sans-serif;
+  --font-stack: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 :root[data-theme="dark"] {
@@ -194,22 +191,14 @@ body {
 
 .hero,
 .download-hero {
-  background: radial-gradient(
-    112.37% 96.84% at 50% 3.16%,
-    #ffffff 55%,
-    #f4fafd 81.63%
-  );
+  background: radial-gradient(112.37% 96.84% at 50% 3.16%, #ffffff 55%, #f4fafd 81.63%);
   padding: 5rem 0;
   text-align: center;
 }
 
 [data-theme="dark"] .hero,
 [data-theme="dark"] .download-hero {
-  background: radial-gradient(
-    112.37% 96.84% at 50% 3.16%,
-    #0b0c0f 55%,
-    #0f1724 81.63%
-  );
+  background: radial-gradient(112.37% 96.84% at 50% 3.16%, #0b0c0f 55%, #0f1724 81.63%);
 }
 
 .hero-content {
@@ -487,14 +476,14 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--color-text-muted);
   line-height: 1.45;
 }
 
 .beta-disclaimer-box svg {
-  flex-shrink: 0;
-  color: var(--color-primary);
+ width: 35px;
+ height: 35px;
 }
 
 .beta-disclaimer-box strong {
@@ -926,13 +915,7 @@ body {
   max-width: 56.25rem;
   margin: 0 auto;
   overflow: hidden;
-  -webkit-mask: linear-gradient(
-    90deg,
-    transparent,
-    white 15%,
-    white 85%,
-    transparent
-  );
+  -webkit-mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
   mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
 }
 
@@ -1106,11 +1089,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(
-    600px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-    rgba(15, 108, 189, 0.08),
-    transparent 40%
-  );
+  background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(15, 108, 189, 0.08), transparent 40%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -1120,11 +1099,7 @@ body {
 [data-theme="dark"] .feature-card::after,
 [data-theme="dark"] .minor-card::after,
 [data-theme="dark"] .support-card::after {
-  background: radial-gradient(
-    600px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-    rgba(255, 255, 255, 0.06),
-    transparent 40%
-  );
+  background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 255, 255, 0.06), transparent 40%);
 }
 
 .feature-card:hover::after,
