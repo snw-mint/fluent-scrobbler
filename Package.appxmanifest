@@ -1,23 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
-  IgnorableNamespaces="uap rescap systemai">
+  IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="DD8D7946-A7EF-4537-BA25-EDEF1413924F"
-    Publisher="CN=AppPublisher"
-    Version="0.2.0" />
-
-  <mp:PhoneIdentity PhoneProductId="DD8D7946-A7EF-4537-BA25-EDEF1413924F" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+    Name="SnowMint.FluentScrobbler"
+    Publisher="CN=F1453FA1-AD03-43D6-B338-B09F9D23593A"
+    Version="0.4.0.0" />
 
   <Properties>
     <DisplayName>FluentScrobbler</DisplayName>
-    <PublisherDisplayName>AppPublisher</PublisherDisplayName>
+    <PublisherDisplayName>Snow Mint</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -48,6 +44,5 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <systemai:Capability Name="systemAIModels"/>
   </Capabilities>
 </Package>
