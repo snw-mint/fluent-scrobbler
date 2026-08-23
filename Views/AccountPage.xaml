@@ -90,6 +90,52 @@
                 </Border>
             </StackPanel>
 
+            <StackPanel Spacing="8" Margin="0,8,0,0">
+                <TextBlock Text="Privacy &amp; Terms" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <TextBlock Text="Privacy Policy" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Learn how your credentials and listening history are handled locally." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <HyperlinkButton Grid.Column="2" NavigateUri="https://snw-mint.github.io/fluent-scrobbler/privacy.html" VerticalAlignment="Center" ToolTipService.ToolTip="Open in browser">
+                            <ic:SymbolIcon Symbol="Open" FontSize="16" />
+                        </HyperlinkButton>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="DocumentBulletList" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <TextBlock Text="Terms of Service" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Read our usage terms and open-source policies." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <HyperlinkButton Grid.Column="2" NavigateUri="https://snw-mint.github.io/fluent-scrobbler/terms.html" VerticalAlignment="Center" ToolTipService.ToolTip="Open in browser">
+                            <ic:SymbolIcon Symbol="Open" FontSize="16" />
+                        </HyperlinkButton>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 </Page>
