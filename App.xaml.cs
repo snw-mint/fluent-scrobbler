@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
 using FluentScrobbler.Services;
 
@@ -89,10 +91,19 @@ namespace FluentScrobbler
             LogService.LogError("[Unobserved Task Exception]", e.Exception);
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            _window = new MainWindow();
+            var mainInstance = AppInstance.FindOrRegisterForKey("FluentScrobbler-MainInstance");
+            if (!mainInstance.IsCurrent)
+            {
+                var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+                await mainInstance.RedirectActivationToAsync(activatedArgs);
+                Process.GetCurrentProcess().Kill();
+                return;
+            }
 
+            AppInstance.GetCurrent().Activated += OnAppInstanceActivated;
+            _window = new MainWindow();
             string[] commandLineArgs = Environment.GetCommandLineArgs();
             bool hasMinimizedFlag = Array.Exists(commandLineArgs, arg => string.Equals(arg, "--minimized", StringComparison.OrdinalIgnoreCase));
 
@@ -100,6 +111,16 @@ namespace FluentScrobbler
             {
                 _window.Activate();
             }
+        }
+
+        private void OnAppInstanceActivated(object? sender, AppActivationArguments e)
+        {
+            MainWindow.Current?.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (MainWindow.Current == null) return;
+                MainWindow.Current.AppWindow.Show();
+                MainWindow.Current.Activate();
+            });
         }
     }
 }
