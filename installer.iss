@@ -21,6 +21,11 @@ WizardStyle=modern
 CloseApplications=yes
 CloseApplicationsFilter=FluentScrobbler.exe
 SetupIconFile=Assets\AppIcon.ico
+LicenseFile=Repo\setup\LICENSE.txt
+WizardImageFile=Repo\setup\WizardImageFile.bmp
+WizardSmallImageFile=Repo\setup\WizardSmallImageFile.bmp
+DisableWelcomePage=no
+DisableFinishedPage=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -28,9 +33,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "autostart"; Description: "Start Fluent Scrobbler with Windows"; GroupDescription: "Additional options:"
-
 [Files]
-Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,*.deps.json"
+Source: "bin\Release\net8.0-windows10.0.26100.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,*.deps.json"
 
 [Icons]
 Name: "{group}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"
