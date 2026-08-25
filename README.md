@@ -14,6 +14,12 @@
   <a href=".github/CONTRIBUTING.md">Contributing</a> •
 </p>
 
+<p align="center">
+  <a href="https://get.microsoft.com/installer/download/9N5RMD87SPVM?referrer=appbadge" target="_self" >
+    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+  </a>
+</p>
+
 ---
 
 > [!NOTE]
