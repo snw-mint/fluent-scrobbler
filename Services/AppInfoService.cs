@@ -13,6 +13,21 @@ namespace FluentScrobbler.Services
         public const string AppDataFolderName = "FluentScrobbler";
 #endif
 
+        public static bool IsPackaged
+        {
+            get
+            {
+                try
+                {
+                    return Package.Current != null && !string.IsNullOrEmpty(Package.Current.Id.FamilyName);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         public static string AppDataPath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             AppDataFolderName

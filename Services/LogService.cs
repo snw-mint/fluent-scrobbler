@@ -56,14 +56,27 @@ namespace FluentScrobbler.Services
         {
             try
             {
-                Directory.CreateDirectory(LogFolderPath);
-                if (File.Exists(LogFilePath))
+                string dir = AppInfoService.IsPackaged
+                    ? Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "Packages",
+                        "SnowMint.FluentScrobbler_cms0gyw6zz74e",
+                        "LocalCache",
+                        "Local",
+                        AppInfoService.AppDataFolderName,
+                        "Logs"
+                    )
+                    : LogFolderPath;
+
+                Directory.CreateDirectory(dir);
+                string file = Path.Combine(dir, "app.log");
+                if (File.Exists(file))
                 {
-                    Process.Start("explorer.exe", $"/select,\"{LogFilePath}\"");
+                    Process.Start("explorer.exe", $"/select,\"{file}\"");
                 }
                 else
                 {
-                    Process.Start("explorer.exe", LogFolderPath);
+                    Process.Start("explorer.exe", dir);
                 }
             }
             catch
