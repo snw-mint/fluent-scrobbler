@@ -28,16 +28,18 @@ namespace FluentScrobbler.Services
         public static string GetLogFilePath() => LogFilePath;
         public static string GetLogFolderPath() => LogFolderPath;
 
-        public static void LogInfo(string message) => Log("INFO", message);
-        public static void LogWarning(string message) => Log("WARN", message);
+        public static void LogInfo(string message) { }
+        public static void LogWarning(string message) { }
         public static void LogError(string message, Exception? ex = null)
         {
-            string fullMessage = ex != null ? $"{message}\nException: {ex}" : message;
-            Log("ERROR", fullMessage);
+            string msg = ex != null ? $"{message}\nException: {ex}" : message;
+            Log("ERROR", msg);
         }
 
         public static void Log(string level, string message)
         {
+            if (level != "ERROR") return;
+
             try
             {
                 lock (LogLock)

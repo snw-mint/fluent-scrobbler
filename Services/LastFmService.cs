@@ -186,7 +186,7 @@ namespace FluentScrobbler.Services
             return null;
         }
 
-        public async Task OpenAuthPageInBrowserAsync(string? token = null)
+        public Task OpenAuthPageInBrowserAsync(string? token = null)
         {
             string authUrl = string.IsNullOrEmpty(token)
                 ? $"https://www.last.fm/api/auth/?api_key={ApiKey}"
@@ -217,6 +217,8 @@ namespace FluentScrobbler.Services
                     LogService.LogError("[Auth Error] Failed to open auth URL in browser", cmdEx);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         public async Task<string?> FetchSessionKeyAsync(string token)
@@ -330,7 +332,10 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
-                LogService.LogError("[API Error] Exception fetching user info", ex);
+                if (ex is not (HttpRequestException or TaskCanceledException or TimeoutException))
+                {
+                    LogService.LogError("[API Error] Exception fetching user info", ex);
+                }
             }
 
             return null;
@@ -461,7 +466,10 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
-                LogService.LogError("[API Error] Exception fetching recent tracks", ex);
+                if (ex is not (HttpRequestException or TaskCanceledException or TimeoutException))
+                {
+                    LogService.LogError("[API Error] Exception fetching recent tracks", ex);
+                }
                 if (_cachedRecentTracks != null && _lastFetchUsername == username && fromTimestamp == null)
                     return _cachedRecentTracks;
             }

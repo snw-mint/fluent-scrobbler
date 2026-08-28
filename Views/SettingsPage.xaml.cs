@@ -27,7 +27,7 @@ namespace FluentScrobbler.Views
             }
         }
 
-        private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
+        private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (isSourceFilteringExpanded)
             {
@@ -57,7 +57,7 @@ namespace FluentScrobbler.Views
             UsePrimaryArtistOnlyStatusText.Text = isPrimaryArtistOnly ? "On" : "Off";
             UsePrimaryArtistOnlyToggle.Toggled += UsePrimaryArtistOnlyToggle_Toggled;
 
-            bool isStartupEnabled = StartupService.IsStartupEnabled();
+            bool isStartupEnabled = await StartupService.IsStartupEnabledAsync();
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartOnStartupToggle.IsOn = isStartupEnabled;
             StartOnStartupStatusText.Text = isStartupEnabled ? "On" : "Off";
@@ -184,13 +184,25 @@ namespace FluentScrobbler.Views
             }
         }
 
-        private void StartOnStartupToggle_Toggled(object sender, RoutedEventArgs e)
+        private async void StartOnStartupToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (StartOnStartupStatusText != null && StartOnStartupToggle != null)
             {
                 bool isOn = StartOnStartupToggle.IsOn;
                 StartOnStartupStatusText.Text = isOn ? "On" : "Off";
-                StartupService.SetStartup(isOn);
+                await StartupService.SetStartupAsync(isOn);
+
+                if (AppInfoService.IsPackaged)
+                {
+                    bool actual = await StartupService.IsStartupEnabledAsync();
+                    if (actual != isOn)
+                    {
+                        StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
+                        StartOnStartupToggle.IsOn = actual;
+                        StartOnStartupStatusText.Text = actual ? "On" : "Off";
+                        StartOnStartupToggle.Toggled += StartOnStartupToggle_Toggled;
+                    }
+                }
             }
         }
 
