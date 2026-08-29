@@ -21,6 +21,7 @@ namespace FluentScrobbler.Services
         private const string LocalSettingsAllowedKey = "AllowedScrobbleSources";
         private const string LocalSettingsKnownKey = "KnownScrobbleSources";
         private const string PrimaryArtistOnlyKey = "UsePrimaryArtistOnly";
+        private const string CleanTrackTitlesKey = "CleanTrackTitles";
         private const string MinTrackLengthKey = "MinimumTrackLengthSeconds";
         private const string SendNowPlayingKey = "SendNowPlayingNotifications";
         private const string PercentageThresholdKey = "ScrobblePercentageThreshold";
@@ -87,6 +88,23 @@ namespace FluentScrobbler.Services
         {
             var dict = LoadSettingsFromFile();
             dict[PrimaryArtistOnlyKey] = enabled.ToString();
+            SaveSettingsToFile(dict);
+        }
+
+        public bool IsCleanTrackTitlesEnabled()
+        {
+            var dict = LoadSettingsFromFile();
+            if (dict.TryGetValue(CleanTrackTitlesKey, out string? val) && bool.TryParse(val, out bool res))
+            {
+                return res;
+            }
+            return false;
+        }
+
+        public void SetCleanTrackTitlesEnabled(bool enabled)
+        {
+            var dict = LoadSettingsFromFile();
+            dict[CleanTrackTitlesKey] = enabled.ToString();
             SaveSettingsToFile(dict);
         }
 
@@ -164,6 +182,19 @@ namespace FluentScrobbler.Services
 
             string cleaned = PrimaryArtistRegex.Replace(artist, string.Empty).Trim();
             return string.IsNullOrWhiteSpace(cleaned) ? artist.Trim() : cleaned;
+        }
+
+        private static readonly Regex CleanTrackTitleRegex = new(
+            @"\s*[\(\[]\s*(?:(?:\d{4}\s*[-–—/]?\s*)?(?:digital\s+)?remaster(?:ed)?(?:\s+(?:version|\d{4}))?|remaster(?:ed)?(?:\s+\d{4})?|7[""”']*(?:\s*(?:edit|mix|version|single))?|radio\s+(?:edit|mix|version)|single\s+version)\s*[\)\]]|\s*[-–—]\s*(?:(?:\d{4}\s*[-–—/]?\s*)?(?:digital\s+)?remaster(?:ed)?(?:\s+(?:version|\d{4}))?|remaster(?:ed)?(?:\s+\d{4})?|7[""”']*(?:\s*(?:edit|mix|version|single))?|radio\s+(?:edit|mix|version)|single\s+version)\s*$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled
+        );
+
+        public static string CleanTrackTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return title;
+
+            string cleaned = CleanTrackTitleRegex.Replace(title, string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(cleaned) ? title.Trim() : cleaned;
         }
 
         public List<string> GetKnownSources()
@@ -310,7 +341,12 @@ namespace FluentScrobbler.Services
                             {
                                 artist = FormatPrimaryArtist(artist);
                             }
-                            return (mediaProperties.Title, artist, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
+                            string title = mediaProperties.Title.Trim();
+                            if (IsCleanTrackTitlesEnabled())
+                            {
+                                title = CleanTrackTitle(title);
+                            }
+                            return (title, artist, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
                         }
                     }
                     catch (Exception ex)

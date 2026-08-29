@@ -97,6 +97,28 @@
                         </StackPanel>
                     </Grid>
                 </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Broom" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <TextBlock Text="Clean Track Titles" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="Remove tags like &quot;Radio Edit&quot;, &quot;Single Version&quot;, &quot;Remastered&quot;, and format mixes (e.g., 7&quot; Version)." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock x:Name="CleanTrackTitlesStatusText" Text="Off" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" />
+                            <ToggleSwitch x:Name="CleanTrackTitlesToggle" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" Toggled="CleanTrackTitlesToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <StackPanel Spacing="8" Margin="0,8,0,0">

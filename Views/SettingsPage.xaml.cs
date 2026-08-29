@@ -57,6 +57,12 @@ namespace FluentScrobbler.Views
             UsePrimaryArtistOnlyStatusText.Text = isPrimaryArtistOnly ? "On" : "Off";
             UsePrimaryArtistOnlyToggle.Toggled += UsePrimaryArtistOnlyToggle_Toggled;
 
+            bool isCleanTrackTitles = mediaService.IsCleanTrackTitlesEnabled();
+            CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
+            CleanTrackTitlesToggle.IsOn = isCleanTrackTitles;
+            CleanTrackTitlesStatusText.Text = isCleanTrackTitles ? "On" : "Off";
+            CleanTrackTitlesToggle.Toggled += CleanTrackTitlesToggle_Toggled;
+
             bool isStartupEnabled = StartupService.IsStartupEnabled();
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartOnStartupToggle.IsOn = isStartupEnabled;
@@ -76,6 +82,7 @@ namespace FluentScrobbler.Views
         {
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
+            CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
         }
@@ -181,6 +188,17 @@ namespace FluentScrobbler.Views
                 UsePrimaryArtistOnlyStatusText.Text = isOn ? "On" : "Off";
                 var mediaService = new WindowsMediaService();
                 mediaService.SetPrimaryArtistOnlyEnabled(isOn);
+            }
+        }
+
+        private void CleanTrackTitlesToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (CleanTrackTitlesStatusText != null && CleanTrackTitlesToggle != null)
+            {
+                bool isOn = CleanTrackTitlesToggle.IsOn;
+                CleanTrackTitlesStatusText.Text = isOn ? "On" : "Off";
+                var mediaService = new WindowsMediaService();
+                mediaService.SetCleanTrackTitlesEnabled(isOn);
             }
         }
 

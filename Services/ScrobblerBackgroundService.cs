@@ -188,6 +188,11 @@ namespace FluentScrobbler.Services
                 string artist = rawArtist;
                 string album = props.AlbumTitle?.Trim() ?? string.Empty;
 
+                if (_windowsMediaService.IsCleanTrackTitlesEnabled())
+                {
+                    title = WindowsMediaService.CleanTrackTitle(title);
+                }
+
                 if (_windowsMediaService.IsPrimaryArtistOnlyEnabled())
                 {
                     artist = WindowsMediaService.FormatPrimaryArtist(artist);
