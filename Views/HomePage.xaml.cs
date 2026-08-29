@@ -38,6 +38,8 @@ namespace FluentScrobbler.Views
         private string _lastNowPlayingTrack = string.Empty;
         private string _lastNowPlayingArtist = string.Empty;
         private static bool _dashboardLoaded;
+        private static bool _isLoadingDashboard;
+        private DispatcherTimer? _networkDebounceTimer;
 
         private static bool _cachedOfflineBannerOpen;
         private static InfoBarSeverity _cachedOfflineSeverity = InfoBarSeverity.Warning;
@@ -281,23 +283,32 @@ namespace FluentScrobbler.Views
 
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
         {
-            this.DispatcherQueue?.TryEnqueue(async () =>
+            this.DispatcherQueue?.TryEnqueue(() =>
             {
-                bool isAvailable = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
-                if (!isAvailable)
+                _networkDebounceTimer?.Stop();
+                _networkDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+                _networkDebounceTimer.Tick += async (s, args) =>
                 {
-                    SetOfflineStatus(isOffline: true);
-                }
-                else
-                {
-                    _dashboardLoaded = false;
-                    await LoadDashboardDataAsync();
-                    _dashboardLoaded = true;
-                }
+                    _networkDebounceTimer?.Stop();
+                    _networkDebounceTimer = null;
+
+                    bool isAvailable = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+                    if (!isAvailable)
+                    {
+                        SetOfflineStatus(isOffline: true);
+                    }
+                    else
+                    {
+                        _dashboardLoaded = false;
+                        await LoadDashboardDataAsync();
+                        _dashboardLoaded = true;
+                    }
+                };
+                _networkDebounceTimer.Start();
             });
         }
 
-        private async void OnNowPlayingChanged(object? sender, NowPlayingInfo? info)
+        private void OnNowPlayingChanged(object? sender, NowPlayingInfo? info)
         {
             this.DispatcherQueue?.TryEnqueue(async () =>
             {
@@ -315,7 +326,7 @@ namespace FluentScrobbler.Views
             });
         }
 
-        private async void OnTrackScrobbled(object? sender, EventArgs e)
+        private void OnTrackScrobbled(object? sender, EventArgs e)
         {
             this.DispatcherQueue?.TryEnqueue(async () =>
             {
@@ -361,6 +372,9 @@ namespace FluentScrobbler.Views
 
         private async Task LoadDashboardDataAsync()
         {
+            if (_isLoadingDashboard) return;
+            _isLoadingDashboard = true;
+
             int hour = DateTime.Now.Hour;
             string greeting = hour switch
             {
@@ -377,6 +391,7 @@ namespace FluentScrobbler.Views
                 DashboardTitleText.Text = $"{greeting}, {displayName}";
                 DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
                 CacheCurrentState();
+                _isLoadingDashboard = false;
                 return;
             }
 
@@ -419,7 +434,7 @@ namespace FluentScrobbler.Views
                         _cachedRecentScrobbles.Clear();
                         _cachedRecentScrobbles.AddRange(historyItems);
                         RenderRecentScrobbles(historyItems);
-                        _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList());
+                        LoadArtProgressively(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList());
 
                         if (userInfo.HasValue)
                         {
@@ -520,6 +535,7 @@ namespace FluentScrobbler.Views
             DashboardTitleText.Text = $"{greeting}, {displayName}";
             DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
             CacheCurrentState();
+            _isLoadingDashboard = false;
         }
 
         private void QuickAction_Click(object sender, RoutedEventArgs e)
@@ -543,7 +559,7 @@ namespace FluentScrobbler.Views
             }
         }
 
-        private async void ExternalLink_Click(object sender, RoutedEventArgs e)
+        private void ExternalLink_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string url && !string.IsNullOrEmpty(url))
             {
@@ -791,7 +807,7 @@ namespace FluentScrobbler.Views
             return outerBorder;
         }
 
-        private async Task LoadArtProgressivelyAsync(
+        private void LoadArtProgressively(
             List<ScrobbleItem> items,
             List<(string Artist, string? Album, string Name, string? AlbumArtUrl)> trackInfos)
         {

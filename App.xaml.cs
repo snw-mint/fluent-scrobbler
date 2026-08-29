@@ -64,9 +64,10 @@ namespace FluentScrobbler
                 }
                 else if (action == "open_update_url")
                 {
+                    string defUrl = AppInfoService.IsPackaged ? UpdateService.StoreProductUrl : UpdateService.DefaultReleasesUrl;
                     string targetUrl = args.Arguments.TryGetValue("url", out var url) && !string.IsNullOrEmpty(url)
                         ? url
-                        : UpdateService.DefaultReleasesUrl;
+                        : defUrl;
 
                     _ = Windows.System.Launcher.LaunchUriAsync(new Uri(targetUrl));
                 }
@@ -104,10 +105,15 @@ namespace FluentScrobbler
 
             AppInstance.GetCurrent().Activated += OnAppInstanceActivated;
             _window = new MainWindow();
+
+            var currentArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            bool isStartupTask = currentArgs != null && currentArgs.Kind == ExtendedActivationKind.StartupTask;
             string[] commandLineArgs = Environment.GetCommandLineArgs();
             bool hasMinimizedFlag = Array.Exists(commandLineArgs, arg => string.Equals(arg, "--minimized", StringComparison.OrdinalIgnoreCase));
 
-            if (!hasMinimizedFlag)
+            bool shouldMinimize = hasMinimizedFlag || (isStartupTask && StartupService.IsStartMinimizedToTrayEnabled());
+
+            if (!shouldMinimize)
             {
                 _window.Activate();
             }

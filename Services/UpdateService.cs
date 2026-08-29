@@ -13,12 +13,13 @@ namespace FluentScrobbler.Services
         private readonly HttpClient _httpClient;
         private const string ReleasesApiUrl = "https://api.github.com/repos/snw-mint/fluent-scrobbler/releases";
         public const string DefaultReleasesUrl = "https://github.com/snw-mint/fluent-scrobbler/releases";
+        public const string StoreProductUrl = "ms-windows-store://pdp/?ProductId=9N5RMD87SPVM";
         private const string LastCheckKey = "LastUpdateCheckUtc";
         private static readonly TimeSpan Cooldown = TimeSpan.FromHours(24);
 
         public bool IsUpdateAvailable { get; private set; }
         public string LatestVersion { get; private set; } = string.Empty;
-        public string ReleaseUrl { get; private set; } = DefaultReleasesUrl;
+        public string ReleaseUrl { get; private set; } = AppInfoService.IsPackaged ? StoreProductUrl : DefaultReleasesUrl;
         public DateTime? LastCheckTime { get; private set; }
 
         public event EventHandler? UpdateStatusChanged;
@@ -114,7 +115,7 @@ namespace FluentScrobbler.Services
 
                 if (!string.IsNullOrEmpty(bestHtmlUrl))
                 {
-                    ReleaseUrl = bestHtmlUrl;
+                    ReleaseUrl = AppInfoService.IsPackaged ? StoreProductUrl : bestHtmlUrl;
                 }
 
                 LastCheckTime = DateTime.UtcNow;
