@@ -255,7 +255,7 @@ body {
 
 .hero-visual-container {
   width: 100%;
-  max-width: 50rem;
+  max-width: 100%;
   aspect-ratio: 16 / 10;
   border-radius: 0.5rem;
   border: none;
