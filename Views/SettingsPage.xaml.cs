@@ -63,6 +63,10 @@ namespace FluentScrobbler.Views
             CleanTrackTitlesStatusText.Text = isCleanTrackTitles ? "On" : "Off";
             CleanTrackTitlesToggle.Toggled += CleanTrackTitlesToggle_Toggled;
 
+            CleanTrackTitlesInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("CleanTrackTitles")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
             bool isStartupEnabled = StartupService.IsStartupEnabled();
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartOnStartupToggle.IsOn = isStartupEnabled;
@@ -80,6 +84,9 @@ namespace FluentScrobbler.Views
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            FeatureBadgeService.MarkFeatureAsSeen("CleanTrackTitles");
+            MainWindow.Current?.UpdateSettingsBadge();
+
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;

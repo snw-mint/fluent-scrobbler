@@ -526,6 +526,29 @@ namespace FluentScrobbler
                 ContentFrame.Navigate(typeof(HomePage));
                 SetSelectedItemByTag("HomePage");
             }
+
+            if (FeatureBadgeService.HasUnseenSettingsFeatures())
+            {
+                SettingsNavInfoBadge.Visibility = Visibility.Visible;
+            }
+        }
+
+        public void UpdateSettingsBadge()
+        {
+            if (SettingsNavInfoBadge != null)
+            {
+                SettingsNavInfoBadge.Visibility = FeatureBadgeService.HasUnseenSettingsFeatures()
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
+        }
+
+        public void HideSettingsBadge()
+        {
+            if (SettingsNavInfoBadge != null)
+            {
+                SettingsNavInfoBadge.Visibility = Visibility.Collapsed;
+            }
         }
 
         public void NavigateToHome()

@@ -109,7 +109,10 @@
                         <ic:SymbolIcon Grid.Column="0" Symbol="Broom" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                            <TextBlock Text="Clean Track Titles" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Clean Track Titles" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                                <InfoBadge x:Name="CleanTrackTitlesInfoBadge" Visibility="Collapsed" VerticalAlignment="Center" />
+                            </StackPanel>
                             <TextBlock Text="Remove tags like &quot;Radio Edit&quot;, &quot;Single Version&quot;, &quot;Remastered&quot;, and format mixes (e.g., 7&quot; Version)." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
