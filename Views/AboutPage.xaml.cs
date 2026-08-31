@@ -79,10 +79,7 @@ namespace FluentScrobbler.Views
 
         private async void UpdateNowButton_Click(object sender, RoutedEventArgs e)
         {
-            string defUrl = AppInfoService.IsPackaged ? UpdateService.StoreProductUrl : UpdateService.DefaultReleasesUrl;
-            string url = string.IsNullOrEmpty(UpdateService.Instance.ReleaseUrl) 
-                ? defUrl 
-                : UpdateService.Instance.ReleaseUrl;
+            string url = AppInfoService.IsPackaged ? UpdateService.StoreProductUrl : UpdateService.DefaultReleasesUrl;
             await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
         }
 

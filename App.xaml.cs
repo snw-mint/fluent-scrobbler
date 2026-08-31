@@ -64,12 +64,8 @@ namespace FluentScrobbler
                 }
                 else if (action == "open_update_url")
                 {
-                    string defUrl = AppInfoService.IsPackaged ? UpdateService.StoreProductUrl : UpdateService.DefaultReleasesUrl;
-                    string targetUrl = args.Arguments.TryGetValue("url", out var url) && !string.IsNullOrEmpty(url)
-                        ? url
-                        : defUrl;
-
-                    _ = Windows.System.Launcher.LaunchUriAsync(new Uri(targetUrl));
+                    string url = AppInfoService.IsPackaged ? UpdateService.StoreProductUrl : UpdateService.DefaultReleasesUrl;
+                    _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
                 }
             }
         }

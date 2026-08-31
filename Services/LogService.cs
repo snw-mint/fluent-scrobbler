@@ -78,7 +78,7 @@ namespace FluentScrobbler.Services
                 }
                 else
                 {
-                    Process.Start("explorer.exe", dir);
+                    Process.Start("explorer.exe", $"\"{dir}\"");
                 }
             }
             catch

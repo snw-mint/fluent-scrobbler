@@ -1,7 +1,3 @@
-#ifndef MyAppVersion
-  #define MyAppVersion "0.6.0"
-#endif
-
 [Setup]
 AppName=Fluent Scrobbler
 AppVersion={#MyAppVersion}

@@ -19,7 +19,7 @@ namespace FluentScrobbler.Services
 
         public bool IsUpdateAvailable { get; private set; }
         public string LatestVersion { get; private set; } = string.Empty;
-        public string ReleaseUrl { get; private set; } = AppInfoService.IsPackaged ? StoreProductUrl : DefaultReleasesUrl;
+        public string ReleaseUrl => AppInfoService.IsPackaged ? StoreProductUrl : DefaultReleasesUrl;
         public DateTime? LastCheckTime { get; private set; }
 
         public event EventHandler? UpdateStatusChanged;
@@ -77,7 +77,6 @@ namespace FluentScrobbler.Services
                 var root = doc.RootElement;
 
                 string bestTagName = string.Empty;
-                string bestHtmlUrl = string.Empty;
 
                 if (root.ValueKind == JsonValueKind.Array)
                 {
@@ -94,12 +93,9 @@ namespace FluentScrobbler.Services
                             tag = nameProp.GetString() ?? string.Empty;
                         }
 
-                        string url = release.TryGetProperty("html_url", out var urlProp) ? urlProp.GetString() ?? string.Empty : string.Empty;
-
                         if (string.IsNullOrEmpty(bestTagName) || IsNewerVersion(tag, bestTagName))
                         {
                             bestTagName = tag;
-                            bestHtmlUrl = url;
                         }
                     }
                 }
@@ -110,12 +106,6 @@ namespace FluentScrobbler.Services
                     {
                         bestTagName = nameProp.GetString() ?? string.Empty;
                     }
-                    bestHtmlUrl = root.TryGetProperty("html_url", out var urlProp) ? urlProp.GetString() ?? string.Empty : string.Empty;
-                }
-
-                if (!string.IsNullOrEmpty(bestHtmlUrl))
-                {
-                    ReleaseUrl = AppInfoService.IsPackaged ? StoreProductUrl : bestHtmlUrl;
                 }
 
                 LastCheckTime = DateTime.UtcNow;
