@@ -408,7 +408,7 @@ namespace FluentScrobbler.Views
                         DateTime todayMidnight = DateTime.Today;
                         long todayUts = new DateTimeOffset(todayMidnight).ToUnixTimeSeconds();
                         var tracksTodayTask = _lastFmService.GetRecentTracksAsync(username, limit: 200, fromTimestamp: todayUts);
-                        var recentHistoryTask = _lastFmService.GetRecentTracksAsync(username, limit: 5);
+                        var recentHistoryTask = _lastFmService.GetRecentTracksAsync(username, limit: 5, forceRefresh: true);
 
                         await Task.WhenAll(userInfoTask, tracksTodayTask, recentHistoryTask);
 
