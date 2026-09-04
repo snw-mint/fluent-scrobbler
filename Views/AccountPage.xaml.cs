@@ -158,7 +158,8 @@ namespace FluentScrobbler.Views
                         {
                             try
                             {
-                                UserAvatarImage.Source = new BitmapImage(new Uri(imageUrl));
+                                var bmp = new BitmapImage { DecodePixelWidth = 160, UriSource = new Uri(imageUrl) };
+                                UserAvatarImage.Source = bmp;
                                 UserAvatarImage.Visibility = Visibility.Visible;
                                 UserAvatarIcon.Visibility = Visibility.Collapsed;
                             }

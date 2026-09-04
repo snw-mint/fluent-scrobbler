@@ -96,7 +96,8 @@ namespace FluentScrobbler.Views
                 {
                     try
                     {
-                        NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(_cachedNowPlayingArtUrl));
+                        var bmp = new BitmapImage { DecodePixelWidth = 160, UriSource = new Uri(_cachedNowPlayingArtUrl) };
+                        NowPlayingAlbumArtImage.Source = bmp;
                         NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
                         NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
                     }
@@ -353,7 +354,8 @@ namespace FluentScrobbler.Views
             {
                 try
                 {
-                    NowPlayingAlbumArtImage.Source = new BitmapImage(new Uri(artUrl));
+                    var bmp = new BitmapImage { DecodePixelWidth = 160, UriSource = new Uri(artUrl) };
+                    NowPlayingAlbumArtImage.Source = bmp;
                     NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
                     NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
                 }
@@ -705,7 +707,8 @@ namespace FluentScrobbler.Views
                 {
                     try
                     {
-                        img.Source = new BitmapImage(new Uri(item.CoverUrl));
+                        var bmp = new BitmapImage { DecodePixelWidth = 104, UriSource = new Uri(item.CoverUrl) };
+                        img.Source = bmp;
                         img.Visibility = Visibility.Visible;
                         icon.Visibility = Visibility.Collapsed;
                     }
