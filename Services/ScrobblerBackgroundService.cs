@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Media.Control;
-using Microsoft.UI.Xaml;
 using FluentScrobbler.Services.Media;
 
 namespace FluentScrobbler.Services
@@ -31,7 +30,8 @@ namespace FluentScrobbler.Services
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
         private readonly System.Collections.Generic.HashSet<string> _notifiedNewInstances = new(StringComparer.OrdinalIgnoreCase);
 
-        private DispatcherTimer? _timer;
+        private CancellationTokenSource? _cts;
+        private GlobalSystemMediaTransportControlsSessionManager? _sessionMgr;
 
         private string _currentTrack = string.Empty;
         private string _currentArtist = string.Empty;
@@ -41,7 +41,6 @@ namespace FluentScrobbler.Services
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
         private bool _isPlaying;
-        private bool _isProcessing;
         private string _lastScrobbledSignature = string.Empty;
 
         public event EventHandler? TrackScrobbled;
@@ -54,11 +53,27 @@ namespace FluentScrobbler.Services
 
         public void Start()
         {
-            if (_timer != null) return;
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(2);
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
+            if (_cts != null) return;
+            _cts = new CancellationTokenSource();
+            _ = RunLoopAsync(_cts.Token);
+        }
+
+        private async Task RunLoopAsync(CancellationToken token)
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+            while (!token.IsCancellationRequested)
+            {
+                await TickAsync();
+
+                try
+                {
+                    if (!await timer.WaitForNextTickAsync(token)) break;
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
         }
 
         private void SetStatus(ScrobbleStatus status, string? track = null, string? artist = null, string? album = null)
@@ -87,11 +102,8 @@ namespace FluentScrobbler.Services
             return false;
         }
 
-        private async void Timer_Tick(object? sender, object e)
+        private async Task TickAsync()
         {
-            if (_isProcessing) return;
-            _isProcessing = true;
-
             try
             {
                 if (!_lastFmService.IsLoggedIn())
@@ -107,18 +119,26 @@ namespace FluentScrobbler.Services
                     return;
                 }
 
-                var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                var sessions = manager?.GetSessions();
+                try
+                {
+                    _sessionMgr ??= await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                }
+                catch
+                {
+                    _sessionMgr = null;
+                }
+
+                var sessions = _sessionMgr?.GetSessions();
                 GlobalSystemMediaTransportControlsSession? allowedSession = null;
 
                 if (sessions != null)
                 {
+                    var knownSources = _windowsMediaService.GetKnownSources();
                     foreach (var s in sessions)
                     {
                         string sAppId = s.SourceAppUserModelId;
                         if (_lastFmService.IsLoggedIn() && !string.IsNullOrWhiteSpace(sAppId))
                         {
-                            var knownSources = _windowsMediaService.GetKnownSources();
                             if (!knownSources.Contains(sAppId) && !_notifiedNewInstances.Contains(sAppId))
                             {
                                 _notifiedNewInstances.Add(sAppId);
@@ -226,7 +246,7 @@ namespace FluentScrobbler.Services
                         NowPlayingChanged?.Invoke(this, CurrentTrack);
                         SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
                     }
-                    _elapsedSeconds += 2;
+                    _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
 
                     int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
                     int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
@@ -241,11 +261,8 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
+                _sessionMgr = null;
                 LogService.LogError("[Scrobbler Service Error] Background processing failed", ex);
-            }
-            finally
-            {
-                _isProcessing = false;
             }
         }
 

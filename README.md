@@ -1,4 +1,15 @@
-# <img src="Assets/logo.png" width="30" align="center"> Fluent Scrobbler &nbsp; [ ![lastest version](<https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsnw-mint%2Ffluent-scrobbler%2Frefs%2Fheads%2Fmain%2Fapp.manifest&query=%2F*%5Blocal-name()%3D'assembly'%5D%2F*%5Blocal-name()%3D'assemblyIdentity'%5D%2F%40version&style=plastic&label=version>) ](https://github.com/snw-mint/fluent-scrobbler/releases) [ ![license](https://img.shields.io/badge/GPLv3-message?label=license&color=%230078D4&style=plastic) ](https://github.com/snw-mint/fluent-scrobbler?tab=GPL-3.0-1-ov-file) ![Static Badge](https://img.shields.io/badge/yes-label?style=plastic&label=maintained)
+<p align="center">
+  <img src="Assets\logo.png" width="70" alt="Fluent Scrobbler Logo" />
+</p>
+
+<h1 align="center">Fluent Scrobbler</h1>
+
+<p align="center">
+  <a href="https://github.com/snw-mint/fluent-scrobbler/releases"><img src="https://img.shields.io/github/v/release/snw-mint/fluent-scrobbler?include_prereleases&display_name=release&style=plastic&color=%232485EC" alt="GitHub Release" /></a>
+  <a href="https://github.com/snw-mint/fluent-scrobbler/activity"><img src="https://img.shields.io/github/last-commit/snw-mint/fluent-scrobbler?style=plastic&color=%234767E4" alt="last commit" /></a>
+  <a href="https://github.com/snw-mint/fluent-scrobbler?tab=GPL-3.0-1-ov-file"><img src="https://img.shields.io/badge/GPLv3-message?style=plastic&label=license&color=%237642E6" alt="license" /></a>
+  <img src="https://img.shields.io/badge/yes-label?style=plastic&label=maintained" alt="maintained" />
+</p>
 
 ![Fluent Scrobbler](Repo/mockup.webp)
 
@@ -21,10 +32,6 @@
 </p>
 
 ---
-
-> [!NOTE]
-> **Beta Release Available!**
-> Fluent Scrobbler is currently in **Initial Beta**. Core features are functional, but you may encounter minor bugs or UI polish issues. Feedback and bug reports are greatly appreciated!
 
 ## Features
 

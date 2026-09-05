@@ -4,15 +4,13 @@ namespace FluentScrobbler.Services
 {
     public static class FeatureBadgeService
     {
-        private static readonly HashSet<string> SettingsFeatures = new()
-        {
-            "CleanTrackTitles"
-        };
+        private static readonly HashSet<string> SettingsFeatures = new();
 
         private static string GetKey(string id) => $"SeenFeature_{id}_{AppInfoService.Version}";
 
         public static bool IsFeatureNew(string id)
         {
+            if (!SettingsFeatures.Contains(id)) return false;
             return SettingsService.GetSetting(GetKey(id)) != "true";
         }
 

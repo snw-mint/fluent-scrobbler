@@ -33,24 +33,33 @@ namespace FluentScrobbler.Services
         );
 
         private static readonly object FileLock = new object();
+        private static Dictionary<string, string>? _cache;
+        private static readonly Dictionary<string, List<string>> _listCache = new();
 
         private static Dictionary<string, string> LoadSettingsFromFile()
         {
             lock (FileLock)
             {
+                if (_cache != null) return _cache;
+
                 try
                 {
                     if (File.Exists(SettingsFilePath))
                     {
                         string json = File.ReadAllText(SettingsFilePath);
                         var dict = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString);
-                        if (dict != null) return dict;
+                        if (dict != null)
+                        {
+                            _cache = dict;
+                            return _cache;
+                        }
                     }
                 }
                 catch
                 {
                 }
-                return new Dictionary<string, string>();
+                _cache = new Dictionary<string, string>();
+                return _cache;
             }
         }
 
@@ -58,6 +67,7 @@ namespace FluentScrobbler.Services
         {
             lock (FileLock)
             {
+                _cache = dict;
                 try
                 {
                     string dir = Path.GetDirectoryName(SettingsFilePath)!;
@@ -276,19 +286,34 @@ namespace FluentScrobbler.Services
 
         private static List<string> GetStoredList(string key)
         {
-            var dict = LoadSettingsFromFile();
-            if (dict.TryGetValue(key, out string? raw) && !string.IsNullOrWhiteSpace(raw))
+            lock (FileLock)
             {
-                return raw.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList();
+                if (_listCache.TryGetValue(key, out var cached)) return cached;
+
+                var dict = LoadSettingsFromFile();
+                if (dict.TryGetValue(key, out string? raw) && !string.IsNullOrWhiteSpace(raw))
+                {
+                    var list = raw.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    _listCache[key] = list;
+                    return list;
+                }
+
+                var empty = new List<string>();
+                _listCache[key] = empty;
+                return empty;
             }
-            return new List<string>();
         }
 
         private static void SaveStoredList(string key, List<string> list)
         {
-            var dict = LoadSettingsFromFile();
-            dict[key] = string.Join('|', list.Distinct());
-            SaveSettingsToFile(dict);
+            lock (FileLock)
+            {
+                var distinct = list.Distinct().ToList();
+                _listCache[key] = distinct;
+                var dict = LoadSettingsFromFile();
+                dict[key] = string.Join('|', distinct);
+                SaveSettingsToFile(dict);
+            }
         }
 
         public static string FormatAppDisplayName(string appId)

@@ -20,6 +20,7 @@ namespace FluentScrobbler.Services
 
         private readonly HttpClient _httpClient;
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _lastFmSubmittedScrobbles = new(StringComparer.OrdinalIgnoreCase);
+        private static (string? Username, string? SessionKey)? _cachedSession;
 
         private List<ScrobbleTrack>? _cachedRecentTracks;
         private DateTime _lastFetchTime = DateTime.MinValue;
@@ -89,15 +90,21 @@ namespace FluentScrobbler.Services
 
         public (string? Username, string? SessionKey) GetUserSession()
         {
+            if (_cachedSession.HasValue) return _cachedSession.Value;
+
             string? username = GetSetting("LastFmUsername");
-            if (string.IsNullOrEmpty(username)) return (null, null);
+            if (string.IsNullOrEmpty(username))
+            {
+                _cachedSession = (null, null);
+                return _cachedSession.Value;
+            }
 
             try
             {
                 var vault = new PasswordVault();
                 var cred = vault.Retrieve(AppInfoService.AppDataFolderName, username);
                 cred.RetrievePassword();
-                return (username, cred.Password);
+                _cachedSession = (username, cred.Password);
             }
             catch
             {
@@ -106,10 +113,15 @@ namespace FluentScrobbler.Services
                 {
                     SaveUserSession(username, oldSessionKey);
                     RemoveSetting("LastFmSessionKey");
-                    return (username, oldSessionKey);
+                    _cachedSession = (username, oldSessionKey);
                 }
-                return (username, null);
+                else
+                {
+                    _cachedSession = (username, null);
+                }
             }
+
+            return _cachedSession.Value;
         }
 
         public void SaveUserSession(string username, string sessionKey)
@@ -127,6 +139,7 @@ namespace FluentScrobbler.Services
             }
 
             RemoveSetting("LastFmSessionKey");
+            _cachedSession = (username, sessionKey);
         }
 
         public void ClearUserSession()
@@ -152,6 +165,7 @@ namespace FluentScrobbler.Services
             _lastFetchTime = DateTime.MinValue;
             _lastFetchUsername = string.Empty;
             _lastFmSubmittedScrobbles.Clear();
+            _cachedSession = null;
 
             _ = OfflineCacheService.Instance.ClearCacheAsync();
         }

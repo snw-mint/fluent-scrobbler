@@ -25,6 +25,7 @@ namespace FluentScrobbler.Views
         private string _lastNowPlayingTrack = string.Empty;
         private string _lastNowPlayingArtist = string.Empty;
         private CancellationTokenSource? _cts;
+        private bool _isRefreshing;
 
         private static readonly SemaphoreSlim _artLoadSemaphore = new(3, 3);
         private static readonly List<ScrobbleItem> _cachedScrobbles = new();
@@ -86,6 +87,63 @@ namespace FluentScrobbler.Views
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
+            _isRefreshing = false;
+        }
+
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isRefreshing || _cts == null || _cts.IsCancellationRequested) return;
+            _isRefreshing = true;
+            RefreshButton.IsEnabled = false;
+            RefreshIcon.Visibility = Visibility.Collapsed;
+            RefreshRing.Visibility = Visibility.Visible;
+            RefreshRing.IsActive = true;
+
+            try
+            {
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                if (cur != null && !_cts.IsCancellationRequested)
+                {
+                    _lastNowPlayingTrack = cur.Track;
+                    _lastNowPlayingArtist = cur.Artist;
+                    await ApplyNowPlayingAsync(cur.Artist, cur.Album, cur.Track, null, _cts.Token);
+                }
+                else
+                {
+                    SetNowPlayingIdle();
+                }
+
+                if (!_cts.IsCancellationRequested)
+                {
+                    await LoadDataAsync(_cts.Token, showLoading: false, forceRefresh: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[ScrobblesPage] Refresh failed", ex);
+            }
+            finally
+            {
+                RefreshRing.IsActive = false;
+                RefreshRing.Visibility = Visibility.Collapsed;
+                RefreshIcon.Visibility = Visibility.Visible;
+            }
+
+            try
+            {
+                if (_cts != null)
+                {
+                    await Task.Delay(5000, _cts.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                RefreshButton.IsEnabled = true;
+                _isRefreshing = false;
+            }
         }
 
         private void OnTrackScrobbledInBackground(object? sender, EventArgs e)
