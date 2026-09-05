@@ -21,28 +21,39 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Publish WinUI 3 App
-        run: >
-          dotnet publish -c Release -r win-x64 -p:Platform=x64 --self-contained true
-          -p:WindowsPackageType=None
-          -p:DebugType=none
-          -p:DebugSymbols=false
-          -p:LastFmApiKey="${{ secrets.LASTFM_API_KEY }}"
-          -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}"
-          -o ./publish
-
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      - name: Compile Inno Setup Installer
+      - name: Build and Package Installers (.exe)
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion="$version" installer.iss
+          $targets = @(
+            @{ Rid = "win-x64"; Arch = "x64"; Platform = "x64" },
+            @{ Rid = "win-x86"; Arch = "x86"; Platform = "x86" },
+            @{ Rid = "win-arm64"; Arch = "arm64"; Platform = "ARM64" }
+          )
+
+          foreach ($t in $targets) {
+            $rid = $t.Rid
+            $arch = $t.Arch
+            $platform = $t.Platform
+            $outDir = "publish\$arch"
+
+            dotnet publish -c Release -r $rid -p:Platform=$platform --self-contained true `
+              -p:WindowsPackageType=None `
+              -p:DebugType=none `
+              -p:DebugSymbols=false `
+              -p:LastFmApiKey="${{ secrets.LASTFM_API_KEY }}" `
+              -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}" `
+              -o $outDir
+
+            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion="$version" /DAppArch="$arch" /DSourceDir="$outDir" installer.iss
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Output/FluentScrobbler-Setup.exe
+          files: Output/FluentScrobbler-Setup-*.exe
           draft: true
           prerelease: true
         env:

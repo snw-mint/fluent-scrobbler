@@ -1,6 +1,19 @@
 #ifndef MyAppVersion
   #define MyAppVersion "1.0.0"
 #endif
+#ifndef AppArch
+  #define AppArch ""
+#endif
+#ifndef SourceDir
+  #define SourceDir "publish"
+#endif
+#ifndef OutputFilename
+  #if AppArch != ""
+    #define OutputFilename "FluentScrobbler-Setup-" + AppArch
+  #else
+    #define OutputFilename "FluentScrobbler-Setup"
+  #endif
+#endif
 
 [Setup]
 AppName=Fluent Scrobbler
@@ -16,7 +29,7 @@ UninstallDisplayIcon={app}\FluentScrobbler.exe
 Compression=lzma2/ultra64
 SolidCompression=yes
 OutputDir=.\Output
-OutputBaseFilename=FluentScrobbler-Setup
+OutputBaseFilename={#OutputFilename}
 WizardStyle=modern
 CloseApplications=yes
 CloseApplicationsFilter=FluentScrobbler.exe
@@ -35,7 +48,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "autostart"; Description: "Start Fluent Scrobbler with Windows"; GroupDescription: "Additional options:"
 
 [Files]
-Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,*.deps.json"
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,*.deps.json"
 
 [Icons]
 Name: "{group}\Fluent Scrobbler"; Filename: "{app}\FluentScrobbler.exe"
