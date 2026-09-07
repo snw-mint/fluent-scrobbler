@@ -10,6 +10,7 @@
 *.sln.docstates
 artifacts/
 fluent-scrobbler-main
+AppTest/
 
 # Build logs
 [Ll]og/
