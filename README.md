@@ -21,8 +21,7 @@
   <a href="https://snw-mint.github.io/fluent-scrobbler/">Overview</a> •
   <a href="https://github.com/snw-mint/fluent-scrobbler/releases">Installation</a> •
   <a href="https://snw-mint.github.io/fluent-scrobbler/privacy.html">Privacy</a> •
-  <a href="https://snw-mint.github.io/fluent-scrobbler/terms.html">Terms</a> •
-  <a href=".github/CONTRIBUTING.md">Contributing</a> •
+  <a href="https://snw-mint.github.io/fluent-scrobbler/terms.html">Terms</a>
 </p>
 
 <p align="center">
