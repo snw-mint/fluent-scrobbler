@@ -41,6 +41,7 @@
 
                     <Button x:Name="ActionButton" Grid.Column="2" VerticalAlignment="Center" Style="{ThemeResource AccentButtonStyle}" Padding="20,10" Click="OnActionButtonClick">
                         <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ProgressRing x:Name="ActionButtonRing" Width="16" Height="16" IsActive="False" Visibility="Collapsed" />
                             <FontIcon x:Name="ActionButtonIcon" Glyph="&#xE8A7;" FontSize="16" />
                             <TextBlock x:Name="ActionButtonText" Text="Login" FontSize="14" FontWeight="SemiBold" />
                         </StackPanel>

@@ -199,35 +199,50 @@ namespace FluentScrobbler.Views
             }
             else
             {
-                if (!string.IsNullOrEmpty(_currentAuthToken))
+                try
                 {
-                    string? sessionKey = await _lastFmService.FetchSessionKeyAsync(_currentAuthToken);
-                    if (!string.IsNullOrEmpty(sessionKey))
+                    ActionButton.IsEnabled = false;
+                    ActionButtonIcon.Visibility = Visibility.Collapsed;
+                    ActionButtonRing.Visibility = Visibility.Visible;
+                    ActionButtonRing.IsActive = true;
+
+                    if (!string.IsNullOrEmpty(_currentAuthToken))
                     {
-                        StopAuthPolling();
+                        string? k = await _lastFmService.FetchSessionKeyAsync(_currentAuthToken);
+                        if (!string.IsNullOrEmpty(k))
+                        {
+                            StopAuthPolling();
+                            _currentAuthToken = null;
+                            _dataLoaded = false;
+                            var (u, _) = _lastFmService.GetUserSession();
+                            NotificationService.ShowAuthSuccessNotification(u ?? "User");
+                            await LoadAccountStateAsync();
+                            return;
+                        }
+                    }
+
+                    _currentAuthToken = await _lastFmService.RequestAuthTokenAsync();
+
+                    if (!string.IsNullOrEmpty(_currentAuthToken))
+                    {
+                        AccountSubtitleText.Text = "Authorize in browser, then click Complete Login";
+                        ActionButtonText.Text = "Complete Login";
+                        await _lastFmService.OpenAuthPageInBrowserAsync(_currentAuthToken);
+                        StartAuthPolling(_currentAuthToken);
+                    }
+                    else
+                    {
+                        AccountSubtitleText.Text = "Network error: Failed to request token. Try again.";
+                        ActionButtonText.Text = "Retry Login";
                         _currentAuthToken = null;
-                        _dataLoaded = false;
-                        var (username, _) = _lastFmService.GetUserSession();
-                        NotificationService.ShowAuthSuccessNotification(username ?? "User");
-                        await LoadAccountStateAsync();
-                        return;
                     }
                 }
-
-                _currentAuthToken = await _lastFmService.RequestAuthTokenAsync();
-
-                if (!string.IsNullOrEmpty(_currentAuthToken))
+                finally
                 {
-                    AccountSubtitleText.Text = "Authorize in browser, then click Complete Login";
-                    ActionButtonText.Text = "Complete Login";
-                    await _lastFmService.OpenAuthPageInBrowserAsync(_currentAuthToken);
-                    StartAuthPolling(_currentAuthToken);
-                }
-                else
-                {
-                    AccountSubtitleText.Text = "Network error: Failed to request token. Try again.";
-                    ActionButtonText.Text = "Retry Login";
-                    _currentAuthToken = null;
+                    ActionButton.IsEnabled = true;
+                    ActionButtonRing.IsActive = false;
+                    ActionButtonRing.Visibility = Visibility.Collapsed;
+                    ActionButtonIcon.Visibility = Visibility.Visible;
                 }
             }
         }

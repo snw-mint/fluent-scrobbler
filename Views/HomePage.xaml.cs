@@ -162,8 +162,9 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            Windows.Networking.Connectivity.NetworkInformation.NetworkStatusChanged += OnNetworkStatusChanged;
 
-            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            if (!IsInternetAvailable())
             {
                 SetOfflineStatus(isOffline: true);
             }
@@ -171,7 +172,6 @@ namespace FluentScrobbler.Views
             if (!_dashboardLoaded)
             {
                 await LoadDashboardDataAsync();
-                _dashboardLoaded = true;
             }
             else
             {
@@ -207,6 +207,7 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            Windows.Networking.Connectivity.NetworkInformation.NetworkStatusChanged -= OnNetworkStatusChanged;
             OfflineCacheWorker.Instance.OfflineModeChanged -= OnOfflineModeChanged;
             OfflineCacheWorker.Instance.CacheCountChanged -= OnCacheCountChanged;
             _refreshCts?.Cancel();
@@ -343,7 +344,40 @@ namespace FluentScrobbler.Views
             MainWindow.Current?.NavigateToSourceSettings();
         }
 
+        private static bool IsInternetAvailable()
+        {
+            try
+            {
+                var p = Windows.Networking.Connectivity.NetworkInformation.GetInternetConnectionProfile();
+                if (p != null)
+                {
+                    return p.GetNetworkConnectivityLevel() == Windows.Networking.Connectivity.NetworkConnectivityLevel.InternetAccess;
+                }
+            }
+            catch
+            {
+            }
+            try
+            {
+                return System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private void OnNetworkStatusChanged(object sender)
+        {
+            TriggerNetworkDebounce();
+        }
+
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
+        {
+            TriggerNetworkDebounce();
+        }
+
+        private void TriggerNetworkDebounce()
         {
             this.DispatcherQueue?.TryEnqueue(() =>
             {
@@ -354,8 +388,8 @@ namespace FluentScrobbler.Views
                     _networkDebounceTimer?.Stop();
                     _networkDebounceTimer = null;
 
-                    bool isAvailable = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
-                    if (!isAvailable)
+                    bool avail = IsInternetAvailable();
+                    if (!avail)
                     {
                         SetOfflineStatus(isOffline: true);
                     }
@@ -363,7 +397,6 @@ namespace FluentScrobbler.Views
                     {
                         _dashboardLoaded = false;
                         await LoadDashboardDataAsync();
-                        _dashboardLoaded = true;
                     }
                 };
                 _networkDebounceTimer.Start();
@@ -448,12 +481,11 @@ namespace FluentScrobbler.Views
 
             string displayName = "User";
 
-            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            if (!IsInternetAvailable())
             {
                 SetOfflineStatus(isOffline: true);
                 DashboardTitleText.Text = $"{greeting}, {displayName}";
                 DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
-                CacheCurrentState();
                 _isLoadingDashboard = false;
                 return;
             }
@@ -593,10 +625,13 @@ namespace FluentScrobbler.Views
             catch (Exception)
             {
                 SetOfflineStatus(isOffline: true);
+                _isLoadingDashboard = false;
+                return;
             }
 
             DashboardTitleText.Text = $"{greeting}, {displayName}";
             DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
+            _dashboardLoaded = true;
             CacheCurrentState();
             _isLoadingDashboard = false;
         }

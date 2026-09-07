@@ -18,7 +18,7 @@ namespace FluentScrobbler.Services
         private readonly string ApiKey = AppSecrets.ApiKey;
         private readonly string ApiSecret = AppSecrets.ApiSecret;
 
-        private readonly HttpClient _httpClient;
+        private static readonly HttpClient _httpClient;
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _lastFmSubmittedScrobbles = new(StringComparer.OrdinalIgnoreCase);
         private static (string? Username, string? SessionKey)? _cachedSession;
 
@@ -30,13 +30,23 @@ namespace FluentScrobbler.Services
         private static (string Username, string DisplayName, string ImageUrl, int ScrobbleCount)? _cachedUserInfo;
         private static string? _cachedUserInfoUsername;
 
-        public LastFmService()
+        static LastFmService()
         {
-            _httpClient = new HttpClient
+            var h = new SocketsHttpHandler
+            {
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+                PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
+                ConnectTimeout = TimeSpan.FromSeconds(10)
+            };
+            _httpClient = new HttpClient(h)
             {
                 Timeout = TimeSpan.FromSeconds(15)
             };
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler-WindowsApp/1.0");
+        }
+
+        public LastFmService()
+        {
         }
 
         private static string? GetSetting(string key)
