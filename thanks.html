@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thank You for Downloading - Fluent Scrobbler</title>
+    <meta name="title" content="Thank You for Downloading - Fluent Scrobbler" />
+    <meta name="description" content="Thank you for downloading Fluent Scrobbler! Follow the quick setup guide, contribute on GitHub, or support the development." />
+    <meta name="author" content="snw-mint" />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="language" content="English" />
+    <meta name="application-name" content="Fluent Scrobbler" />
+    <meta name="theme-color" content="#0f6cbd" />
+    <link rel="canonical" href="https://snw-mint.github.io/fluent-scrobbler/thanks.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fluent Scrobbler" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="Thank You for Downloading - Fluent Scrobbler" />
+    <meta property="og:description" content="Thank you for downloading Fluent Scrobbler! Follow the quick setup instructions or support the project." />
+    <meta property="og:url" content="https://snw-mint.github.io/fluent-scrobbler/thanks.html" />
+    <meta property="og:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Thank You for Downloading - Fluent Scrobbler" />
+    <meta property="twitter:description" content="Thank you for downloading Fluent Scrobbler! Follow the quick setup instructions or support the project." />
+    <meta property="twitter:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .download-hero.thanks-hero,
+      [data-theme="dark"] .download-hero.thanks-hero,
+      .thanks-hero {
+        background: transparent !important;
+        padding: 3rem 1rem 1.5rem;
+        text-align: center;
+      }
+
+      .thanks-hero .title {
+        color: var(--color-text-main);
+      }
+
+      .thanks-icon {
+        width: 6.5rem;
+        height: 6.5rem;
+        object-fit: contain;
+        margin-bottom: 1.25rem;
+      }
+
+      .contribute-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: 1.5rem;
+        max-width: 75rem;
+        margin: 0 auto 3rem;
+      }
+
+      .contribute-card {
+        background-color: #f8f9fa;
+        border: none;
+        border-radius: 1rem;
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+      }
+
+      [data-theme="dark"] .contribute-card {
+        background-color: var(--color-surface);
+      }
+
+      .contribute-card-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin-bottom: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .contribute-card-icon svg {
+        width: 3rem;
+        height: 3rem;
+      }
+
+      .contribute-card-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .contribute-card-desc {
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        line-height: 1.5;
+      }
+
+      .contribute-card-btn {
+        margin-top: auto;
+        padding: 0.65rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--color-primary);
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .contribute-card-btn:hover {
+        background-color: var(--color-primary-hover);
+      }
+
+      .download-status-box {
+        max-width: 75rem;
+        margin: 0 auto 2rem;
+        background-color: #f8f9fa;
+        border: 1px solid var(--color-border);
+        border-radius: 1rem;
+        padding: 1.25rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      [data-theme="dark"] .download-status-box {
+        background-color: var(--color-surface);
+      }
+
+      .download-status-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: left;
+      }
+
+      .download-status-text {
+        font-size: 0.95rem;
+        color: var(--color-text-main);
+      }
+
+      .download-retry-btn {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        text-decoration: none;
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-main);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.15s ease;
+      }
+
+      .download-retry-btn:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+
+      .smartscreen-box {
+        max-width: 75rem;
+        margin: 0 auto 4rem;
+        background-color: rgba(15, 108, 189, 0.05);
+        border: 1px solid rgba(15, 108, 189, 0.25);
+        border-left: 4px solid var(--color-primary);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: left;
+      }
+
+      [data-theme="dark"] .smartscreen-box {
+        background-color: rgba(55, 150, 255, 0.08);
+        border-color: rgba(55, 150, 255, 0.25);
+      }
+
+      .smartscreen-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--color-primary);
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .smartscreen-desc {
+        color: var(--color-text-main);
+        font-size: 0.925rem;
+        line-height: 1.6;
+        margin: 0 0 0.75rem;
+      }
+
+      .smartscreen-steps {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        line-height: 1.65;
+      }
+
+      .smartscreen-steps strong {
+        color: var(--color-text-main);
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="container nav-content">
+        <div class="nav-left">
+          <a href="index.html" class="logo" style="text-decoration: none; color: inherit">
+            <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
+            <span>Fluent Scrobbler</span>
+          </a>
+          <div class="nav-divider"></div>
+          <div class="nav-links">
+            <a href="index.html">Overview</a>
+            <a href="download.html">Download</a>
+            <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener">Buy Me a Coffee</a>
+            <a href="https://github.com/snw-mint/fluent-scrobbler" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <div class="nav-right">
+          <button id="theme-switcher" class="theme-switch" aria-label="Toggle Dark Mode">
+            <span class="theme-icon light-icon">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.026 17.001c-2.762 4.784-8.879 6.423-13.663 3.661a9.964 9.964 0 0 1-3.234-2.983.75.75 0 0 1 .365-1.131c3.767-1.348 5.785-2.911 6.956-5.146 1.232-2.353 1.551-4.93.689-8.464a.75.75 0 0 1 .769-.926 9.961 9.961 0 0 1 4.457 1.327C21.149 6.1 22.788 12.217 20.025 17Zm-8.248-4.903c-1.25 2.388-3.31 4.099-6.817 5.499a8.492 8.492 0 0 0 2.152 1.766 8.501 8.501 0 1 0 8.502-14.725 8.485 8.485 0 0 0-2.792-1.016c.647 3.384.23 6.044-1.045 8.476Z" fill="currentColor" />
+              </svg>
+            </span>
+            <span class="theme-icon dark-icon">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.996 19.01a.75.75 0 0 1 .743.649l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.101v-1.5a.75.75 0 0 1 .75-.75Zm6.022-2.072 1.06 1.06a.75.75 0 1 1-1.06 1.061l-1.06-1.06a.75.75 0 0 1 1.06-1.061Zm-10.983 0a.75.75 0 0 1 0 1.06L5.974 19.06a.75.75 0 0 1-1.06-1.06l1.06-1.061a.75.75 0 0 1 1.06 0ZM12 6.475a5.525 5.525 0 1 1 0 11.05 5.525 5.525 0 0 1 0-11.05Zm0 1.5a4.025 4.025 0 1 0 0 8.05 4.025 4.025 0 0 0 0-8.05Zm9.25 3.293a.75.75 0 0 1 .102 1.493l-.102.007h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm-17-.029a.75.75 0 0 1 .102 1.494l-.102.006h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm1.64-6.37.084.072 1.06 1.06a.75.75 0 0 1-.976 1.134l-.084-.073-1.06-1.06a.75.75 0 0 1 .976-1.134Zm13.188.072a.75.75 0 0 1 .073.977l-.073.084-1.06 1.06a.75.75 0 0 1-1.133-.976l.072-.084 1.06-1.061a.75.75 0 0 1 1.061 0ZM12 1.99a.75.75 0 0 1 .743.648l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.102v-1.5a.75.75 0 0 1 .75-.75Z" fill="currentColor" />
+              </svg>
+            </span>
+          </button>
+          <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <header class="download-hero thanks-hero">
+      <div class="container hero-content">
+        <img class="thanks-icon" src="assets/thanks.png" alt="Thank You" width="104" height="104" />
+        <h1 class="title">Thank You for Downloading!</h1>
+        <p class="subtitle">Your download should begin automatically. If it doesn't, click the retry button below.</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="contribute-grid">
+        <a href="https://github.com/snw-mint/fluent-scrobbler" target="_blank" rel="noopener noreferrer" class="contribute-card">
+          <div class="contribute-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.788 3.103c.495-1.004 1.926-1.004 2.421 0l2.358 4.777 5.273.766c1.107.161 1.549 1.522.748 2.303l-3.816 3.72.901 5.25c.19 1.103-.968 1.944-1.959 1.424l-4.716-2.48-4.715 2.48c-.99.52-2.148-.32-1.96-1.424l.901-5.25-3.815-3.72c-.801-.78-.359-2.142.748-2.302L8.43 7.88z" fill="url(#star-grad)"/><defs><linearGradient id="star-grad" x1="21.994" y1="21.928" x2="1.427" y2="2.53" gradientUnits="userSpaceOnUse"><stop stop-color="#ff6f47"/><stop offset="1" stop-color="#ffcd0f"/></linearGradient></defs></svg>
+          </div>
+          <h2 class="contribute-card-title">Star on GitHub</h2>
+          <p class="contribute-card-desc">Help more Windows and Last.fm users discover the project.</p>
+          <span class="contribute-card-btn">Star Repository</span>
+        </a>
+
+        <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener noreferrer" class="contribute-card">
+          <div class="contribute-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m12.82 5.58-.821.822-.823-.823a5.375 5.375 0 0 0-7.602 7.601l7.896 7.896a.75.75 0 0 0 1.06 0l7.902-7.897a5.38 5.38 0 0 0-7.612-7.6" fill="url(#bmc-grad)"/><defs><linearGradient id="bmc-grad" x1="-2.376" y1="-.938" x2="8.135" y2="21.378" gradientUnits="userSpaceOnUse"><stop stop-color="#f97dbd"/><stop offset="1" stop-color="#d7257d"/></linearGradient></defs></svg>
+          </div>
+          <h2 class="contribute-card-title">Buy Me a Coffee</h2>
+          <p class="contribute-card-desc">Support continuous development and maintenance directly.</p>
+          <span class="contribute-card-btn">Donate Support</span>
+        </a>
+
+        <a href="https://github.com/snw-mint/fluent-scrobbler/issues" target="_blank" rel="noopener noreferrer" class="contribute-card">
+          <div class="contribute-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3a3.25 3.25 0 1 0 0 6.5A3.25 3.25 0 0 0 12 3" fill="url(#report-grad-a)"/><path d="M5 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6" fill="url(#report-grad-b)"/><path d="M19 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6" fill="url(#report-grad-c)"/><path d="M15.39 11.442a1.75 1.75 0 0 0-2.143 1.237l-.712 2.656a4.5 4.5 0 0 0 8.694 2.33l.711-2.657a1.75 1.75 0 0 0-1.237-2.143z" fill="url(#report-grad-d)"/><path d="M8.61 11.442a1.75 1.75 0 0 1 2.142 1.237l.712 2.656a4.5 4.5 0 0 1-8.693 2.33l-.712-2.657a1.75 1.75 0 0 1 1.238-2.143z" fill="url(#report-grad-e)"/><path d="M9.25 11a1.75 1.75 0 0 0-1.75 1.75v3.75a4.5 4.5 0 1 0 9 0v-3.75A1.75 1.75 0 0 0 14.75 11z" fill="url(#report-grad-f)"/><defs><radialGradient id="report-grad-a" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(59.931 1.106 12.505)scale(4.05997)"><stop offset=".339" stop-color="#3dcbff"/><stop offset="1" stop-color="#14b1ff"/></radialGradient><radialGradient id="report-grad-b" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(47.573 -5.867 7.649)scale(4.91969)"><stop stop-color="#008ce2"/><stop offset="1" stop-color="#0068c6"/></radialGradient><radialGradient id="report-grad-c" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(78.837 4.954 14.313)scale(4.40105)"><stop stop-color="#0078d4"/><stop offset="1" stop-color="#004695"/></radialGradient><radialGradient id="report-grad-d" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(78.837 -.741 16.557)scale(7.05605)"><stop stop-color="#0078d4"/><stop offset="1" stop-color="#004695"/></radialGradient><radialGradient id="report-grad-e" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(61.056 -7.854 9.61)scale(10.478 7.54206)"><stop stop-color="#008ce2"/><stop offset="1" stop-color="#0068c6"/></radialGradient><radialGradient id="report-grad-f" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(62.478 -6.395 16.433)scale(6.09533 5.76056)"><stop offset=".339" stop-color="#3dcbff"/><stop offset="1" stop-color="#14b1ff"/></radialGradient></defs></svg>
+          </div>
+          <h2 class="contribute-card-title">Report & Discuss</h2>
+          <p class="contribute-card-desc">Open bug reports, suggest features, or participate in discussions.</p>
+          <span class="contribute-card-btn">Open an Issue</span>
+        </a>
+      </section>
+
+      <div class="download-status-box">
+        <div class="download-status-info">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2" fill="url(#grad-check-a)"/><path d="m15.22 8.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06" fill="url(#grad-check-b)"/><defs><linearGradient id="grad-check-a" x1="2.714" y1="5.75" x2="16.517" y2="20.09" gradientUnits="userSpaceOnUse"><stop stop-color="#52d17c"/><stop offset="1" stop-color="#22918b"/></linearGradient><linearGradient id="grad-check-b" x1="9.188" y1="9.413" x2="10.681" y2="16.713" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#e3ffd9"/></linearGradient></defs></svg>
+          <div class="download-status-text">
+            <span>Download initiated: <strong id="download-filename">Fluent Scrobbler Setup</strong></span>
+          </div>
+        </div>
+        <a id="retry-link" href="download.html" class="download-retry-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor" />
+          </svg>
+          <span>Retry Download</span>
+        </a>
+      </div>
+
+      <section class="smartscreen-box">
+        <div class="smartscreen-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.75A.75.75 0 0 1 3.75 5c2.663 0 5.258-.943 7.8-2.85a.75.75 0 0 1 .9 0C14.992 4.057 17.587 5 20.25 5a.75.75 0 0 1 .75.75V11c0 5.001-2.958 8.676-8.725 10.948a.75.75 0 0 1-.55 0C5.958 19.676 3 16 3 11z" fill="url(#grad-shield-a)"/><defs><radialGradient id="grad-shield-a" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(54.497 6.945 -8.578)scale(47.5993 42.0478)"><stop offset=".338" stop-color="#0fafff"/><stop offset=".529" stop-color="#367af2"/><stop offset=".682" stop-color="#5750e2"/><stop offset=".861" stop-color="#cc23d1"/></radialGradient></defs></svg>
+          <span>Windows SmartScreen Notice</span>
+        </div>
+        <p class="smartscreen-desc">
+          Fluent Scrobbler is 100% free, open source, and auditable. Because it is a relatively new application without an expensive commercial code-signing certificate, Windows Defender SmartScreen may display a warning:
+        </p>
+        <ol class="smartscreen-steps">
+          <li>Click <strong>More info</strong> on the prompt.</li>
+          <li>Click <strong>Run anyway</strong> to proceed with installation.</li>
+          <li>The complete source code is publicly verifiable on GitHub with zero trackers or telemetry.</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
+            <span>Fluent Scrobbler</span>
+          </div>
+          <p class="footer-description">Fluent Scrobbler is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Microsoft Corporation or Last.fm.</p>
+        </div>
+
+        <div class="footer-nav">
+          <div class="footer-column">
+            <h4>Overview</h4>
+            <a href="index.html">Home</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Use</a>
+            <a href="licenses.html">Licenses</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Support</h4>
+            <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml">Report a Bug</a>
+            <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml">Request a Feature</a>
+            <a href="https://github.com/snw-mint/fluent-scrobbler/discussions/new/choose">Ask a Question</a>
+            <a href="mailto:snowmint.dev@gmail.com">Contact</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Community</h4>
+            <a href="https://github.com/snw-mint/fluent-scrobbler">Source Code</a>
+            <a href="https://github.com/snw-mint/fluent-scrobbler/blob/main/CONTRIBUTING.md">Contributing</a>
+            <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener noreferrer">Support the Project</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Download</h4>
+            <a href="https://github.com/snw-mint/fluent-scrobbler/releases" target="_blank" rel="noopener noreferrer">All Releases</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="container footer-bottom">
+        <p>
+          &copy; 2026 Fluent Scrobbler. Created by
+          <a href="https://github.com/snw-mint" target="_blank" rel="noopener noreferrer">Snow Mint</a>
+          .
+        </p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const file = params.get("file");
+        const downloadMap = {
+          x64: "https://github.com/snw-mint/fluent-scrobbler/releases/latest/download/FluentScrobbler-Setup-x64.exe",
+          x86: "https://github.com/snw-mint/fluent-scrobbler/releases/latest/download/FluentScrobbler-Setup-x86.exe",
+          arm64: "https://github.com/snw-mint/fluent-scrobbler/releases/latest/download/FluentScrobbler-Setup-arm64.exe"
+        };
+
+        const targetUrl = downloadMap[file];
+        const label = document.getElementById("download-filename");
+        const retry = document.getElementById("retry-link");
+
+        if (targetUrl) {
+          if (label) label.textContent = `FluentScrobbler-Setup-${file}.exe`;
+          if (retry) retry.href = targetUrl;
+          setTimeout(() => {
+            const a = document.createElement("a");
+            a.href = targetUrl;
+            a.setAttribute("download", "");
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }, 600);
+        } else if (retry) {
+          retry.href = "download.html";
+        }
+      })();
+    </script>
+  </body>
+</html>
