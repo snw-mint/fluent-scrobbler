@@ -181,6 +181,11 @@ namespace FluentScrobbler.Services
             SaveSettingsToFile(dict);
         }
 
+        private static readonly Regex AppleMusicArtistAlbumRegex = new(
+            @"^\s*(?<artist>.+?)\s*[—–]\s*(?<album>.+?)\s*$",
+            RegexOptions.Compiled
+        );
+
         private static readonly Regex PrimaryArtistRegex = new(
             @"\s*[\(\[](?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,)\s+.*[\)\]]|\s+(?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,|x)\s+.*$|\s*[,;/\\|&].*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled
@@ -361,7 +366,23 @@ namespace FluentScrobbler.Services
                         if (mediaProperties != null && !string.IsNullOrWhiteSpace(mediaProperties.Title))
                         {
                             string sourceName = FormatAppDisplayName(appId);
-                            string artist = !string.IsNullOrWhiteSpace(mediaProperties.Artist) ? mediaProperties.Artist.Trim() : (mediaProperties.AlbumArtist?.Trim() ?? string.Empty);
+                            string rawArtist = !string.IsNullOrWhiteSpace(mediaProperties.Artist) ? mediaProperties.Artist.Trim() : (mediaProperties.AlbumArtist?.Trim() ?? string.Empty);
+                            string album = mediaProperties.AlbumTitle ?? string.Empty;
+
+                            if (sourceName == "Apple Music")
+                            {
+                                var m = AppleMusicArtistAlbumRegex.Match(rawArtist);
+                                if (m.Success)
+                                {
+                                    rawArtist = m.Groups["artist"].Value;
+                                    if (string.IsNullOrWhiteSpace(album))
+                                    {
+                                        album = m.Groups["album"].Value;
+                                    }
+                                }
+                            }
+
+                            string artist = rawArtist;
                             if (IsPrimaryArtistOnlyEnabled())
                             {
                                 artist = FormatPrimaryArtist(artist);
@@ -371,7 +392,7 @@ namespace FluentScrobbler.Services
                             {
                                 title = CleanTrackTitle(title);
                             }
-                            return (title, artist, mediaProperties.AlbumTitle ?? string.Empty, sourceName);
+                            return (title, artist, album, sourceName);
                         }
                     }
                     catch (Exception ex)
