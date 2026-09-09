@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -163,12 +165,47 @@ namespace FluentScrobbler.Views
             }
         }
 
-        private void SourceApp_CheckChanged(object sender, RoutedEventArgs e)
+        private async void SourceApp_CheckChanged(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox check && check.Tag is string appId)
             {
+                bool isChecked = check.IsChecked == true;
                 var mediaService = new WindowsMediaService();
-                mediaService.SetSourceAllowed(appId, check.IsChecked == true);
+                mediaService.SetSourceAllowed(appId, isChecked);
+
+                if (isChecked && appId.Contains("vlc", StringComparison.OrdinalIgnoreCase))
+                {
+                    await ShowVlcPluginDialogAsync();
+                }
+            }
+        }
+
+        private async Task ShowVlcPluginDialogAsync()
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "VLC Plugin Required",
+                Content = "VLC does not support Windows Media Controls (SMTC) by default. To enable scrobbling from VLC, please download and install the Windows 10 SMTC plugin.",
+                PrimaryButtonText = "Download Plugin",
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.XamlRoot
+            };
+
+            var res = await dialog.ShowAsync();
+            if (res == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "https://github.com/spmn/vlc-win10smtc/releases",
+                        UseShellExecute = true
+                    });
+                }
+                catch
+                {
+                }
             }
         }
 
