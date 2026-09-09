@@ -47,6 +47,9 @@
 3. **Connect Account**: Open Fluent Scrobbler, navigate to the **Account** section, and click **Connect to Last.fm** to authorize the application.
 4. **Start Scrobbling**: Play music in any Windows media player or web browser, and your listening history will scrobble automatically.
 
+> [!NOTE]
+> **VLC Media Player**: VLC does not support Windows Media Transport Controls (SMTC) by default. To enable scrobbling from VLC, install the [vlc-win10smtc plugin](https://github.com/spmn/vlc-win10smtc/releases).
+
 ## System Specifications & Tech Stack
 
 ### System Requirements
