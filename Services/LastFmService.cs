@@ -524,29 +524,35 @@ namespace FluentScrobbler.Services
                         albumElement.TryGetProperty("image", out var imagesProp) && 
                         imagesProp.ValueKind == JsonValueKind.Array)
                     {
-                        string? mediumImage = null;
-                        string? largeImage = null;
+                        string? xlImg = null;
+                        string? lgImg = null;
+                        string? mdImg = null;
                         
                         foreach (var img in imagesProp.EnumerateArray())
                         {
                             if (img.TryGetProperty("size", out var sizeProp))
                             {
                                 string size = sizeProp.GetString() ?? "";
-                                if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                                if (size == "extralarge" && img.TryGetProperty("#text", out var xlText))
                                 {
-                                    mediumImage = medText.GetString();
+                                    xlImg = xlText.GetString();
                                 }
                                 else if (size == "large" && img.TryGetProperty("#text", out var lgText))
                                 {
-                                    largeImage = lgText.GetString();
+                                    lgImg = lgText.GetString();
+                                }
+                                else if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                                {
+                                    mdImg = medText.GetString();
                                 }
                             }
                         }
                         
-                        string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
+                        string? selectedImage = !string.IsNullOrEmpty(xlImg) ? xlImg : (!string.IsNullOrEmpty(lgImg) ? lgImg : mdImg);
                         
                         if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
                         {
+                            selectedImage = selectedImage.Replace("lastfm-img.freetls.fastly.net", "lastfm.freetls.fastly.net");
                             return selectedImage;
                         }
                     }
@@ -576,29 +582,35 @@ namespace FluentScrobbler.Services
                         albumElement.TryGetProperty("image", out var imagesProp) && 
                         imagesProp.ValueKind == JsonValueKind.Array)
                     {
-                        string? mediumImage = null;
-                        string? largeImage = null;
+                        string? xlImg = null;
+                        string? lgImg = null;
+                        string? mdImg = null;
                         
                         foreach (var img in imagesProp.EnumerateArray())
                         {
                             if (img.TryGetProperty("size", out var sizeProp))
                             {
                                 string size = sizeProp.GetString() ?? "";
-                                if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                                if (size == "extralarge" && img.TryGetProperty("#text", out var xlText))
                                 {
-                                    mediumImage = medText.GetString();
+                                    xlImg = xlText.GetString();
                                 }
                                 else if (size == "large" && img.TryGetProperty("#text", out var lgText))
                                 {
-                                    largeImage = lgText.GetString();
+                                    lgImg = lgText.GetString();
+                                }
+                                else if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                                {
+                                    mdImg = medText.GetString();
                                 }
                             }
                         }
                         
-                        string? selectedImage = !string.IsNullOrEmpty(mediumImage) ? mediumImage : largeImage;
+                        string? selectedImage = !string.IsNullOrEmpty(xlImg) ? xlImg : (!string.IsNullOrEmpty(lgImg) ? lgImg : mdImg);
                         
                         if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
                         {
+                            selectedImage = selectedImage.Replace("lastfm-img.freetls.fastly.net", "lastfm.freetls.fastly.net");
                             return selectedImage;
                         }
                     }

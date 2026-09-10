@@ -37,6 +37,7 @@ namespace FluentScrobbler.Services
         private string _currentArtist = string.Empty;
         private string _currentAlbum = string.Empty;
         private string _currentAppId = string.Empty;
+        private GlobalSystemMediaTransportControlsSession? _currentSession;
         private long _trackStartTime;
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
@@ -114,6 +115,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -158,6 +160,7 @@ namespace FluentScrobbler.Services
 
                 if (allowedSession == null)
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -165,6 +168,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -176,6 +180,7 @@ namespace FluentScrobbler.Services
 
                 if (!isCurrentlyPlaying)
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -183,6 +188,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -191,6 +197,7 @@ namespace FluentScrobbler.Services
                 var props = await allowedSession.TryGetMediaPropertiesAsync();
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -198,10 +205,13 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
+
+                _currentSession = allowedSession;
 
                 string title = props.Title.Trim();
                 string rawArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
@@ -236,6 +246,7 @@ namespace FluentScrobbler.Services
                     SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
                     await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                    _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                 }
                 else
                 {
@@ -245,6 +256,7 @@ namespace FluentScrobbler.Services
                         CurrentTrack = new NowPlayingInfo(_currentTrack, _currentArtist, _currentAlbum);
                         NowPlayingChanged?.Invoke(this, CurrentTrack);
                         SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                        _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                     }
                     _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
 
@@ -347,6 +359,7 @@ namespace FluentScrobbler.Services
             _currentTrack = string.Empty;
             _currentArtist = string.Empty;
             _currentAlbum = string.Empty;
+            _currentSession = null;
             _hasScrobbledCurrentTrack = true;
             _elapsedSeconds = 0;
             _isPlaying = false;
@@ -357,6 +370,86 @@ namespace FluentScrobbler.Services
             {
                 CurrentTrack = null;
                 NowPlayingChanged?.Invoke(this, null);
+                _ = ClearDiscordPresenceAsync();
+            }
+        }
+
+        public async Task SyncDiscordPresenceAsync()
+        {
+            LogService.LogInfo($"[Discord RPC] Sync requested: enabled={SettingsService.GetSetting("DiscordRichPresence")}, track={CurrentTrack?.Track}");
+            if (SettingsService.GetSetting("DiscordRichPresence") == "true")
+            {
+                if (CurrentTrack != null)
+                {
+                    await UpdateDiscordPresenceAsync(CurrentTrack.Track, CurrentTrack.Artist, CurrentTrack.Album, _trackStartTime);
+                }
+                else
+                {
+                    LogService.LogInfo("[Discord RPC] Sync: no active track playing right now");
+                }
+            }
+            else
+            {
+                await ClearDiscordPresenceAsync();
+            }
+        }
+
+        private async Task UpdateDiscordPresenceAsync(string track, string artist, string album, long fallbackStart)
+        {
+            try
+            {
+                string? val = SettingsService.GetSetting("DiscordRichPresence");
+                LogService.LogInfo($"[Discord RPC] UpdatePresence: setting={val}, track='{track}', artist='{artist}'");
+                if (val != "true") return;
+
+                long start = fallbackStart;
+                long? end = null;
+
+                if (_currentSession != null)
+                {
+                    try
+                    {
+                        var tl = _currentSession.GetTimelineProperties();
+                        if (tl != null && tl.EndTime > TimeSpan.Zero)
+                        {
+                            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                            long pos = (long)tl.Position.TotalSeconds;
+                            long total = (long)tl.EndTime.TotalSeconds;
+                            if (total > pos)
+                            {
+                                start = now - pos;
+                                end = start + total;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                string? art = await _lastFmService.GetTrackArtFromLastFmAsync(artist, track);
+                LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}', start={start}, end={end}");
+                await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, start, end);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Discord RPC Error] Failed to update presence", ex);
+            }
+        }
+
+        private async Task ClearDiscordPresenceAsync()
+        {
+            try
+            {
+                LogService.LogInfo("[Discord RPC] ClearPresence called");
+                if (DiscordRpcService.Instance.IsConnected)
+                {
+                    await DiscordRpcService.Instance.ClearActivityAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Discord RPC Error] Failed to clear presence", ex);
             }
         }
     }
