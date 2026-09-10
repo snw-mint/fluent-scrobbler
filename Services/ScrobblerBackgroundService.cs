@@ -37,6 +37,7 @@ namespace FluentScrobbler.Services
         private string _currentArtist = string.Empty;
         private string _currentAlbum = string.Empty;
         private string _currentAppId = string.Empty;
+        private GlobalSystemMediaTransportControlsSession? _currentSession;
         private long _trackStartTime;
         private int _elapsedSeconds;
         private bool _hasScrobbledCurrentTrack;
@@ -159,6 +160,7 @@ namespace FluentScrobbler.Services
 
                 if (allowedSession == null)
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -178,6 +180,7 @@ namespace FluentScrobbler.Services
 
                 if (!isCurrentlyPlaying)
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -194,6 +197,7 @@ namespace FluentScrobbler.Services
                 var props = await allowedSession.TryGetMediaPropertiesAsync();
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
+                    _currentSession = null;
                     await CheckTrackEndedAsync();
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -206,6 +210,8 @@ namespace FluentScrobbler.Services
                     SetStatus(ScrobbleStatus.Idle);
                     return;
                 }
+
+                _currentSession = allowedSession;
 
                 string title = props.Title.Trim();
                 string rawArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
@@ -353,6 +359,7 @@ namespace FluentScrobbler.Services
             _currentTrack = string.Empty;
             _currentArtist = string.Empty;
             _currentAlbum = string.Empty;
+            _currentSession = null;
             _hasScrobbledCurrentTrack = true;
             _elapsedSeconds = 0;
             _isPlaying = false;
@@ -387,7 +394,7 @@ namespace FluentScrobbler.Services
             }
         }
 
-        private async Task UpdateDiscordPresenceAsync(string track, string artist, string album, long startTime)
+        private async Task UpdateDiscordPresenceAsync(string track, string artist, string album, long fallbackStart)
         {
             try
             {
@@ -395,9 +402,34 @@ namespace FluentScrobbler.Services
                 LogService.LogInfo($"[Discord RPC] UpdatePresence: setting={val}, track='{track}', artist='{artist}'");
                 if (val != "true") return;
 
+                long start = fallbackStart;
+                long? end = null;
+
+                if (_currentSession != null)
+                {
+                    try
+                    {
+                        var tl = _currentSession.GetTimelineProperties();
+                        if (tl != null && tl.EndTime > TimeSpan.Zero)
+                        {
+                            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                            long pos = (long)tl.Position.TotalSeconds;
+                            long total = (long)tl.EndTime.TotalSeconds;
+                            if (total > pos)
+                            {
+                                start = now - pos;
+                                end = start + total;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
                 string? art = await _lastFmService.GetTrackArtFromLastFmAsync(artist, track);
-                LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}'");
-                await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, startTime);
+                LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}', start={start}, end={end}");
+                await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, start, end);
             }
             catch (Exception ex)
             {

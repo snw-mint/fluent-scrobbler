@@ -183,9 +183,9 @@ namespace FluentScrobbler.Services
             }
         }
 
-        public async Task UpdateActivityAsync(string title, string artist, string? album, string? imgUrl, long? startSec = null)
+        public async Task UpdateActivityAsync(string title, string artist, string? album, string? imgUrl, long? startSec = null, long? endSec = null)
         {
-            LogService.LogInfo($"[Discord RPC] UpdateActivity requested: title='{title}', artist='{artist}', album='{album}', img='{imgUrl}'");
+            LogService.LogInfo($"[Discord RPC] UpdateActivity requested: title='{title}', artist='{artist}', album='{album}', img='{imgUrl}', start={startSec}, end={endSec}");
             await _lock.WaitAsync();
             try
             {
@@ -221,6 +221,10 @@ namespace FluentScrobbler.Services
 
                     w.WriteStartObject("timestamps");
                     w.WriteNumber("start", start);
+                    if (endSec.HasValue && endSec.Value > start)
+                    {
+                        w.WriteNumber("end", endSec.Value);
+                    }
                     w.WriteEndObject();
 
                     if (hasImg)
