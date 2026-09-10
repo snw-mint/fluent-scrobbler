@@ -81,6 +81,12 @@ namespace FluentScrobbler.Views
             StartMinimizedToTrayStatusText.Text = isStartMinimized ? "On" : "Off";
             StartMinimizedToTrayToggle.Toggled += StartMinimizedToTrayToggle_Toggled;
 
+            bool isDiscordEnabled = SettingsService.GetSetting("DiscordRichPresence") == "true";
+            DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
+            DiscordPresenceToggle.IsOn = isDiscordEnabled;
+            DiscordPresenceStatusText.Text = isDiscordEnabled ? "On" : "Off";
+            DiscordPresenceToggle.Toggled += DiscordPresenceToggle_Toggled;
+
             LoadSourceApplications();
         }
 
@@ -94,6 +100,7 @@ namespace FluentScrobbler.Views
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
+            DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -263,6 +270,16 @@ namespace FluentScrobbler.Views
                 bool isOn = StartMinimizedToTrayToggle.IsOn;
                 StartMinimizedToTrayStatusText.Text = isOn ? "On" : "Off";
                 StartupService.SetStartMinimizedToTrayEnabled(isOn);
+            }
+        }
+
+        private void DiscordPresenceToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (DiscordPresenceStatusText != null && DiscordPresenceToggle != null)
+            {
+                bool on = DiscordPresenceToggle.IsOn;
+                DiscordPresenceStatusText.Text = on ? "On" : "Off";
+                SettingsService.SetSetting("DiscordRichPresence", on ? "true" : "false");
             }
         }
 
