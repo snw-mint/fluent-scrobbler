@@ -140,7 +140,10 @@
                         </Viewbox>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                            <TextBlock Text="Discord Rich Presence" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Discord Rich Presence" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                                <InfoBadge x:Name="DiscordPresenceInfoBadge" Visibility="Collapsed" VerticalAlignment="Center" />
+                            </StackPanel>
                             <TextBlock Text="Display your currently playing track on your Discord profile." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 

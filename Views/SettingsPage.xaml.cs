@@ -87,12 +87,17 @@ namespace FluentScrobbler.Views
             DiscordPresenceStatusText.Text = isDiscordEnabled ? "On" : "Off";
             DiscordPresenceToggle.Toggled += DiscordPresenceToggle_Toggled;
 
+            DiscordPresenceInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("DiscordRichPresence")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
             LoadSourceApplications();
         }
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
         {
             FeatureBadgeService.MarkFeatureAsSeen("CleanTrackTitles");
+            FeatureBadgeService.MarkFeatureAsSeen("DiscordRichPresence");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
