@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -252,6 +253,12 @@ namespace FluentScrobbler.Services
             {
             }
 
+            if (IsVlcInstalled() && !knownSources.Any(s => s.Contains("vlc", StringComparison.OrdinalIgnoreCase)))
+            {
+                knownSources.Add("vlc.exe");
+                SaveStoredList(LocalSettingsKnownKey, knownSources);
+            }
+
             var result = new List<SourceAppInfo>();
             foreach (var appId in knownSources)
             {
@@ -264,6 +271,30 @@ namespace FluentScrobbler.Services
             }
 
             return result;
+        }
+
+        public static bool IsVlcInstalled()
+        {
+            try
+            {
+                if (Process.GetProcessesByName("vlc").Length > 0) return true;
+
+                string pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                string pfx = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+                if (File.Exists(Path.Combine(pf, "VideoLAN", "VLC", "vlc.exe"))) return true;
+                if (!string.IsNullOrEmpty(pfx) && File.Exists(Path.Combine(pfx, "VideoLAN", "VLC", "vlc.exe"))) return true;
+
+                using var k = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\VideoLAN\VLC");
+                if (k != null) return true;
+
+                using var k32 = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\VideoLAN\VLC");
+                if (k32 != null) return true;
+            }
+            catch
+            {
+            }
+            return false;
         }
 
         public void SetSourceAllowed(string appId, bool isAllowed)
@@ -285,8 +316,8 @@ namespace FluentScrobbler.Services
 
         public bool IsSourceAllowed(string appId)
         {
-            var allowedSources = GetStoredList(LocalSettingsAllowedKey);
-            return allowedSources.Contains(appId);
+            var list = GetStoredList(LocalSettingsAllowedKey);
+            return list.Any(a => string.Equals(a, appId, StringComparison.OrdinalIgnoreCase) || (a.Contains("vlc", StringComparison.OrdinalIgnoreCase) && appId.Contains("vlc", StringComparison.OrdinalIgnoreCase)));
         }
 
         private static List<string> GetStoredList(string key)
