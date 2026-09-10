@@ -278,13 +278,15 @@ namespace FluentScrobbler.Views
             }
         }
 
-        private void DiscordPresenceToggle_Toggled(object sender, RoutedEventArgs e)
+        private async void DiscordPresenceToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (DiscordPresenceStatusText != null && DiscordPresenceToggle != null)
             {
                 bool on = DiscordPresenceToggle.IsOn;
                 DiscordPresenceStatusText.Text = on ? "On" : "Off";
                 SettingsService.SetSetting("DiscordRichPresence", on ? "true" : "false");
+                LogService.LogInfo($"[Settings] DiscordPresenceToggle set to {on}");
+                await ScrobblerBackgroundService.Instance.SyncDiscordPresenceAsync();
             }
         }
 

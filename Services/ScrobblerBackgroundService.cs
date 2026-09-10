@@ -114,6 +114,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -165,6 +166,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -183,6 +185,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -198,6 +201,7 @@ namespace FluentScrobbler.Services
                     {
                         CurrentTrack = null;
                         NowPlayingChanged?.Invoke(this, null);
+                        _ = ClearDiscordPresenceAsync();
                     }
                     SetStatus(ScrobbleStatus.Idle);
                     return;
@@ -236,6 +240,7 @@ namespace FluentScrobbler.Services
                     SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
                     await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                    _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                 }
                 else
                 {
@@ -245,6 +250,7 @@ namespace FluentScrobbler.Services
                         CurrentTrack = new NowPlayingInfo(_currentTrack, _currentArtist, _currentAlbum);
                         NowPlayingChanged?.Invoke(this, CurrentTrack);
                         SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                        _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                     }
                     _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
 
@@ -357,6 +363,61 @@ namespace FluentScrobbler.Services
             {
                 CurrentTrack = null;
                 NowPlayingChanged?.Invoke(this, null);
+                _ = ClearDiscordPresenceAsync();
+            }
+        }
+
+        public async Task SyncDiscordPresenceAsync()
+        {
+            LogService.LogInfo($"[Discord RPC] Sync requested: enabled={SettingsService.GetSetting("DiscordRichPresence")}, track={CurrentTrack?.Track}");
+            if (SettingsService.GetSetting("DiscordRichPresence") == "true")
+            {
+                if (CurrentTrack != null)
+                {
+                    await UpdateDiscordPresenceAsync(CurrentTrack.Track, CurrentTrack.Artist, CurrentTrack.Album, _trackStartTime);
+                }
+                else
+                {
+                    LogService.LogInfo("[Discord RPC] Sync: no active track playing right now");
+                }
+            }
+            else
+            {
+                await ClearDiscordPresenceAsync();
+            }
+        }
+
+        private async Task UpdateDiscordPresenceAsync(string track, string artist, string album, long startTime)
+        {
+            try
+            {
+                string? val = SettingsService.GetSetting("DiscordRichPresence");
+                LogService.LogInfo($"[Discord RPC] UpdatePresence: setting={val}, track='{track}', artist='{artist}'");
+                if (val != "true") return;
+
+                string? art = await _lastFmService.GetTrackArtFromLastFmAsync(artist, track);
+                LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}'");
+                await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, startTime);
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Discord RPC Error] Failed to update presence", ex);
+            }
+        }
+
+        private async Task ClearDiscordPresenceAsync()
+        {
+            try
+            {
+                LogService.LogInfo("[Discord RPC] ClearPresence called");
+                if (DiscordRpcService.Instance.IsConnected)
+                {
+                    await DiscordRpcService.Instance.ClearActivityAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Discord RPC Error] Failed to clear presence", ex);
             }
         }
     }

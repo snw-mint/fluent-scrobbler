@@ -28,8 +28,16 @@ namespace FluentScrobbler.Services
         public static string GetLogFilePath() => LogFilePath;
         public static string GetLogFolderPath() => LogFolderPath;
 
-        public static void LogInfo(string message) { }
-        public static void LogWarning(string message) { }
+        public static void LogInfo(string message)
+        {
+            Log("INFO", message);
+        }
+
+        public static void LogWarning(string message)
+        {
+            Log("WARN", message);
+        }
+
         public static void LogError(string message, Exception? ex = null)
         {
             string msg = ex != null ? $"{message}\nException: {ex}" : message;
@@ -38,15 +46,16 @@ namespace FluentScrobbler.Services
 
         public static void Log(string level, string message)
         {
-            if (level != "ERROR") return;
-
             try
             {
+                string entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [{level}] {message}";
+                Console.WriteLine(entry);
+                Debug.WriteLine(entry);
+
                 lock (LogLock)
                 {
                     Directory.CreateDirectory(LogFolderPath);
-                    string entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [{level}] {message}{Environment.NewLine}";
-                    File.AppendAllText(LogFilePath, entry);
+                    File.AppendAllText(LogFilePath, entry + Environment.NewLine);
                 }
             }
             catch
