@@ -288,6 +288,7 @@ namespace FluentScrobbler.Services
                 }
 
                 _currentSession = allowedSession;
+                string appId = allowedSession.SourceAppUserModelId;
 
                 string title = props.Title.Trim();
                 string rawArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
