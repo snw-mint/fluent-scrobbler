@@ -25,6 +25,7 @@ namespace FluentScrobbler.Services
         public static ScrobblerBackgroundService Instance => _instance ??= new ScrobblerBackgroundService();
 
         private readonly LastFmService _lastFmService = new();
+        private readonly MediaArtResolver _mediaArtResolver = new();
         private readonly WindowsMediaService _windowsMediaService = new();
         private readonly SemaphoreSlim _scrobbleLock = new(1, 1);
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
@@ -427,7 +428,7 @@ namespace FluentScrobbler.Services
                     }
                 }
 
-                string? art = await _lastFmService.GetTrackArtFromLastFmAsync(artist, track);
+                string? art = await _mediaArtResolver.ResolveRemoteArtUrlAsync(artist, album, track);
                 LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}', start={start}, end={end}");
                 await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, start, end);
             }

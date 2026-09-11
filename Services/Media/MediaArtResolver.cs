@@ -6,73 +6,75 @@ namespace FluentScrobbler.Services.Media
 {
     public class MediaArtResolver
     {
-        private readonly ListenBrainzService _listenBrainzService = new();
-        private readonly LastFmService _lastFmService = new();
-        private static readonly ConcurrentDictionary<string, string> _artCache = new(StringComparer.OrdinalIgnoreCase);
+        private readonly DeezerService _deezer = new();
+        private readonly CoverCacheService _cache = CoverCacheService.Instance;
+        private readonly ListenBrainzService _mb = new();
+        private static readonly ConcurrentDictionary<string, (string LocalUri, string RemoteUrl)> _mem = new(StringComparer.OrdinalIgnoreCase);
 
         public async Task<string?> ResolveAlbumArtAsync(string artist, string album, string? trackTitle = null, string? lastFmArtUrl = null)
         {
-            string cacheKey = $"{artist}|{album}|{trackTitle}";
+            var res = await ResolveArtCoreAsync(artist, album, trackTitle);
+            return res.LocalUri;
+        }
 
-            if (!string.IsNullOrWhiteSpace(lastFmArtUrl) &&
-                !lastFmArtUrl.Contains("2a96cbd8b46e442fc41c2b86b821562f", StringComparison.OrdinalIgnoreCase))
+        public async Task<string?> ResolveRemoteArtUrlAsync(string artist, string album, string? trackTitle = null)
+        {
+            var res = await ResolveArtCoreAsync(artist, album, trackTitle);
+            return res.RemoteUrl;
+        }
+
+        private async Task<(string? LocalUri, string? RemoteUrl)> ResolveArtCoreAsync(string artist, string album, string? trackTitle)
+        {
+            if (string.IsNullOrWhiteSpace(artist)) return (null, null);
+
+            var key = $"{artist}|{album}|{trackTitle}".ToLowerInvariant();
+
+            if (_mem.TryGetValue(key, out var m) && !string.IsNullOrEmpty(m.LocalUri))
             {
-                _artCache[cacheKey] = lastFmArtUrl;
-                return lastFmArtUrl;
+                return m;
             }
 
-            if (_artCache.TryGetValue(cacheKey, out var cachedUrl) && !string.IsNullOrEmpty(cachedUrl))
+            var cached = await _cache.GetCachedAsync(key);
+            if (!string.IsNullOrEmpty(cached.LocalUri))
             {
-                return cachedUrl;
+                _mem[key] = (cached.LocalUri, cached.RemoteUrl ?? string.Empty);
+                return cached;
             }
 
-            if (!string.IsNullOrWhiteSpace(artist))
+            string? remote = null;
+
+            if (!string.IsNullOrWhiteSpace(album))
             {
-                if (!string.IsNullOrWhiteSpace(trackTitle))
-                {
-                    string? trackArt = await _lastFmService.GetTrackArtFromLastFmAsync(artist, trackTitle);
-                    if (!string.IsNullOrWhiteSpace(trackArt))
-                    {
-                        _artCache[cacheKey] = trackArt;
-                        return trackArt;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(album))
-                {
-                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, album);
-                    if (!string.IsNullOrWhiteSpace(lastFmApiArt))
-                    {
-                        _artCache[cacheKey] = lastFmApiArt;
-                        return lastFmApiArt;
-                    }
-
-                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(album, artist);
-                    if (!string.IsNullOrWhiteSpace(musicBrainzArt))
-                    {
-                        _artCache[cacheKey] = musicBrainzArt;
-                        return musicBrainzArt;
-                    }
-                }
-                else if (!string.IsNullOrWhiteSpace(trackTitle))
-                {
-                    string? lastFmApiArt = await _lastFmService.GetAlbumArtFromLastFmAsync(artist, trackTitle);
-                    if (!string.IsNullOrWhiteSpace(lastFmApiArt))
-                    {
-                        _artCache[cacheKey] = lastFmApiArt;
-                        return lastFmApiArt;
-                    }
-
-                    string? musicBrainzArt = await _listenBrainzService.GetAlbumCoverUrlAsync(trackTitle, artist);
-                    if (!string.IsNullOrWhiteSpace(musicBrainzArt))
-                    {
-                        _artCache[cacheKey] = musicBrainzArt;
-                        return musicBrainzArt;
-                    }
-                }
+                remote = await _deezer.GetAlbumArtUrlAsync(artist, album);
             }
 
-            return null;
+            if (string.IsNullOrWhiteSpace(remote) && !string.IsNullOrWhiteSpace(trackTitle))
+            {
+                remote = await _deezer.GetTrackArtUrlAsync(artist, trackTitle, album);
+            }
+
+            if (string.IsNullOrWhiteSpace(remote) && !string.IsNullOrWhiteSpace(album))
+            {
+                remote = await _mb.GetAlbumCoverUrlAsync(album, artist);
+            }
+
+            if (string.IsNullOrWhiteSpace(remote) && !string.IsNullOrWhiteSpace(trackTitle))
+            {
+                remote = await _mb.GetAlbumCoverUrlAsync(trackTitle, artist);
+            }
+
+            if (!string.IsNullOrWhiteSpace(remote))
+            {
+                var saved = await _cache.SaveAndCacheAsync(key, remote);
+                if (!string.IsNullOrEmpty(saved.LocalUri))
+                {
+                    _mem[key] = (saved.LocalUri, saved.RemoteUrl ?? remote);
+                    return saved;
+                }
+                return (remote, remote);
+            }
+
+            return (null, null);
         }
     }
 }
