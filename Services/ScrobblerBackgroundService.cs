@@ -28,11 +28,13 @@ namespace FluentScrobbler.Services
         private readonly MediaArtResolver _mediaArtResolver = new();
         private readonly WindowsMediaService _windowsMediaService = new();
         private readonly SemaphoreSlim _scrobbleLock = new(1, 1);
+        private readonly SemaphoreSlim _sessionLock = new(1, 1);
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
         private readonly System.Collections.Generic.HashSet<string> _notifiedNewInstances = new(StringComparer.OrdinalIgnoreCase);
 
         private CancellationTokenSource? _cts;
         private GlobalSystemMediaTransportControlsSessionManager? _sessionMgr;
+        private string? _activeSessionId;
 
         private string _currentTrack = string.Empty;
         private string _currentArtist = string.Empty;
@@ -57,7 +59,35 @@ namespace FluentScrobbler.Services
         {
             if (_cts != null) return;
             _cts = new CancellationTokenSource();
+            _ = InitSessionManagerAsync();
             _ = RunLoopAsync(_cts.Token);
+        }
+
+        private async Task InitSessionManagerAsync()
+        {
+            try
+            {
+                _sessionMgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                if (_sessionMgr != null)
+                {
+                    _sessionMgr.CurrentSessionChanged += OnCurrentSessionChanged;
+                    _sessionMgr.SessionsChanged += OnSessionsChanged;
+                }
+            }
+            catch
+            {
+                _sessionMgr = null;
+            }
+        }
+
+        private void OnCurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)
+        {
+            _ = ProcessSessionUpdateAsync();
+        }
+
+        private void OnSessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
+        {
+            _ = ProcessSessionUpdateAsync();
         }
 
         private async Task RunLoopAsync(CancellationToken token)
@@ -65,7 +95,7 @@ namespace FluentScrobbler.Services
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
             while (!token.IsCancellationRequested)
             {
-                await TickAsync();
+                await ProcessSessionUpdateAsync();
 
                 try
                 {
@@ -75,6 +105,19 @@ namespace FluentScrobbler.Services
                 {
                     break;
                 }
+            }
+        }
+
+        private async Task ProcessSessionUpdateAsync()
+        {
+            await _sessionLock.WaitAsync();
+            try
+            {
+                await TickAsync();
+            }
+            finally
+            {
+                _sessionLock.Release();
             }
         }
 
@@ -124,23 +167,31 @@ namespace FluentScrobbler.Services
 
                 try
                 {
-                    _sessionMgr ??= await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                    if (_sessionMgr == null)
+                    {
+                        _sessionMgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                        if (_sessionMgr != null)
+                        {
+                            _sessionMgr.CurrentSessionChanged += OnCurrentSessionChanged;
+                            _sessionMgr.SessionsChanged += OnSessionsChanged;
+                        }
+                    }
                 }
                 catch
                 {
                     _sessionMgr = null;
                 }
 
-                var sessions = _sessionMgr?.GetSessions();
-                GlobalSystemMediaTransportControlsSession? allowedSession = null;
+                if (_sessionMgr == null) return;
 
+                var sessions = _sessionMgr.GetSessions();
                 if (sessions != null)
                 {
                     var knownSources = _windowsMediaService.GetKnownSources();
                     foreach (var s in sessions)
                     {
                         string sAppId = s.SourceAppUserModelId;
-                        if (_lastFmService.IsLoggedIn() && !string.IsNullOrWhiteSpace(sAppId))
+                        if (!string.IsNullOrWhiteSpace(sAppId))
                         {
                             if (!knownSources.Contains(sAppId) && !_notifiedNewInstances.Contains(sAppId))
                             {
@@ -150,36 +201,60 @@ namespace FluentScrobbler.Services
                                 NewSourceDetected?.Invoke(this, displayName);
                             }
                         }
+                    }
+                }
 
-                        if (_windowsMediaService.IsSourceAllowed(sAppId))
+                var playingSessions = new List<GlobalSystemMediaTransportControlsSession>();
+                if (sessions != null)
+                {
+                    foreach (var s in sessions)
+                    {
+                        string id = s.SourceAppUserModelId;
+                        if (string.IsNullOrWhiteSpace(id)) continue;
+
+                        if (!_windowsMediaService.IsSourceAllowed(id)) continue;
+
+                        var pb = s.GetPlaybackInfo();
+                        if (pb != null && pb.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
                         {
-                            allowedSession = s;
-                            break;
+                            playingSessions.Add(s);
                         }
                     }
                 }
 
-                if (allowedSession == null)
+                GlobalSystemMediaTransportControlsSession? allowedSession = null;
+
+                if (playingSessions.Count == 0)
                 {
-                    _currentSession = null;
-                    await CheckTrackEndedAsync();
-                    bool wasPlaying = _isPlaying || CurrentTrack != null;
-                    _isPlaying = false;
-                    if (wasPlaying)
+                    _activeSessionId = null;
+                    allowedSession = null;
+                }
+                else if (playingSessions.Count == 1)
+                {
+                    allowedSession = playingSessions[0];
+                    _activeSessionId = allowedSession.SourceAppUserModelId;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(_activeSessionId))
                     {
-                        CurrentTrack = null;
-                        NowPlayingChanged?.Invoke(this, null);
-                        _ = ClearDiscordPresenceAsync();
+                        allowedSession = playingSessions.FirstOrDefault(s => string.Equals(s.SourceAppUserModelId, _activeSessionId, StringComparison.OrdinalIgnoreCase));
                     }
-                    SetStatus(ScrobbleStatus.Idle);
-                    return;
+
+                    if (allowedSession == null)
+                    {
+                        var curr = _sessionMgr.GetCurrentSession();
+                        if (curr != null)
+                        {
+                            allowedSession = playingSessions.FirstOrDefault(s => string.Equals(s.SourceAppUserModelId, curr.SourceAppUserModelId, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        allowedSession ??= playingSessions[0];
+                        _activeSessionId = allowedSession.SourceAppUserModelId;
+                    }
                 }
 
-                string appId = allowedSession.SourceAppUserModelId;
-                var playbackInfo = allowedSession.GetPlaybackInfo();
-                bool isCurrentlyPlaying = playbackInfo != null && playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
-
-                if (!isCurrentlyPlaying)
+                if (allowedSession == null)
                 {
                     _currentSession = null;
                     await CheckTrackEndedAsync();
@@ -361,6 +436,7 @@ namespace FluentScrobbler.Services
             _currentArtist = string.Empty;
             _currentAlbum = string.Empty;
             _currentSession = null;
+            _activeSessionId = null;
             _hasScrobbledCurrentTrack = true;
             _elapsedSeconds = 0;
             _isPlaying = false;
