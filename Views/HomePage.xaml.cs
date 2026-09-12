@@ -50,6 +50,8 @@ namespace FluentScrobbler.Views
         private static string _cachedOfflineMessage = "Connection lost. Your scrobbles are being saved locally and will sync automatically once you are back online.";
         private static string? _cachedOfflineButtonContent;
         private static string? _cachedOfflineButtonTag;
+        private static readonly HashSet<string> _dismissedSourceNames = new(StringComparer.OrdinalIgnoreCase);
+        private static List<string> _currentBannerSourceNames = new();
 
         public HomePage()
         {
@@ -282,7 +284,7 @@ namespace FluentScrobbler.Views
             });
         }
 
-        private void SetNewSourceBanner(bool isOpen, string? message = null)
+        private void SetNewSourceBanner(bool isOpen, string? message = null, IEnumerable<string>? sourceNames = null)
         {
             if (NewSourceInfoBar == null) return;
             if (isOpen)
@@ -291,6 +293,7 @@ namespace FluentScrobbler.Views
                 {
                     NewSourceInfoBar.Message = message;
                 }
+                _currentBannerSourceNames = sourceNames?.ToList() ?? new List<string>();
                 NewSourceInfoBar.Visibility = Visibility.Visible;
                 NewSourceInfoBar.IsOpen = true;
             }
@@ -304,6 +307,10 @@ namespace FluentScrobbler.Views
         private void NewSourceInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
         {
             sender.Visibility = Visibility.Collapsed;
+            foreach (var name in _currentBannerSourceNames)
+            {
+                _dismissedSourceNames.Add(name);
+            }
         }
 
         private async Task CheckUnconfiguredSourcesAsync()
@@ -311,11 +318,13 @@ namespace FluentScrobbler.Views
             try
             {
                 var sources = await _windowsMediaService.GetDetectedSourcesAsync();
-                if (sources != null && sources.Exists(s => !s.IsAllowed))
+                var unallowed = sources?.Where(s => !s.IsAllowed && !_dismissedSourceNames.Contains(s.DisplayName))
+                                        .Select(s => s.DisplayName).ToList() ?? new List<string>();
+
+                if (unallowed.Count > 0)
                 {
-                    var unallowed = sources.Where(s => !s.IsAllowed).Select(s => s.DisplayName).ToList();
                     string names = string.Join(", ", unallowed);
-                    SetNewSourceBanner(true, $"New media {(unallowed.Count > 1 ? "apps" : "app")} ({names}) detected. Enable in Source Filtering to scrobble.");
+                    SetNewSourceBanner(true, $"New media {(unallowed.Count > 1 ? "apps" : "app")} ({names}) detected. Enable in Source Filtering to scrobble.", unallowed);
                 }
                 else
                 {
@@ -329,7 +338,8 @@ namespace FluentScrobbler.Views
         {
             this.DispatcherQueue?.TryEnqueue(() =>
             {
-                SetNewSourceBanner(true, $"A new media app ({appName}) was detected. Enable it in Source Filtering to start scrobbling.");
+                if (_dismissedSourceNames.Contains(appName)) return;
+                SetNewSourceBanner(true, $"A new media app ({appName}) was detected. Enable it in Source Filtering to start scrobbling.", new[] { appName });
             });
         }
 
