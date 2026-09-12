@@ -81,7 +81,7 @@ namespace FluentScrobbler.Services
         {
             _currentBackoffLevel = 0;
             SetTimerInterval();
-            await ProcessCacheAsync();
+            await ProcessCacheAsync(waitForLock: true);
         }
 
         public async Task TriggerOfflineModeAsync()
@@ -103,9 +103,16 @@ namespace FluentScrobbler.Services
             }
         }
 
-        private async Task ProcessCacheAsync()
+        private async Task ProcessCacheAsync(bool waitForLock = false)
         {
-            if (!_processLock.Wait(0)) return;
+            if (waitForLock)
+            {
+                await _processLock.WaitAsync();
+            }
+            else if (!_processLock.Wait(0))
+            {
+                return;
+            }
 
             try
             {
