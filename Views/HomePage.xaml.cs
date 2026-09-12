@@ -164,11 +164,6 @@ namespace FluentScrobbler.Views
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             Windows.Networking.Connectivity.NetworkInformation.NetworkStatusChanged += OnNetworkStatusChanged;
 
-            if (!IsInternetAvailable())
-            {
-                SetOfflineStatus(isOffline: true);
-            }
-
             if (!_dashboardLoaded)
             {
                 await LoadDashboardDataAsync();
@@ -344,29 +339,6 @@ namespace FluentScrobbler.Views
             MainWindow.Current?.NavigateToSourceSettings();
         }
 
-        private static bool IsInternetAvailable()
-        {
-            try
-            {
-                var p = Windows.Networking.Connectivity.NetworkInformation.GetInternetConnectionProfile();
-                if (p != null)
-                {
-                    return p.GetNetworkConnectivityLevel() == Windows.Networking.Connectivity.NetworkConnectivityLevel.InternetAccess;
-                }
-            }
-            catch
-            {
-            }
-            try
-            {
-                return System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
-            }
-            catch
-            {
-                return true;
-            }
-        }
-
         private void OnNetworkStatusChanged(object sender)
         {
             TriggerNetworkDebounce();
@@ -388,16 +360,8 @@ namespace FluentScrobbler.Views
                     _networkDebounceTimer?.Stop();
                     _networkDebounceTimer = null;
 
-                    bool avail = IsInternetAvailable();
-                    if (!avail)
-                    {
-                        SetOfflineStatus(isOffline: true);
-                    }
-                    else
-                    {
-                        _dashboardLoaded = false;
-                        await LoadDashboardDataAsync();
-                    }
+                    _dashboardLoaded = false;
+                    await LoadDashboardDataAsync(forceRefresh: true);
                 };
                 _networkDebounceTimer.Start();
             });
@@ -480,15 +444,6 @@ namespace FluentScrobbler.Views
             };
 
             string displayName = "User";
-
-            if (!IsInternetAvailable())
-            {
-                SetOfflineStatus(isOffline: true);
-                DashboardTitleText.Text = $"{greeting}, {displayName}";
-                DashboardSubtitleText.Text = "Welcome back! Here is a summary of your activity today.";
-                _isLoadingDashboard = false;
-                return;
-            }
 
             try
             {
