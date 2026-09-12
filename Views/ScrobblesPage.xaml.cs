@@ -491,13 +491,13 @@ namespace FluentScrobbler.Views
             NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
-            NowPlayingTrack.Text = track;
+            NowPlayingTrackText.Text = track;
 
             string artistAlbumStr = string.IsNullOrWhiteSpace(album)
                 ? (artist ?? string.Empty)
                 : $"{artist} • {album}";
 
-            NowPlayingArtist.Text = artistAlbumStr;
+            NowPlayingArtistAlbumText.Text = artistAlbumStr;
 
             NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
             NowPlayingFallbackIcon.Visibility = Visibility.Visible;
@@ -509,7 +509,7 @@ namespace FluentScrobbler.Views
             {
                 try
                 {
-                    var bmp = new BitmapImage { DecodePixelWidth = 176, UriSource = new Uri(coverUrl) };
+                    var bmp = new BitmapImage { DecodePixelWidth = 160, UriSource = new Uri(coverUrl) };
                     NowPlayingAlbumArtImage.Source = bmp;
                     NowPlayingAlbumArtImage.Visibility = Visibility.Visible;
                     NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
