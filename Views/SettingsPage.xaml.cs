@@ -91,6 +91,16 @@ namespace FluentScrobbler.Views
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            bool isLegacyPlayersEnabled = SettingsService.IsLegacyPlayersEnabled();
+            LegacyPlayersToggle.Toggled -= LegacyPlayersToggle_Toggled;
+            LegacyPlayersToggle.IsOn = isLegacyPlayersEnabled;
+            LegacyPlayersStatusText.Text = isLegacyPlayersEnabled ? "On" : "Off";
+            LegacyPlayersToggle.Toggled += LegacyPlayersToggle_Toggled;
+
+            LegacyPlayersInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("LegacyPlayersSupport")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
             LoadSourceApplications();
         }
 
@@ -98,6 +108,7 @@ namespace FluentScrobbler.Views
         {
             FeatureBadgeService.MarkFeatureAsSeen("CleanTrackTitles");
             FeatureBadgeService.MarkFeatureAsSeen("DiscordRichPresence");
+            FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
@@ -106,6 +117,7 @@ namespace FluentScrobbler.Views
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
             DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
+            LegacyPlayersToggle.Toggled -= LegacyPlayersToggle_Toggled;
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -287,6 +299,17 @@ namespace FluentScrobbler.Views
                 SettingsService.SetSetting("DiscordRichPresence", on ? "true" : "false");
                 LogService.LogInfo($"[Settings] DiscordPresenceToggle set to {on}");
                 await ScrobblerBackgroundService.Instance.SyncDiscordPresenceAsync();
+            }
+        }
+
+        private void LegacyPlayersToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (LegacyPlayersStatusText != null && LegacyPlayersToggle != null)
+            {
+                bool on = LegacyPlayersToggle.IsOn;
+                LegacyPlayersStatusText.Text = on ? "On" : "Off";
+                SettingsService.SetLegacyPlayersEnabled(on);
+                LogService.LogInfo($"[Settings] LegacyPlayersToggle set to {on}");
             }
         }
 

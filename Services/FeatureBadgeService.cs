@@ -6,7 +6,8 @@ namespace FluentScrobbler.Services
     {
         private static readonly HashSet<string> SettingsFeatures = new()
         {
-            "DiscordRichPresence"
+            "DiscordRichPresence",
+            "LegacyPlayersSupport"
         };
 
         private static string GetKey(string id) => $"SeenFeature_{id}_{AppInfoService.Version}";
