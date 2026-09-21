@@ -101,6 +101,8 @@ namespace FluentScrobbler.Views
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            ScrobblerBackgroundService.Instance.NewSourceDetected += OnNewSourceDetected;
+
             LoadSourceApplications();
         }
 
@@ -111,6 +113,8 @@ namespace FluentScrobbler.Views
             FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
             MainWindow.Current?.UpdateSettingsBadge();
 
+            ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
+
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
@@ -118,6 +122,14 @@ namespace FluentScrobbler.Views
             StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
             DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
             LegacyPlayersToggle.Toggled -= LegacyPlayersToggle_Toggled;
+        }
+
+        private void OnNewSourceDetected(object? sender, string appName)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                LoadSourceApplications();
+            });
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -310,6 +322,10 @@ namespace FluentScrobbler.Views
                 LegacyPlayersStatusText.Text = on ? "On" : "Off";
                 SettingsService.SetLegacyPlayersEnabled(on);
                 LogService.LogInfo($"[Settings] LegacyPlayersToggle set to {on}");
+                if (on)
+                {
+                    LoadSourceApplications();
+                }
             }
         }
 

@@ -74,6 +74,10 @@ namespace FluentScrobbler.Services
 
         private void OnLegacyTrackChanged(object? sender, LegacyTrackInfo info)
         {
+            if (info.State != LegacyPlaybackState.NotRunning && !string.IsNullOrWhiteSpace(info.SourceApp))
+            {
+                RegisterLegacySourceIfNew(info.SourceApp, info.DisplayName);
+            }
             _ = ProcessSessionUpdateAsync();
         }
 
@@ -272,7 +276,16 @@ namespace FluentScrobbler.Services
                 {
                     if (_legacyPlayerWatcher.IsRunning && _legacyPlayerWatcher.CurrentTrack is { State: LegacyPlaybackState.Playing } legacyTrack && legacyTrack.IsValid)
                     {
-                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, "Winamp", null);
+                        string legacyAppId = !string.IsNullOrWhiteSpace(legacyTrack.SourceApp) ? legacyTrack.SourceApp : "winamp.exe";
+                        RegisterLegacySourceIfNew(legacyAppId, legacyTrack.DisplayName);
+
+                        if (!_windowsMediaService.IsSourceAllowed(legacyAppId))
+                        {
+                            await SetIdleStateAsync();
+                            return;
+                        }
+
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
                         return;
                     }
 
@@ -285,7 +298,16 @@ namespace FluentScrobbler.Services
                 {
                     if (_legacyPlayerWatcher.IsRunning && _legacyPlayerWatcher.CurrentTrack is { State: LegacyPlaybackState.Playing } legacyTrack && legacyTrack.IsValid)
                     {
-                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, "Winamp", null);
+                        string legacyAppId = !string.IsNullOrWhiteSpace(legacyTrack.SourceApp) ? legacyTrack.SourceApp : "winamp.exe";
+                        RegisterLegacySourceIfNew(legacyAppId, legacyTrack.DisplayName);
+
+                        if (!_windowsMediaService.IsSourceAllowed(legacyAppId))
+                        {
+                            await SetIdleStateAsync();
+                            return;
+                        }
+
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
                         return;
                     }
 
@@ -306,8 +328,36 @@ namespace FluentScrobbler.Services
             }
         }
 
+        private void RegisterLegacySourceIfNew(string appId, string? displayName)
+        {
+            try
+            {
+                var knownSources = _windowsMediaService.GetKnownSources();
+                if (!knownSources.Contains(appId) && !_notifiedNewInstances.Contains(appId))
+                {
+                    _notifiedNewInstances.Add(appId);
+                    string name = !string.IsNullOrWhiteSpace(displayName)
+                        ? displayName
+                        : WindowsMediaService.FormatAppDisplayName(appId);
+                    _windowsMediaService.RegisterKnownSource(appId, name);
+                    NotificationService.ShowNewInstanceNotification(name);
+                    NewSourceDetected?.Invoke(this, name);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Legacy Source Registration] Failed to register source", ex);
+            }
+        }
+
         private async Task ProcessTrackAsync(string rawTitle, string rawArtist, string rawAlbum, string appId, GlobalSystemMediaTransportControlsSession? session)
         {
+            if (!_windowsMediaService.IsSourceAllowed(appId))
+            {
+                await SetIdleStateAsync();
+                return;
+            }
+
             _currentSession = session;
             string title = rawTitle.Trim();
             string artist = rawArtist;

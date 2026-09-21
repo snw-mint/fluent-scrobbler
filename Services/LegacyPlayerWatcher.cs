@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,6 +20,7 @@ namespace FluentScrobbler.Services
         private const string WinampClassName = "Winamp v1.x";
         private const uint WM_USER = 0x0400;
         private const int IPC_ISPLAYING = 104;
+        private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
         // P/Invoke Signatures
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -31,6 +34,18 @@ namespace FluentScrobbler.Services
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
 
         // Regex patterns for metadata cleaning
         private static readonly Regex PlayerSuffixRegex = new(
@@ -165,6 +180,10 @@ namespace FluentScrobbler.Services
             }
             else
             {
+                GetWindowThreadProcessId(hWnd, out uint pid);
+                int processId = (int)pid;
+                var (technicalId, displayName, binaryPath) = ResolveProcessMetadata(processId);
+
                 int playStatus = SendMessage(hWnd, WM_USER, IntPtr.Zero, (IntPtr)IPC_ISPLAYING).ToInt32();
 
                 LegacyPlaybackState state = playStatus switch
@@ -181,7 +200,12 @@ namespace FluentScrobbler.Services
                 {
                     Artist = artist,
                     Title = title,
-                    State = state
+                    State = state,
+                    ProcessId = processId,
+                    ProcessName = technicalId,
+                    DisplayName = displayName,
+                    BinaryPath = binaryPath,
+                    SourceApp = LegacyTrackInfo.NormalizeSourceApp(technicalId)
                 };
             }
 
@@ -191,6 +215,112 @@ namespace FluentScrobbler.Services
                 _lastTrack = currentInfo;
                 TrackChanged?.Invoke(this, currentInfo);
             }
+        }
+
+        private static (string TechnicalId, string DisplayName, string BinaryPath) ResolveProcessMetadata(int processId)
+        {
+            string binaryPath = string.Empty;
+            string technicalId = string.Empty;
+            string displayName = string.Empty;
+
+            if (processId <= 0)
+            {
+                return (string.Empty, string.Empty, string.Empty);
+            }
+
+            try
+            {
+                // 1. Query full executable path safely across 32/64-bit boundaries
+                IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                if (hProcess != IntPtr.Zero)
+                {
+                    try
+                    {
+                        var sb = new StringBuilder(1024);
+                        int size = sb.Capacity;
+                        if (QueryFullProcessImageName(hProcess, 0, sb, ref size))
+                        {
+                            binaryPath = sb.ToString();
+                        }
+                    }
+                    finally
+                    {
+                        CloseHandle(hProcess);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(binaryPath))
+                {
+                    try
+                    {
+                        using var proc = Process.GetProcessById(processId);
+                        binaryPath = proc.MainModule?.FileName ?? string.Empty;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                // Technical Identifier: lowercase executable name (e.g. "winamp.exe", "aimp.exe")
+                if (!string.IsNullOrEmpty(binaryPath))
+                {
+                    technicalId = Path.GetFileName(binaryPath).ToLowerInvariant();
+                }
+                else
+                {
+                    try
+                    {
+                        using var proc = Process.GetProcessById(processId);
+                        technicalId = (proc.ProcessName + ".exe").ToLowerInvariant();
+                    }
+                    catch
+                    {
+                        technicalId = "legacyplayer.exe";
+                    }
+                }
+
+                // Display Name: read official product description or product name
+                if (!string.IsNullOrEmpty(binaryPath) && File.Exists(binaryPath))
+                {
+                    try
+                    {
+                        var versionInfo = FileVersionInfo.GetVersionInfo(binaryPath);
+                        if (!string.IsNullOrWhiteSpace(versionInfo.FileDescription))
+                        {
+                            displayName = versionInfo.FileDescription.Trim();
+                        }
+                        else if (!string.IsNullOrWhiteSpace(versionInfo.ProductName))
+                        {
+                            displayName = versionInfo.ProductName.Trim();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                // Fallback: filename with first letter capitalized
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    string rawName = Path.GetFileNameWithoutExtension(technicalId);
+                    if (!string.IsNullOrEmpty(rawName))
+                    {
+                        displayName = char.ToUpperInvariant(rawName[0]) + (rawName.Length > 1 ? rawName.Substring(1) : string.Empty);
+                    }
+                    else
+                    {
+                        displayName = "Legacy Player";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogWarning($"[LegacyPlayerWatcher] Error resolving metadata for PID {processId}: {ex.Message}");
+                technicalId = string.IsNullOrEmpty(technicalId) ? "legacyplayer.exe" : technicalId;
+                displayName = string.IsNullOrEmpty(displayName) ? "Legacy Player" : displayName;
+            }
+
+            return (technicalId, displayName, binaryPath);
         }
 
         public static (string Artist, string Title) ParseAndCleanTitle(string? rawTitle)

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Media.Control;
+using FluentScrobbler.Models;
 
 namespace FluentScrobbler.Services
 {
@@ -259,6 +260,35 @@ namespace FluentScrobbler.Services
                 SaveStoredList(LocalSettingsKnownKey, knownSources);
             }
 
+            if (SettingsService.IsLegacyPlayersEnabled())
+            {
+                try
+                {
+                    var legacyTrack = LegacyPlayerWatcher.Instance.CurrentTrack;
+                    if (legacyTrack == null || legacyTrack.State == LegacyPlaybackState.NotRunning)
+                    {
+                        LegacyPlayerWatcher.Instance.CheckPlayerState();
+                        legacyTrack = LegacyPlayerWatcher.Instance.CurrentTrack;
+                    }
+
+                    if (legacyTrack != null && legacyTrack.State != LegacyPlaybackState.NotRunning && !string.IsNullOrWhiteSpace(legacyTrack.SourceApp))
+                    {
+                        if (!knownSources.Contains(legacyTrack.SourceApp))
+                        {
+                            knownSources.Add(legacyTrack.SourceApp);
+                            SaveStoredList(LocalSettingsKnownKey, knownSources);
+                        }
+                        if (!string.IsNullOrWhiteSpace(legacyTrack.DisplayName))
+                        {
+                            RegisterKnownSource(legacyTrack.SourceApp, legacyTrack.DisplayName);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
             var result = new List<SourceAppInfo>();
             foreach (var appId in knownSources)
             {
@@ -295,6 +325,28 @@ namespace FluentScrobbler.Services
             {
             }
             return false;
+        }
+
+        public void RegisterKnownSource(string appId, string? displayName = null)
+        {
+            if (string.IsNullOrWhiteSpace(appId)) return;
+            var knownSources = GetStoredList(LocalSettingsKnownKey);
+            if (!knownSources.Contains(appId))
+            {
+                knownSources.Add(appId);
+                SaveStoredList(LocalSettingsKnownKey, knownSources);
+            }
+
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                var dict = LoadSettingsFromFile();
+                string nameKey = $"SourceDisplayName_{appId.ToLowerInvariant()}";
+                if (!dict.TryGetValue(nameKey, out var existing) || existing != displayName)
+                {
+                    dict[nameKey] = displayName;
+                    SaveSettingsToFile(dict);
+                }
+            }
         }
 
         public void SetSourceAllowed(string appId, bool isAllowed)
@@ -355,6 +407,20 @@ namespace FluentScrobbler.Services
         public static string FormatAppDisplayName(string appId)
         {
             if (string.IsNullOrWhiteSpace(appId)) return "Unknown Application";
+
+            try
+            {
+                var dict = LoadSettingsFromFile();
+                string nameKey = $"SourceDisplayName_{appId.ToLowerInvariant()}";
+                if (dict.TryGetValue(nameKey, out string? customName) && !string.IsNullOrWhiteSpace(customName))
+                {
+                    return customName;
+                }
+            }
+            catch
+            {
+            }
+
             string lower = appId.ToLowerInvariant();
             if (lower.Contains("spotify")) return "Spotify";
             if (lower.Contains("chrome")) return "Google Chrome";
@@ -364,12 +430,18 @@ namespace FluentScrobbler.Services
             if (lower.Contains("vlc")) return "VLC Media Player";
             if (lower.Contains("foobar")) return "foobar2000";
             if (lower.Contains("wmplayer") || lower.Contains("mediaplayer")) return "Windows Media Player";
+            if (lower.Contains("winamp")) return "Winamp";
+            if (lower.Contains("aimp")) return "AIMP";
 
             string name = Path.GetFileNameWithoutExtension(appId);
             if (name.Contains("!"))
             {
                 var parts = name.Split('!');
                 name = parts[parts.Length - 1];
+            }
+            if (!string.IsNullOrEmpty(name))
+            {
+                return char.ToUpper(name[0]) + (name.Length > 1 ? name.Substring(1) : "");
             }
             return name;
         }
