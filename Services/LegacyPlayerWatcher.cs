@@ -16,20 +16,18 @@ namespace FluentScrobbler.Services
         private static LegacyPlayerWatcher? _instance;
         public static LegacyPlayerWatcher Instance => _instance ??= new LegacyPlayerWatcher();
 
-        // Win32 Interop Constants
         private const string WinampClassName = "Winamp v1.x";
         private const uint WM_USER = 0x0400;
         private const int IPC_ISPLAYING = 104;
         private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
-        // P/Invoke Signatures
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int GetWindowTextLength(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -41,13 +39,12 @@ namespace FluentScrobbler.Services
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(IntPtr hObject);
 
-        // Regex patterns for metadata cleaning
         private static readonly Regex PlayerSuffixRegex = new(
             @"\s*[-–—]\s*(?:Winamp(?:\s+[\d\.]+)?|AIMP(?:\s+[\d\.]+)?)\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled
@@ -113,7 +110,6 @@ namespace FluentScrobbler.Services
                     _pollingTimer.Elapsed += OnTimerElapsed;
                     _pollingTimer.Start();
 
-                    // Perform an immediate initial check
                     CheckPlayerState();
                 }
                 else
@@ -134,8 +130,12 @@ namespace FluentScrobbler.Services
                             Title = _lastTrack.Title,
                             State = LegacyPlaybackState.NotRunning
                         };
-                        _lastTrack = stoppedTrack;
+                        _lastTrack = null;
                         TrackChanged?.Invoke(this, stoppedTrack);
+                    }
+                    else
+                    {
+                        _lastTrack = null;
                     }
                 }
             }
@@ -209,7 +209,6 @@ namespace FluentScrobbler.Services
                 };
             }
 
-            // Deduplication: only trigger if track info or playback state has changed
             if (!Equals(_lastTrack, currentInfo))
             {
                 _lastTrack = currentInfo;
@@ -230,7 +229,6 @@ namespace FluentScrobbler.Services
 
             try
             {
-                // 1. Query full executable path safely across 32/64-bit boundaries
                 IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
                 if (hProcess != IntPtr.Zero)
                 {
@@ -261,7 +259,6 @@ namespace FluentScrobbler.Services
                     }
                 }
 
-                // Technical Identifier: lowercase executable name (e.g. "winamp.exe", "aimp.exe")
                 if (!string.IsNullOrEmpty(binaryPath))
                 {
                     technicalId = Path.GetFileName(binaryPath).ToLowerInvariant();
@@ -279,7 +276,6 @@ namespace FluentScrobbler.Services
                     }
                 }
 
-                // Display Name: read official product description or product name
                 if (!string.IsNullOrEmpty(binaryPath) && File.Exists(binaryPath))
                 {
                     try
@@ -299,7 +295,6 @@ namespace FluentScrobbler.Services
                     }
                 }
 
-                // Fallback: filename with first letter capitalized
                 if (string.IsNullOrWhiteSpace(displayName))
                 {
                     string rawName = Path.GetFileNameWithoutExtension(technicalId);
@@ -332,17 +327,14 @@ namespace FluentScrobbler.Services
 
             string cleaned = rawTitle.Trim();
 
-            // 1. Remove player suffixes like "- Winamp" or "- AIMP"
             cleaned = PlayerSuffixRegex.Replace(cleaned, string.Empty).Trim();
 
-            // Guard against player-only title headers when no track is playing
             if (string.Equals(cleaned, "Winamp", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(cleaned, "AIMP", StringComparison.OrdinalIgnoreCase))
             {
                 return (string.Empty, string.Empty);
             }
 
-            // 2. Remove leading track numbering (e.g. "01. ", "1. ", "01 - ")
             cleaned = TrackNumberPrefixRegex.Replace(cleaned, string.Empty).Trim();
 
             if (string.IsNullOrWhiteSpace(cleaned))
@@ -350,7 +342,6 @@ namespace FluentScrobbler.Services
                 return (string.Empty, string.Empty);
             }
 
-            // 3. Separate standard "Artist - Title" format
             var parts = ArtistTrackSeparatorRegex.Split(cleaned);
             if (parts.Length >= 2)
             {
@@ -359,7 +350,6 @@ namespace FluentScrobbler.Services
                 return (artist, title);
             }
 
-            // Fallback if no separator is found
             return (string.Empty, cleaned);
         }
 
