@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Media.Control;
+using FluentScrobbler.Models;
 using FluentScrobbler.Services.Media;
 
 namespace FluentScrobbler.Services
@@ -27,6 +28,7 @@ namespace FluentScrobbler.Services
         private readonly LastFmService _lastFmService = new();
         private readonly MediaArtResolver _mediaArtResolver = new();
         private readonly WindowsMediaService _windowsMediaService = new();
+        private readonly ILegacyPlayerWatcher _legacyPlayerWatcher = LegacyPlayerWatcher.Instance;
         private readonly SemaphoreSlim _scrobbleLock = new(1, 1);
         private readonly SemaphoreSlim _sessionLock = new(1, 1);
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
@@ -59,8 +61,24 @@ namespace FluentScrobbler.Services
         {
             if (_cts != null) return;
             _cts = new CancellationTokenSource();
+
+            _legacyPlayerWatcher.TrackChanged += OnLegacyTrackChanged;
+            if (SettingsService.IsLegacyPlayersEnabled())
+            {
+                _legacyPlayerWatcher.Start();
+            }
+
             _ = InitSessionManagerAsync();
             _ = RunLoopAsync(_cts.Token);
+        }
+
+        private void OnLegacyTrackChanged(object? sender, LegacyTrackInfo info)
+        {
+            if (info.State != LegacyPlaybackState.NotRunning && !string.IsNullOrWhiteSpace(info.SourceApp))
+            {
+                RegisterLegacySourceIfNew(info.SourceApp, info.DisplayName);
+            }
+            _ = ProcessSessionUpdateAsync();
         }
 
         private async Task InitSessionManagerAsync()
@@ -256,103 +274,162 @@ namespace FluentScrobbler.Services
 
                 if (allowedSession == null)
                 {
-                    _currentSession = null;
-                    await CheckTrackEndedAsync();
-                    bool wasPlaying = _isPlaying || CurrentTrack != null;
-                    _isPlaying = false;
-                    if (wasPlaying)
+                    if (_legacyPlayerWatcher.IsRunning && _legacyPlayerWatcher.CurrentTrack is { State: LegacyPlaybackState.Playing } legacyTrack && legacyTrack.IsValid)
                     {
-                        CurrentTrack = null;
-                        NowPlayingChanged?.Invoke(this, null);
-                        _ = ClearDiscordPresenceAsync();
+                        string legacyAppId = !string.IsNullOrWhiteSpace(legacyTrack.SourceApp) ? legacyTrack.SourceApp : "winamp.exe";
+                        RegisterLegacySourceIfNew(legacyAppId, legacyTrack.DisplayName);
+
+                        if (!_windowsMediaService.IsSourceAllowed(legacyAppId))
+                        {
+                            await SetIdleStateAsync();
+                            return;
+                        }
+
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
+                        return;
                     }
-                    SetStatus(ScrobbleStatus.Idle);
+
+                    await SetIdleStateAsync();
                     return;
                 }
 
                 var props = await allowedSession.TryGetMediaPropertiesAsync();
                 if (props == null || string.IsNullOrWhiteSpace(props.Title))
                 {
-                    _currentSession = null;
-                    await CheckTrackEndedAsync();
-                    bool wasPlaying = _isPlaying || CurrentTrack != null;
-                    _isPlaying = false;
-                    if (wasPlaying)
+                    if (_legacyPlayerWatcher.IsRunning && _legacyPlayerWatcher.CurrentTrack is { State: LegacyPlaybackState.Playing } legacyTrack && legacyTrack.IsValid)
                     {
-                        CurrentTrack = null;
-                        NowPlayingChanged?.Invoke(this, null);
-                        _ = ClearDiscordPresenceAsync();
+                        string legacyAppId = !string.IsNullOrWhiteSpace(legacyTrack.SourceApp) ? legacyTrack.SourceApp : "winamp.exe";
+                        RegisterLegacySourceIfNew(legacyAppId, legacyTrack.DisplayName);
+
+                        if (!_windowsMediaService.IsSourceAllowed(legacyAppId))
+                        {
+                            await SetIdleStateAsync();
+                            return;
+                        }
+
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
+                        return;
                     }
-                    SetStatus(ScrobbleStatus.Idle);
+
+                    await SetIdleStateAsync();
                     return;
                 }
 
-                _currentSession = allowedSession;
-                string appId = allowedSession.SourceAppUserModelId;
+                string smtcAppId = allowedSession.SourceAppUserModelId;
+                string smtcArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
+                string smtcAlbum = props.AlbumTitle?.Trim() ?? string.Empty;
 
-                string title = props.Title.Trim();
-                string rawArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
-                string artist = rawArtist;
-                string album = props.AlbumTitle?.Trim() ?? string.Empty;
-
-                if (_windowsMediaService.IsCleanTrackTitlesEnabled())
-                {
-                    title = WindowsMediaService.CleanTrackTitle(title);
-                }
-
-                if (_windowsMediaService.IsPrimaryArtistOnlyEnabled())
-                {
-                    artist = WindowsMediaService.FormatPrimaryArtist(artist);
-                }
-
-                if (title != _currentTrack || artist != _currentArtist)
-                {
-                    await CheckTrackEndedAsync();
-
-                    _currentTrack = title;
-                    _currentArtist = artist;
-                    _currentAlbum = album;
-                    _currentAppId = appId;
-                    _trackStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    _elapsedSeconds = 0;
-                    _hasScrobbledCurrentTrack = IsRecentlyScrobbled(_currentArtist, _currentTrack, 60);
-                    _isPlaying = true;
-
-                    CurrentTrack = new NowPlayingInfo(title, artist, album);
-                    NowPlayingChanged?.Invoke(this, CurrentTrack);
-                    SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
-
-                    await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
-                    _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-                }
-                else
-                {
-                    _isPlaying = true;
-                    if (CurrentTrack == null)
-                    {
-                        CurrentTrack = new NowPlayingInfo(_currentTrack, _currentArtist, _currentAlbum);
-                        NowPlayingChanged?.Invoke(this, CurrentTrack);
-                        SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
-                        _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
-                    }
-                    _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
-
-                    int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
-                    int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
-                    if (!_hasScrobbledCurrentTrack && _elapsedSeconds >= minLength)
-                    {
-                        if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 30)
-                        {
-                            await ExecuteScrobbleAsync();
-                        }
-                    }
-                }
+                await ProcessTrackAsync(props.Title, smtcArtist, smtcAlbum, smtcAppId, allowedSession);
             }
             catch (Exception ex)
             {
                 _sessionMgr = null;
                 LogService.LogError("[Scrobbler Service Error] Background processing failed", ex);
             }
+        }
+
+        private void RegisterLegacySourceIfNew(string appId, string? displayName)
+        {
+            try
+            {
+                var knownSources = _windowsMediaService.GetKnownSources();
+                if (!knownSources.Contains(appId) && !_notifiedNewInstances.Contains(appId))
+                {
+                    _notifiedNewInstances.Add(appId);
+                    string name = !string.IsNullOrWhiteSpace(displayName)
+                        ? displayName
+                        : WindowsMediaService.FormatAppDisplayName(appId);
+                    _windowsMediaService.RegisterKnownSource(appId, name);
+                    NotificationService.ShowNewInstanceNotification(name);
+                    NewSourceDetected?.Invoke(this, name);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Legacy Source Registration] Failed to register source", ex);
+            }
+        }
+
+        private async Task ProcessTrackAsync(string rawTitle, string rawArtist, string rawAlbum, string appId, GlobalSystemMediaTransportControlsSession? session)
+        {
+            if (!_windowsMediaService.IsSourceAllowed(appId))
+            {
+                await SetIdleStateAsync();
+                return;
+            }
+
+            _currentSession = session;
+            string title = rawTitle.Trim();
+            string artist = rawArtist;
+            string album = rawAlbum.Trim();
+
+            if (_windowsMediaService.IsCleanTrackTitlesEnabled())
+            {
+                title = WindowsMediaService.CleanTrackTitle(title);
+            }
+
+            if (_windowsMediaService.IsPrimaryArtistOnlyEnabled())
+            {
+                artist = WindowsMediaService.FormatPrimaryArtist(artist);
+            }
+
+            if (title != _currentTrack || artist != _currentArtist)
+            {
+                await CheckTrackEndedAsync();
+
+                _currentTrack = title;
+                _currentArtist = artist;
+                _currentAlbum = album;
+                _currentAppId = appId;
+                _trackStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                _elapsedSeconds = 0;
+                _hasScrobbledCurrentTrack = IsRecentlyScrobbled(_currentArtist, _currentTrack, 60);
+                _isPlaying = true;
+
+                CurrentTrack = new NowPlayingInfo(title, artist, album);
+                NowPlayingChanged?.Invoke(this, CurrentTrack);
+                SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+
+                await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+            }
+            else
+            {
+                _isPlaying = true;
+                if (CurrentTrack == null)
+                {
+                    CurrentTrack = new NowPlayingInfo(_currentTrack, _currentArtist, _currentAlbum);
+                    NowPlayingChanged?.Invoke(this, CurrentTrack);
+                    SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                    _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                }
+                _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
+
+                int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
+                int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
+                if (!_hasScrobbledCurrentTrack && _elapsedSeconds >= minLength)
+                {
+                    if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 30)
+                    {
+                        await ExecuteScrobbleAsync();
+                    }
+                }
+            }
+        }
+
+        private async Task SetIdleStateAsync()
+        {
+            _currentSession = null;
+            await CheckTrackEndedAsync();
+            bool wasPlaying = _isPlaying || CurrentTrack != null;
+            _isPlaying = false;
+            if (wasPlaying)
+            {
+                CurrentTrack = null;
+                NowPlayingChanged?.Invoke(this, null);
+                _ = ClearDiscordPresenceAsync();
+            }
+            SetStatus(ScrobbleStatus.Idle);
         }
 
         private async Task ExecuteScrobbleAsync()
