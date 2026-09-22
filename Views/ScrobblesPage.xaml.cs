@@ -78,6 +78,7 @@ namespace FluentScrobbler.Views
             NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
             NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
             NowPlayingIdleIcon.Visibility = Visibility.Visible;
+            NowPlayingLikeButton.Visibility = Visibility.Collapsed;
         }
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
@@ -372,15 +373,66 @@ namespace FluentScrobbler.Views
             Grid.SetColumn(infoStack, 1);
             grid.Children.Add(infoStack);
 
+            var rightStack = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 8,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
             var timeText = new TextBlock
             {
                 Text = item.TimeFormatted,
                 VerticalAlignment = VerticalAlignment.Center,
                 Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Margin = new Thickness(8, 0, 8, 0)
+                Margin = new Thickness(8, 0, 0, 0)
             };
-            Grid.SetColumn(timeText, 2);
-            grid.Children.Add(timeText);
+            rightStack.Children.Add(timeText);
+
+            var heartIcon = new FluentIcons.WinUI.SymbolIcon
+            {
+                Symbol = FluentIcons.Common.Symbol.Heart,
+                IconVariant = FluentIcons.Common.IconVariant.Regular,
+                FontSize = 18
+            };
+            HeartUiHelper.SetHeartVisual(heartIcon, item.IsFavorite);
+
+            var likeButton = new Button
+            {
+                Style = Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle) ? (Style)subtleStyle : null,
+                Padding = new Thickness(6),
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = heartIcon
+            };
+            ToolTipService.SetToolTip(likeButton, "Love track");
+
+            bool isLiking = false;
+            likeButton.Click += async (s, ev) =>
+            {
+                if (isLiking) return;
+                isLiking = true;
+                likeButton.IsEnabled = false;
+
+                try
+                {
+                    bool willBeLoved = heartIcon.IconVariant != FluentIcons.Common.IconVariant.Filled;
+                    HeartUiHelper.SetHeartVisual(heartIcon, willBeLoved);
+                    HeartUiHelper.AnimateHeartPop(heartIcon);
+                    item.IsFavorite = willBeLoved;
+
+                    await _lastFmService.ToggleLoveTrackAsync(item.TrackName, item.ArtistName, willBeLoved);
+                    await Task.Delay(500);
+                }
+                finally
+                {
+                    likeButton.IsEnabled = true;
+                    isLiking = false;
+                }
+            };
+            rightStack.Children.Add(likeButton);
+
+            Grid.SetColumn(rightStack, 2);
+            grid.Children.Add(rightStack);
 
             var outerBorder = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(@"
 <Border xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
@@ -491,6 +543,8 @@ namespace FluentScrobbler.Views
             NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
+            NowPlayingLikeButton.Visibility = Visibility.Visible;
+            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, false);
             NowPlayingTrackText.Text = track;
 
             string artistAlbumStr = string.IsNullOrWhiteSpace(album)
@@ -527,6 +581,35 @@ namespace FluentScrobbler.Views
             if (MainContentPanel == null) return;
             MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
             MainContentPanel.Width = Math.Max(0, (e.NewSize.Width - 64) * 0.9);
+        }
+
+        private bool _isLikingNowPlaying = false;
+
+        private async void NowPlayingLikeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isLikingNowPlaying) return;
+            
+            _isLikingNowPlaying = true;
+            NowPlayingLikeButton.IsEnabled = false;
+
+            try
+            {
+                bool willBeLoved = NowPlayingLikeIcon.IconVariant != FluentIcons.Common.IconVariant.Filled;
+                HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, willBeLoved);
+                HeartUiHelper.AnimateHeartPop(NowPlayingLikeIcon);
+
+                if (!string.IsNullOrEmpty(_lastNowPlayingTrack) && !string.IsNullOrEmpty(_lastNowPlayingArtist))
+                {
+                    await _lastFmService.ToggleLoveTrackAsync(_lastNowPlayingTrack, _lastNowPlayingArtist, willBeLoved);
+                }
+                
+                await Task.Delay(500);
+            }
+            finally
+            {
+                NowPlayingLikeButton.IsEnabled = true;
+                _isLikingNowPlaying = false;
+            }
         }
     }
 }

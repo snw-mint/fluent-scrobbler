@@ -42,6 +42,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Width="80" Height="80" CornerRadius="8" Background="{ThemeResource LayerFillColorDefaultBrush}">
@@ -67,6 +68,17 @@
                             <TextBlock Text="Silence is golden... but music is better" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                             <TextBlock Text="Play something to start scrobbling." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
+
+                        <Button x:Name="NowPlayingLikeButton"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed"
+                                Style="{ThemeResource SubtleButtonStyle}"
+                                ToolTipService.ToolTip="Love track"
+                                Padding="8"
+                                Click="NowPlayingLikeButton_Click">
+                            <ic:SymbolIcon x:Name="NowPlayingLikeIcon" Symbol="Heart" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </Button>
                     </Grid>
                 </Border>
             </StackPanel>

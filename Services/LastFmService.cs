@@ -822,10 +822,53 @@ namespace FluentScrobbler.Services
             return false;
         }
 
-        public async Task<bool> ToggleLoveTrackAsync(string track, string artist, bool love, string sessionKey)
+        public async Task<bool> ToggleLoveTrackAsync(string track, string artist, bool love)
         {
-            await Task.Delay(100);
-            return true;
+            var (_, sessionKey) = GetUserSession();
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                LogService.LogWarning("[Auth Warning] ToggleLoveTrack cancelled: No active session.");
+                return false;
+            }
+
+            try
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    { "api_key", ApiKey },
+                    { "artist", artist },
+                    { "method", love ? "track.love" : "track.unlove" },
+                    { "sk", sessionKey },
+                    { "track", track }
+                };
+
+                string apiSig = GenerateApiSignature(parameters, ApiSecret);
+                parameters["api_sig"] = apiSig;
+                parameters["format"] = "json";
+
+                var content = new FormUrlEncodedContent(parameters);
+                var response = await _httpClient.PostAsync(BaseUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    bool success = !json.Contains("error");
+                    if (!success)
+                    {
+                        LogService.LogError($"[API Error] {(love ? "track.love" : "track.unlove")} returned error response: {json}");
+                    }
+                    return success;
+                }
+                else
+                {
+                    LogService.LogError($"[API Error] {(love ? "track.love" : "track.unlove")} HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[API Error] Exception toggling love track", ex);
+            }
+            return false;
         }
     }
 }
