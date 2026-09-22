@@ -29,7 +29,6 @@ jobs:
           $version = "${{ github.ref_name }}".TrimStart('v')
           $targets = @(
             @{ Rid = "win-x64"; Arch = "x64"; Platform = "x64" },
-            @{ Rid = "win-x86"; Arch = "x86"; Platform = "x86" },
             @{ Rid = "win-arm64"; Arch = "arm64"; Platform = "ARM64" }
           )
 

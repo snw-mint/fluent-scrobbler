@@ -12,7 +12,18 @@ namespace FluentScrobbler.Services
             "settings.json"
         );
 
-        private static readonly object LockObj = new();
+        public const string LegacyPlayersEnabledKey = "EnableLegacyPlayerMonitoring";
+
+        public static bool IsLegacyPlayersEnabled()
+        {
+            return GetSetting(LegacyPlayersEnabledKey) == "true";
+        }
+
+        public static void SetLegacyPlayersEnabled(bool enabled)
+        {
+            SetSetting(LegacyPlayersEnabledKey, enabled ? "true" : "false");
+            LegacyPlayerWatcher.Instance.SetMonitoringState(enabled);
+        }
 
         public static string? GetSetting(string key)
         {
@@ -47,6 +58,8 @@ namespace FluentScrobbler.Services
             fileSettings[key] = value;
             SaveSettingsToFile(fileSettings);
         }
+
+        private static readonly object LockObj = new();
 
         private static Dictionary<string, string> LoadSettingsFromFile()
         {

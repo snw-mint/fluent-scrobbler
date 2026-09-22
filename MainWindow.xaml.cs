@@ -72,6 +72,9 @@ namespace FluentScrobbler
                     await CapturarMarketing4KAsync();
                 }
             };
+
+            ScrobblerBackgroundService.Instance.Start();
+            OfflineCacheWorker.Instance.Start();
         }
 
         public async Task CapturarMarketing4KAsync(string nomeArquivo = "FluentScrobbler_Marketing_4K.png")
