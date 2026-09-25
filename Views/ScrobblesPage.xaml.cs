@@ -35,6 +35,7 @@ namespace FluentScrobbler.Views
             this.InitializeComponent();
             this.Loaded += ScrobblesPage_Loaded;
             this.Unloaded += ScrobblesPage_Unloaded;
+            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
         }
 
         private async void ScrobblesPage_Loaded(object sender, RoutedEventArgs e)
@@ -89,6 +90,44 @@ namespace FluentScrobbler.Views
             _cts?.Dispose();
             _cts = null;
             _isRefreshing = false;
+        }
+
+        private void OnTrackLoveChanged(object? sender, (string Track, string Artist, bool IsLoved) e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.Equals(_lastNowPlayingTrack, e.Track, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(_lastNowPlayingArtist, e.Artist, StringComparison.OrdinalIgnoreCase))
+                {
+                    HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, e.IsLoved);
+                }
+
+                bool changed = false;
+                foreach (var scrobble in Scrobbles)
+                {
+                    if (string.Equals(scrobble.TrackName, e.Track, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(scrobble.ArtistName, e.Artist, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scrobble.IsFavorite = e.IsLoved;
+                        changed = true;
+                    }
+                }
+
+                foreach (var scrobble in _cachedScrobbles)
+                {
+                    if (string.Equals(scrobble.TrackName, e.Track, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(scrobble.ArtistName, e.Artist, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scrobble.IsFavorite = e.IsLoved;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    RenderScrobblesList();
+                }
+            });
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -544,7 +583,25 @@ namespace FluentScrobbler.Views
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingLikeButton.Visibility = Visibility.Visible;
-            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, false);
+
+            bool isLoved = false;
+            var cachedNowPlaying = _cachedScrobbles.FirstOrDefault(t =>
+                string.Equals(t.TrackName, track, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(t.ArtistName, artist, StringComparison.OrdinalIgnoreCase));
+            if (cachedNowPlaying != null)
+            {
+                isLoved = cachedNowPlaying.IsFavorite;
+            }
+            else
+            {
+                var localLoved = LastFmService.GetLocalLoveCache(track ?? "", artist ?? "");
+                if (localLoved.HasValue)
+                {
+                    isLoved = localLoved.Value;
+                }
+            }
+            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, isLoved);
+
             NowPlayingTrackText.Text = track;
 
             string artistAlbumStr = string.IsNullOrWhiteSpace(album)

@@ -35,6 +35,7 @@ namespace FluentScrobbler.Views
         private static string? _cachedNowPlayingTrack;
         private static string? _cachedNowPlayingArtistAlbum;
         private static string? _cachedNowPlayingArtUrl;
+        private static bool _cachedNowPlayingIsLoved;
 
         private string _lastNowPlayingTrack = string.Empty;
         private string _lastNowPlayingArtist = string.Empty;
@@ -59,6 +60,7 @@ namespace FluentScrobbler.Views
             ApplyCachedState();
             this.Loaded += HomePage_Loaded;
             this.Unloaded += HomePage_Unloaded;
+            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
         }
 
         private void ApplyCachedState()
@@ -98,6 +100,7 @@ namespace FluentScrobbler.Views
                 NowPlayingLikeButton.Visibility = Visibility.Visible;
                 if (_cachedNowPlayingTrack != null) NowPlayingTrackText.Text = _cachedNowPlayingTrack;
                 if (_cachedNowPlayingArtistAlbum != null) NowPlayingArtistAlbumText.Text = _cachedNowPlayingArtistAlbum;
+                HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, _cachedNowPlayingIsLoved);
                 if (!string.IsNullOrEmpty(_cachedNowPlayingArtUrl))
                 {
                     try
@@ -213,6 +216,35 @@ namespace FluentScrobbler.Views
             _refreshCts?.Dispose();
             _refreshCts = null;
             _isRefreshing = false;
+        }
+
+        private void OnTrackLoveChanged(object? sender, (string Track, string Artist, bool IsLoved) e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.Equals(_lastNowPlayingTrack, e.Track, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(_lastNowPlayingArtist, e.Artist, StringComparison.OrdinalIgnoreCase))
+                {
+                    _cachedNowPlayingIsLoved = e.IsLoved;
+                    HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, e.IsLoved);
+                }
+
+                bool changed = false;
+                foreach (var scrobble in _cachedRecentScrobbles)
+                {
+                    if (string.Equals(scrobble.TrackName, e.Track, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(scrobble.ArtistName, e.Artist, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scrobble.IsFavorite = e.IsLoved;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    RenderRecentScrobbles(_cachedRecentScrobbles);
+                }
+            });
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -413,7 +445,27 @@ namespace FluentScrobbler.Views
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingLikeButton.Visibility = Visibility.Visible;
-            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, false);
+            
+            bool isLoved = false;
+            var cachedNowPlaying = _cachedRecentScrobbles.FirstOrDefault(t => 
+                string.Equals(t.TrackName, track, StringComparison.OrdinalIgnoreCase) && 
+                string.Equals(t.ArtistName, artist, StringComparison.OrdinalIgnoreCase));
+            if (cachedNowPlaying != null)
+            {
+                isLoved = cachedNowPlaying.IsFavorite;
+            }
+            else
+            {
+                var localLoved = LastFmService.GetLocalLoveCache(track ?? "", artist ?? "");
+                if (localLoved.HasValue)
+                {
+                    isLoved = localLoved.Value;
+                }
+            }
+
+            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, isLoved);
+            _cachedNowPlayingIsLoved = isLoved;
+            
             NowPlayingTrackText.Text = track;
             string artistAlbumStr = string.IsNullOrEmpty(album) ? artist : $"{artist} • {album}";
             NowPlayingArtistAlbumText.Text = artistAlbumStr;

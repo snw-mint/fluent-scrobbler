@@ -13,6 +13,22 @@ namespace FluentScrobbler.Services
 {
     public class LastFmService
     {
+        public static event EventHandler<(string Track, string Artist, bool IsLoved)>? TrackLoveChanged;
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _localLoveCache = new(StringComparer.OrdinalIgnoreCase);
+
+        public static void UpdateLocalLoveCache(string track, string artist, bool isLoved)
+        {
+            _localLoveCache[$"{artist}|{track}"] = isLoved;
+        }
+
+        public static bool? GetLocalLoveCache(string track, string artist)
+        {
+            if (_localLoveCache.TryGetValue($"{artist}|{track}", out bool isLoved))
+                return isLoved;
+            return null;
+        }
+
         private const string BaseUrl = "https://ws.audioscrobbler.com/2.0/";
 
         private readonly string ApiKey = AppSecrets.ApiKey;
@@ -475,6 +491,8 @@ namespace FluentScrobbler.Services
                             {
                                 track.IsLoved = lovedProp.GetString() == "1";
                             }
+                            
+                            UpdateLocalLoveCache(track.Name, track.Artist, track.IsLoved);
 
                             if (item.TryGetProperty("date", out var dateProp) &&
                                 dateProp.TryGetProperty("uts", out var utsProp) &&
@@ -856,6 +874,11 @@ namespace FluentScrobbler.Services
                     if (!success)
                     {
                         LogService.LogError($"[API Error] {(love ? "track.love" : "track.unlove")} returned error response: {json}");
+                    }
+                    else
+                    {
+                        UpdateLocalLoveCache(track, artist, love);
+                        TrackLoveChanged?.Invoke(this, (track, artist, love));
                     }
                     return success;
                 }
