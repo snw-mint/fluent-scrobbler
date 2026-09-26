@@ -32,6 +32,16 @@ jobs:
             @{ Rid = "win-arm64"; Arch = "arm64"; Platform = "ARM64" }
           )
 
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue)?.Source
+          if (-not $iscc) {
+            $candidates = @(
+              "$env:ProgramFiles\Inno Setup 7\ISCC.exe",
+              "${env:ProgramFiles(x86)}\Inno Setup 7\ISCC.exe",
+              "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+            )
+            $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+
           foreach ($t in $targets) {
             $rid = $t.Rid
             $arch = $t.Arch
@@ -46,7 +56,7 @@ jobs:
               -p:LastFmApiSecret="${{ secrets.LASTFM_API_SECRET }}" `
               -o $outDir
 
-            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion="$version" /DAppArch="$arch" /DSourceDir="$outDir" installer.iss
+            & $iscc /DMyAppVersion="$version" /DAppArch="$arch" /DSourceDir="$outDir" installer.iss
           }
 
       - name: Create GitHub Release
