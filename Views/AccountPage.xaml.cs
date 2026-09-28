@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Storage.Pickers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -185,6 +187,15 @@ namespace FluentScrobbler.Views
                 ActionButtonText.Text = string.IsNullOrEmpty(_currentAuthToken) ? "Login" : "Complete Login";
                 ActionButtonIcon.Glyph = "\uE8A7";
             }
+
+            if (ExportConfigButton != null) ExportConfigButton.IsEnabled = isLoggedIn;
+            if (ImportConfigButton != null) ImportConfigButton.IsEnabled = isLoggedIn;
+            if (ConfigBackupDescription != null)
+            {
+                ConfigBackupDescription.Text = isLoggedIn
+                    ? "Export your settings to a JSON file or import existing preferences."
+                    : "Log in to your account to export or import your application settings.";
+            }
         }
 
         private async void OnActionButtonClick(object sender, RoutedEventArgs e)
@@ -296,6 +307,134 @@ namespace FluentScrobbler.Views
             if (MainContentPanel == null) return;
             MainContentPanel.HorizontalAlignment = HorizontalAlignment.Center;
             MainContentPanel.Width = Math.Max(0, (e.NewSize.Width - 64) * 0.9);
+        }
+
+        private IntPtr GetWindowHandle()
+        {
+            if (MainWindow.Current != null)
+            {
+                return WinRT.Interop.WindowNative.GetWindowHandle(MainWindow.Current);
+            }
+            return IntPtr.Zero;
+        }
+
+        private async void ExportConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var savePicker = new FileSavePicker();
+                var hwnd = GetWindowHandle();
+                if (hwnd != IntPtr.Zero)
+                {
+                    WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+                }
+
+                savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                savePicker.FileTypeChoices.Add("JSON File", new List<string> { ".json" });
+                savePicker.SuggestedFileName = $"FluentScrobbler-Settings-{DateTime.Now:yyyyMMdd}.json";
+
+                var file = await savePicker.PickSaveFileAsync();
+                if (file != null)
+                {
+                    await SettingsService.ExportSettingsAsync(file.Path);
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Settings Exported",
+                        Content = $"Your settings were successfully exported to:\n{file.Path}",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = this.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Export Settings Error]", ex);
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Export Failed",
+                    Content = $"Could not export settings: {ex.Message}",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
+        }
+
+        private async void ImportConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var openPicker = new FileOpenPicker();
+                var hwnd = GetWindowHandle();
+                if (hwnd != IntPtr.Zero)
+                {
+                    WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+                }
+
+                openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+                openPicker.FileTypeFilter.Add(".json");
+
+                var file = await openPicker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    var confirmDialog = new ContentDialog
+                    {
+                        Title = "Import Settings?",
+                        Content = "Importing settings will overwrite your current application preferences. Do you wish to continue?",
+                        PrimaryButtonText = "Import",
+                        CloseButtonText = "Cancel",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await confirmDialog.ShowAsync();
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        bool imported = await SettingsService.ImportSettingsAsync(file.Path);
+                        if (imported)
+                        {
+                            var successDialog = new ContentDialog
+                            {
+                                Title = "Settings Imported",
+                                Content = "Settings were imported successfully! You may need to restart the application for all changes to take full effect.",
+                                CloseButtonText = "OK",
+                                DefaultButton = ContentDialogButton.Close,
+                                XamlRoot = this.XamlRoot
+                            };
+                            await successDialog.ShowAsync();
+                        }
+                        else
+                        {
+                            var failDialog = new ContentDialog
+                            {
+                                Title = "Import Failed",
+                                Content = "The selected file is not a valid Fluent Scrobbler settings backup or is corrupted.",
+                                CloseButtonText = "OK",
+                                DefaultButton = ContentDialogButton.Close,
+                                XamlRoot = this.XamlRoot
+                            };
+                            await failDialog.ShowAsync();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Import Settings Error]", ex);
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Import Failed",
+                    Content = $"Could not import settings: {ex.Message}",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
+                await errorDialog.ShowAsync();
+            }
         }
     }
 }

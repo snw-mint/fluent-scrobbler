@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace FluentScrobbler.Services
 {
@@ -99,6 +100,55 @@ namespace FluentScrobbler.Services
                 {
                 }
             }
+        }
+
+        public static string GetSettingsFilePath() => SettingsFilePath;
+
+        public static async Task ExportSettingsAsync(string destinationFilePath)
+        {
+            var settings = LoadSettingsFromFile();
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                foreach (var pair in localSettings.Values)
+                {
+                    if (pair.Value != null)
+                    {
+                        settings[pair.Key] = pair.Value.ToString() ?? string.Empty;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            string json = JsonSerializer.Serialize(settings, AppJsonContext.Default.DictionaryStringString);
+            await File.WriteAllTextAsync(destinationFilePath, json);
+        }
+
+        public static async Task<bool> ImportSettingsAsync(string sourceFilePath)
+        {
+            if (!File.Exists(sourceFilePath)) return false;
+
+            string json = await File.ReadAllTextAsync(sourceFilePath);
+            var imported = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString);
+            if (imported == null || imported.Count == 0) return false;
+
+            SaveSettingsToFile(imported);
+
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                foreach (var pair in imported)
+                {
+                    localSettings.Values[pair.Key] = pair.Value;
+                }
+            }
+            catch
+            {
+            }
+
+            return true;
         }
     }
 }

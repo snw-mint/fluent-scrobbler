@@ -50,7 +50,7 @@
             </Border>
 
             <StackPanel Spacing="8" Margin="0,8,0,0">
-                <TextBlock Text="Local Data &amp; Offline Storage" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+                <TextBlock Text="Local Data &amp; Configuration" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <Grid>
@@ -87,6 +87,28 @@
                         </StackPanel>
 
                         <Button x:Name="ClearCacheButton" Grid.Column="2" Content="Clear Cache" VerticalAlignment="Center" Click="ClearCacheButton_Click" />
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Settings" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <TextBlock Text="Application Settings" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock x:Name="ConfigBackupDescription" Text="Log in to your account to export or import your application settings." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button x:Name="ExportConfigButton" Content="Export" VerticalAlignment="Center" Click="ExportConfigButton_Click" IsEnabled="False" />
+                            <Button x:Name="ImportConfigButton" Content="Import" VerticalAlignment="Center" Click="ImportConfigButton_Click" IsEnabled="False" />
+                        </StackPanel>
                     </Grid>
                 </Border>
             </StackPanel>
