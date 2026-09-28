@@ -1,50 +1,55 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11</title>
-    <meta name="title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
-    <meta name="description" content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm. Track media playback automatically with Windows System Media Controls, offline caching, and zero telemetry." />
-    <meta name="keywords" content="fluent scrobbler, last.fm scrobbler, windows 11 scrobbler, winui 3, native scrobbler, windows media scrobbler, open source scrobbler, lastfm windows, music scrobbler" />
-    <meta name="google-site-verification" content="o8yUQzgwJaDdduUxp62pQBIaOHGTHUSK1EhFHfpFtI4" />
-    <meta name="author" content="snw-mint" />
-    <meta name="robots" content="index, follow" />
-    <meta name="language" content="English" />
-    <meta name="application-name" content="Fluent Scrobbler" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://snw-mint.github.io/fluent-scrobbler/" />
-    <meta property="og:title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
-    <meta property="og:description" content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm with system media controls, offline cache, and zero telemetry." />
-    <meta property="og:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:alt" content="Fluent Scrobbler desktop interface preview" />
-    <meta property="og:site_name" content="Fluent Scrobbler" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://snw-mint.github.io/fluent-scrobbler/" />
-    <meta property="twitter:title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
-    <meta property="twitter:description" content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm with system media controls, offline cache, and zero telemetry." />
-    <meta property="twitter:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
-    <link rel="manifest" href="site.webmanifest" />
-    <meta name="theme-color" content="#0f6cbd" />
-    <link rel="canonical" href="https://snw-mint.github.io/fluent-scrobbler/" />
-    <link rel="alternate" hreflang="en" href="https://snw-mint.github.io/fluent-scrobbler/" />
-    <link rel="stylesheet" href="style.css" />
-    <script>
-      (() => {
-        try {
-          const storedTheme = localStorage.getItem("theme-preference");
-          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          const theme = storedTheme || (prefersDark ? "dark" : "light");
-          document.documentElement.setAttribute("data-theme", theme);
-        } catch (e) {}
-      })();
-    </script>
-    <script type="application/ld+json">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11</title>
+  <meta name="title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
+  <meta name="description"
+    content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm. Track media playback automatically with Windows System Media Controls, offline caching, and zero telemetry." />
+  <meta name="keywords"
+    content="fluent scrobbler, last.fm scrobbler, windows 11 scrobbler, winui 3, native scrobbler, windows media scrobbler, open source scrobbler, lastfm windows, music scrobbler" />
+  <meta name="google-site-verification" content="o8yUQzgwJaDdduUxp62pQBIaOHGTHUSK1EhFHfpFtI4" />
+  <meta name="author" content="snw-mint" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="English" />
+  <meta name="application-name" content="Fluent Scrobbler" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://snw-mint.github.io/fluent-scrobbler/" />
+  <meta property="og:title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
+  <meta property="og:description"
+    content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm with system media controls, offline cache, and zero telemetry." />
+  <meta property="og:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:alt" content="Fluent Scrobbler desktop interface preview" />
+  <meta property="og:site_name" content="Fluent Scrobbler" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://snw-mint.github.io/fluent-scrobbler/" />
+  <meta property="twitter:title" content="Fluent Scrobbler - Native Last.fm Scrobbler for Windows 11" />
+  <meta property="twitter:description"
+    content="Fluent Scrobbler is a native, open-source Windows 11 scrobbler for Last.fm with system media controls, offline cache, and zero telemetry." />
+  <meta property="twitter:image" content="https://snw-mint.github.io/fluent-scrobbler/assets/og-image.jpg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0f6cbd" />
+  <link rel="canonical" href="https://snw-mint.github.io/fluent-scrobbler/" />
+  <link rel="alternate" hreflang="en" href="https://snw-mint.github.io/fluent-scrobbler/" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    (() => {
+      try {
+        const storedTheme = localStorage.getItem("theme-preference");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const theme = storedTheme || (prefersDark ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) { }
+    })();
+  </script>
+  <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -52,7 +57,7 @@
         "url": "https://snw-mint.github.io/fluent-scrobbler/"
       }
     </script>
-    <script id="software-schema" type="application/ld+json">
+  <script id="software-schema" type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
@@ -77,227 +82,353 @@
         "sameAs": ["https://github.com/snw-mint/fluent-scrobbler", "https://github.com/snw-mint/fluent-scrobbler/releases"]
       }
     </script>
-  </head>
+</head>
 
-  <body>
-    <nav class="navbar">
-      <div class="container nav-content">
-        <div class="nav-left">
-          <div class="logo">
-            <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
-            <span>Fluent Scrobbler</span>
-          </div>
-          <div class="nav-divider"></div>
-          <div class="nav-links">
-            <a href="#overview">Overview</a>
-            <a href="download.html">Download</a>
-            <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener">Buy Me a Coffee</a>
-            <a href="https://github.com/snw-mint/fluent-scrobbler" target="_blank" rel="noopener">GitHub</a>
-          </div>
+<body>
+  <nav class="navbar">
+    <div class="container nav-content">
+      <div class="nav-left">
+        <div class="logo">
+          <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
+          <span>Fluent Scrobbler</span>
         </div>
-        <div class="nav-right">
-          <button id="theme-switcher" class="theme-switch" aria-label="Toggle Dark Mode">
-            <span class="theme-icon light-icon">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.026 17.001c-2.762 4.784-8.879 6.423-13.663 3.661a9.964 9.964 0 0 1-3.234-2.983.75.75 0 0 1 .365-1.131c3.767-1.348 5.785-2.911 6.956-5.146 1.232-2.353 1.551-4.93.689-8.464a.75.75 0 0 1 .769-.926 9.961 9.961 0 0 1 4.457 1.327C21.149 6.1 22.788 12.217 20.025 17Zm-8.248-4.903c-1.25 2.388-3.31 4.099-6.817 5.499a8.492 8.492 0 0 0 2.152 1.766 8.501 8.501 0 1 0 8.502-14.725 8.485 8.485 0 0 0-2.792-1.016c.647 3.384.23 6.044-1.045 8.476Z" fill="currentColor" />
-              </svg>
-            </span>
-            <span class="theme-icon dark-icon">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.996 19.01a.75.75 0 0 1 .743.649l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.101v-1.5a.75.75 0 0 1 .75-.75Zm6.022-2.072 1.06 1.06a.75.75 0 1 1-1.06 1.061l-1.06-1.06a.75.75 0 0 1 1.06-1.061Zm-10.983 0a.75.75 0 0 1 0 1.06L5.974 19.06a.75.75 0 0 1-1.06-1.06l1.06-1.061a.75.75 0 0 1 1.06 0ZM12 6.475a5.525 5.525 0 1 1 0 11.05 5.525 5.525 0 0 1 0-11.05Zm0 1.5a4.025 4.025 0 1 0 0 8.05 4.025 4.025 0 0 0 0-8.05Zm9.25 3.293a.75.75 0 0 1 .102 1.493l-.102.007h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm-17-.029a.75.75 0 0 1 .102 1.494l-.102.006h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm1.64-6.37.084.072 1.06 1.06a.75.75 0 0 1-.976 1.134l-.084-.073-1.06-1.06a.75.75 0 0 1 .976-1.134Zm13.188.072a.75.75 0 0 1 .073.977l-.073.084-1.06 1.06a.75.75 0 0 1-1.133-.976l.072-.084 1.06-1.061a.75.75 0 0 1 1.061 0ZM12 1.99a.75.75 0 0 1 .743.648l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.102v-1.5a.75.75 0 0 1 .75-.75Z" fill="currentColor" />
-              </svg>
-            </span>
-          </button>
-          <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <div class="nav-divider"></div>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="download.html">Download</a>
+          <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener">Buy Me a Coffee</a>
+          <a href="https://github.com/snw-mint/fluent-scrobbler" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button id="theme-switcher" class="theme-switch" aria-label="Toggle Dark Mode">
+          <span class="theme-icon light-icon">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.026 17.001c-2.762 4.784-8.879 6.423-13.663 3.661a9.964 9.964 0 0 1-3.234-2.983.75.75 0 0 1 .365-1.131c3.767-1.348 5.785-2.911 6.956-5.146 1.232-2.353 1.551-4.93.689-8.464a.75.75 0 0 1 .769-.926 9.961 9.961 0 0 1 4.457 1.327C21.149 6.1 22.788 12.217 20.025 17Zm-8.248-4.903c-1.25 2.388-3.31 4.099-6.817 5.499a8.492 8.492 0 0 0 2.152 1.766 8.501 8.501 0 1 0 8.502-14.725 8.485 8.485 0 0 0-2.792-1.016c.647 3.384.23 6.044-1.045 8.476Z"
+                fill="currentColor" />
             </svg>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <header class="hero" id="overview">
-      <div class="container hero-content">
-        <h1 class="title">
-          A Native Scrobbler for
-          <span class="gradient-text">Windows 11</span>
-        </h1>
-        <p class="subtitle">Track what you listen to across all your Windows media players with a clean, native desktop experience.</p>
-
-        <a href="download.html" class="main-download-btn">
+          </span>
+          <span class="theme-icon dark-icon">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M11.996 19.01a.75.75 0 0 1 .743.649l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.101v-1.5a.75.75 0 0 1 .75-.75Zm6.022-2.072 1.06 1.06a.75.75 0 1 1-1.06 1.061l-1.06-1.06a.75.75 0 0 1 1.06-1.061Zm-10.983 0a.75.75 0 0 1 0 1.06L5.974 19.06a.75.75 0 0 1-1.06-1.06l1.06-1.061a.75.75 0 0 1 1.06 0ZM12 6.475a5.525 5.525 0 1 1 0 11.05 5.525 5.525 0 0 1 0-11.05Zm0 1.5a4.025 4.025 0 1 0 0 8.05 4.025 4.025 0 0 0 0-8.05Zm9.25 3.293a.75.75 0 0 1 .102 1.493l-.102.007h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm-17-.029a.75.75 0 0 1 .102 1.494l-.102.006h-1.5a.75.75 0 0 1-.102-1.493l.102-.007h1.5Zm1.64-6.37.084.072 1.06 1.06a.75.75 0 0 1-.976 1.134l-.084-.073-1.06-1.06a.75.75 0 0 1 .976-1.134Zm13.188.072a.75.75 0 0 1 .073.977l-.073.084-1.06 1.06a.75.75 0 0 1-1.133-.976l.072-.084 1.06-1.061a.75.75 0 0 1 1.061 0ZM12 1.99a.75.75 0 0 1 .743.648l.007.102v1.5a.75.75 0 0 1-1.493.101l-.007-.102v-1.5a.75.75 0 0 1 .75-.75Z"
+                fill="currentColor" />
+            </svg>
+          </span>
+        </button>
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle navigation menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18.2498 20.5009C18.664 20.5008 19 20.8365 19 21.2507C19 21.6649 18.6644 22.0008 18.2502 22.0047C4.836 22.0048 4.5 21.6691 4.5 21.2549C4.5 20.8407 4.83557 20.5048 5.24978 20.5047L18.2498 20.5009ZM11.6482 2.01271L11.75 2.00586C12.1297 2.00586 12.4435 2.28801 12.4932 2.65409L12.5 2.75586L12.499 16.4409L16.2208 12.7205C16.4871 12.4543 16.9038 12.4301 17.1974 12.648L17.2815 12.7206C17.5477 12.9869 17.5719 13.4036 17.354 13.6972L17.2814 13.7813L12.2837 18.7779C12.0176 19.044 11.6012 19.0683 11.3076 18.8507L11.2235 18.7782L6.22003 13.7816C5.92694 13.4889 5.92661 13.014 6.21931 12.7209C6.48539 12.4545 6.90204 12.43 7.1958 12.6477L7.27997 12.7202L10.999 16.4339L11 2.75586C11 2.37616 11.2822 2.06237 11.6482 2.01271L11.75 2.00586L11.6482 2.01271Z" fill="#fff" />
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          <span>Download Fluent Scrobbler</span>
-        </a>
-        <p class="download-disclaimer">Fluent Scrobbler is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Microsoft Corporation or Last.fm.</p>
+        </button>
+      </div>
+    </div>
+  </nav>
 
-        <div class="hero-visual-container">
-          <img id="hero-fallback" class="fluent-media" src="assets/main.webp" alt="Fluent Scrobbler Interface" />
+  <header class="hero" id="overview">
+    <div class="container hero-content">
+      <h1 class="title">
+        A Native Scrobbler for
+        <span class="gradient-text">Windows 11</span>
+      </h1>
+      <p class="subtitle">Track what you listen to across all your Windows media players with a clean, native desktop
+        experience.</p>
+
+      <a href="download.html" class="main-download-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M18.2498 20.5009C18.664 20.5008 19 20.8365 19 21.2507C19 21.6649 18.6644 22.0008 18.2502 22.0047C4.836 22.0048 4.5 21.6691 4.5 21.2549C4.5 20.8407 4.83557 20.5048 5.24978 20.5047L18.2498 20.5009ZM11.6482 2.01271L11.75 2.00586C12.1297 2.00586 12.4435 2.28801 12.4932 2.65409L12.5 2.75586L12.499 16.4409L16.2208 12.7205C16.4871 12.4543 16.9038 12.4301 17.1974 12.648L17.2815 12.7206C17.5477 12.9869 17.5719 13.4036 17.354 13.6972L17.2814 13.7813L12.2837 18.7779C12.0176 19.044 11.6012 19.0683 11.3076 18.8507L11.2235 18.7782L6.22003 13.7816C5.92694 13.4889 5.92661 13.014 6.21931 12.7209C6.48539 12.4545 6.90204 12.43 7.1958 12.6477L7.27997 12.7202L10.999 16.4339L11 2.75586C11 2.37616 11.2822 2.06237 11.6482 2.01271L11.75 2.00586L11.6482 2.01271Z"
+            fill="#fff" />
+        </svg>
+        <span>Download Fluent Scrobbler</span>
+      </a>
+      <p class="download-disclaimer">Fluent Scrobbler is an independent open-source project and is not affiliated with,
+        endorsed by, or sponsored by Microsoft Corporation or Last.fm.</p>
+
+      <div class="hero-visual-container">
+        <img id="hero-fallback" class="fluent-media" src="assets/main.webp" alt="Fluent Scrobbler Interface" />
+      </div>
+    </div>
+  </header>
+
+  <section class="featured-section" aria-label="Featured Highlights">
+    <div class="container">
+      <div class="featured-grid">
+        <div class="featured-card">
+          <div class="featured-card-icon">
+            <svg viewBox="0 -28.5 256 256" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
+              <g stroke-width="0" />
+              <g stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M216.856 16.597A208.5 208.5 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046q-29.538-4.442-58.533 0c-1.832-4.4-4.55-9.933-6.846-14.046a207.8 207.8 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161 161 0 0 0 79.735 175.3a136.4 136.4 0 0 1-21.846-10.632 109 109 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a132 132 0 0 0 5.355 4.237 136 136 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36M85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2 23.236 11.804 23.015 26.2c.02 14.375-10.148 26.18-23.015 26.18m85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18"
+                fill="#5865f2" />
+            </svg>
+          </div>
+          <h3 class="featured-card-title">Discord Rich Presence</h3>
+          <p class="featured-card-desc">Share your currently playing track and artist live on your Discord activity
+            profile in real time.</p>
+        </div>
+        <div class="featured-card">
+          <div class="featured-card-icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M13 2a2.47 2.47 0 0 1 2.47 2.47l-.001.53H19a1 1 0 0 1 1 1l-.001 3.499-1.53.001a2.47 2.47 0 0 0-2.464 2.307L16 11.97v.06a2.47 2.47 0 0 0 2.307 2.465l.163.005 1.529-.001.001 3.504a1 1 0 0 1-1 1l-3.531-.001v.528a2.47 2.47 0 1 1-4.939 0v-.528H7a1 1 0 0 1-1-1l-.001-3.531h-.53a2.47 2.47 0 0 1 0-4.94H6V6a1 1 0 0 1 1-1h3.53v-.53A2.47 2.47 0 0 1 13 2"
+                fill="url(#media-a)" />
+              <path
+                d="M13 2a2.47 2.47 0 0 1 2.47 2.47l-.001.53H19a1 1 0 0 1 1 1l-.001 3.499-1.53.001a2.47 2.47 0 0 0-2.464 2.307L16 11.97v.06a2.47 2.47 0 0 0 2.307 2.465l.163.005 1.529-.001.001 3.504a1 1 0 0 1-1 1l-3.531-.001v.528a2.47 2.47 0 1 1-4.939 0v-.528H7a1 1 0 0 1-1-1l-.001-3.531h-.53a2.47 2.47 0 0 1 0-4.94H6V6a1 1 0 0 1 1-1h3.53v-.53A2.47 2.47 0 0 1 13 2"
+                fill="url(#media-b)" fill-opacity=".7" />
+              <defs>
+                <linearGradient id="media-a" x1="5.833" y1=".889" x2="16.883" y2="21.761" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#1ec8b0" />
+                  <stop offset="1" stop-color="#2764e7" />
+                </linearGradient>
+                <linearGradient id="media-b" x1="14.131" y1="4.456" x2="18.725" y2="23.861" gradientUnits="userSpaceOnUse">
+                  <stop offset=".533" stop-color="#ff6ce8" stop-opacity="0" />
+                  <stop offset="1" stop-color="#ff6ce8" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h3 class="featured-card-title">Legacy Media Player Support</h3>
+          <p class="featured-card-desc">Automatic tracking for classic desktop players including Winamp, AIMP, and
+            compatible media engines.</p>
+        </div>
+        <div class="featured-card">
+          <div class="featured-card-icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10" fill="url(#mem-a)" />
+              <path
+                d="M7.934 16.066a.75.75 0 1 1-1.06 1.06 7.25 7.25 0 0 1 6.798-12.181.75.75 0 1 1-.344 1.46 5.75 5.75 0 0 0-5.393 9.661m9.954-6.924a.75.75 0 0 1 .955.46 7.25 7.25 0 0 1-1.716 7.525.75.75 0 1 1-1.061-1.061 5.75 5.75 0 0 0 1.362-5.969.75.75 0 0 1 .46-.955"
+                fill="url(#mem-b)" />
+              <path
+                d="M7.934 16.066a.75.75 0 1 1-1.06 1.06 7.25 7.25 0 0 1 6.798-12.181.75.75 0 1 1-.344 1.46 5.75 5.75 0 0 0-5.393 9.661m9.954-6.924a.75.75 0 0 1 .955.46 7.25 7.25 0 0 1-1.716 7.525.75.75 0 1 1-1.061-1.061 5.75 5.75 0 0 0 1.362-5.969.75.75 0 0 1 .46-.955"
+                fill="url(#mem-c)" />
+              <path
+                d="M7.934 16.066a.75.75 0 1 1-1.06 1.06 7.25 7.25 0 0 1 6.798-12.181.75.75 0 1 1-.344 1.46 5.75 5.75 0 0 0-5.393 9.661m9.954-6.924a.75.75 0 0 1 .955.46 7.25 7.25 0 0 1-1.716 7.525.75.75 0 1 1-1.061-1.061 5.75 5.75 0 0 0 1.362-5.969.75.75 0 0 1 .46-.955"
+                fill="url(#mem-d)" />
+              <path
+                d="M15.88 6.667a.625.625 0 0 1 .961.761l-.129.25a425 425 0 0 1-1.416 2.713c-.4.758-.814 1.534-1.156 2.157-.171.31-.326.586-.452.803a5 5 0 0 1-.319.5 1.875 1.875 0 0 1-2.941-2.327c.086-.109.244-.265.413-.425.182-.173.414-.387.678-.625.527-.476 1.188-1.058 1.833-1.62a370 370 0 0 1 2.314-2.003z"
+                fill="url(#mem-e)" />
+              <defs>
+                <linearGradient id="mem-a" x1="9.143" y1="2" x2="16.805" y2="20.922" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#f4f4f4" />
+                  <stop offset="1" stop-color="#cbcbcb" />
+                </linearGradient>
+                <linearGradient id="mem-c" x1="8.5" y1="14" x2="6.179" y2="16.715" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#42b870" stop-opacity="0" />
+                  <stop offset=".58" stop-color="#42b870" />
+                </linearGradient>
+                <linearGradient id="mem-d" x1="15.48" y1="14.395" x2="17.818" y2="16.714" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#e82c41" stop-opacity="0" />
+                  <stop offset=".563" stop-color="#e82c41" />
+                </linearGradient>
+                <linearGradient id="mem-e" x1="10.023" y1="6.517" x2="15.173" y2="13.14" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#0fafff" />
+                  <stop offset="1" stop-color="#2764e7" />
+                </linearGradient>
+                <radialGradient id="mem-b" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                  gradientTransform="matrix(15.6599 0 0 23.6791 4.46 17.317)">
+                  <stop stop-color="#42b870" />
+                  <stop offset=".501" stop-color="#ff921f" />
+                  <stop offset="1" stop-color="#e82c41" />
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+          <h3 class="featured-card-title">Low Memory Usage</h3>
+          <p class="featured-card-desc">Engineered for lightweight background performance with minimal RAM and CPU
+            footprint.</p>
         </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <section class="feature-showcase-section">
-      <div class="container">
-        <div class="showcase-row">
-          <div class="showcase-content">
-            <h2 class="showcase-title">Live Scrobbles & Recent History</h2>
-            <p class="showcase-desc">Browse your complete scrobbling feed in real time directly inside a native Windows interface.</p>
-            <p class="showcase-desc">Track submission statuses, view now playing details, and monitor your listening statistics with instant Last.fm synchronization.</p>
-            <a href="download.html" class="feature-cta-btn">
-              <span class="cta-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z" fill="#fff" />
-                </svg>
-              </span>
-              <span class="cta-text">Try Fluent Scrobbler Now</span>
-            </a>
-          </div>
-          <div class="showcase-image-wrapper">
-            <img src="assets/section1.webp" alt="Live Scrobbles & Recent History" class="showcase-img" width="2731" height="1536" />
-          </div>
+  <section class="feature-showcase-section">
+    <div class="container">
+      <div class="showcase-row">
+        <div class="showcase-content">
+          <h2 class="showcase-title">Live Scrobbles & Recent History</h2>
+          <p class="showcase-desc">Browse your complete scrobbling feed in real time directly inside a native Windows
+            interface.</p>
+          <p class="showcase-desc">Track submission statuses, view now playing details, and monitor your listening
+            statistics with instant Last.fm synchronization.</p>
+          <a href="download.html" class="feature-cta-btn">
+            <span class="cta-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z"
+                  fill="#fff" />
+              </svg>
+            </span>
+            <span class="cta-text">Try Fluent Scrobbler Now</span>
+          </a>
+        </div>
+        <div class="showcase-image-wrapper">
+          <img src="assets/section1.webp" alt="Live Scrobbles & Recent History" class="showcase-img" width="2731"
+            height="1536" />
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="feature-showcase-section alt-bg">
-      <div class="container">
-        <div class="showcase-row row-reverse">
-          <div class="showcase-content">
-            <h2 class="showcase-title">Unobtrusive System Tray Integration</h2>
-            <p class="showcase-desc">Fluent Scrobbler sits quietly in your Windows 11 system tray, capturing playback without interrupting your workflow.</p>
-            <p class="showcase-desc">Quickly preview active scrobble status, control the application, or access options with a single click directly from the taskbar.</p>
-            <a href="download.html" class="feature-cta-btn">
-              <span class="cta-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z" fill="#fff" />
-                </svg>
-              </span>
-              <span class="cta-text">Try Fluent Scrobbler Now</span>
-            </a>
-          </div>
-          <div class="showcase-image-wrapper">
-            <img src="assets/section2.webp" alt="Unobtrusive System Tray Integration" class="showcase-img" width="2731" height="1536" />
-          </div>
+  <section class="feature-showcase-section alt-bg">
+    <div class="container">
+      <div class="showcase-row row-reverse">
+        <div class="showcase-content">
+          <h2 class="showcase-title">Unobtrusive System Tray Integration</h2>
+          <p class="showcase-desc">Fluent Scrobbler sits quietly in your Windows 11 system tray, capturing playback
+            without interrupting your workflow.</p>
+          <p class="showcase-desc">Quickly preview active scrobble status, control the application, or access options
+            with a single click directly from the taskbar.</p>
+          <a href="download.html" class="feature-cta-btn">
+            <span class="cta-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z"
+                  fill="#fff" />
+              </svg>
+            </span>
+            <span class="cta-text">Try Fluent Scrobbler Now</span>
+          </a>
+        </div>
+        <div class="showcase-image-wrapper">
+          <img src="assets/section2.webp" alt="Unobtrusive System Tray Integration" class="showcase-img" width="2731"
+            height="1536" />
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="feature-showcase-section">
-      <div class="container">
-        <div class="showcase-row">
-          <div class="showcase-content">
-            <h2 class="showcase-title">Granular Settings & Customization</h2>
-            <p class="showcase-desc">Tailor your scrobbling experience to fit your setup. Configure ignored apps, playback rules, and startup preferences.</p>
-            <p class="showcase-desc">Switch seamlessly between dark, light, and system themes with full support for Windows 11 Mica aesthetics.</p>
-            <a href="download.html" class="feature-cta-btn">
-              <span class="cta-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z" fill="#fff" />
-                </svg>
-              </span>
-              <span class="cta-text">Try Fluent Scrobbler Now</span>
-            </a>
-          </div>
-          <div class="showcase-image-wrapper">
-            <img src="assets/section.webp" alt="Granular Settings & Customization" class="showcase-img" width="2731" height="1536" />
-          </div>
+  <section class="feature-showcase-section">
+    <div class="container">
+      <div class="showcase-row">
+        <div class="showcase-content">
+          <h2 class="showcase-title">Granular Settings & Customization</h2>
+          <p class="showcase-desc">Tailor your scrobbling experience to fit your setup. Configure ignored apps, playback
+            rules, and startup preferences.</p>
+          <p class="showcase-desc">Switch seamlessly between dark, light, and system themes with full support for
+            Windows 11 Mica aesthetics.</p>
+          <a href="download.html" class="feature-cta-btn">
+            <span class="cta-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z"
+                  fill="#fff" />
+              </svg>
+            </span>
+            <span class="cta-text">Try Fluent Scrobbler Now</span>
+          </a>
+        </div>
+        <div class="showcase-image-wrapper">
+          <img src="assets/section.webp" alt="Granular Settings & Customization" class="showcase-img" width="2731"
+            height="1536" />
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="feature-showcase-section alt-bg">
-      <div class="container">
-        <div class="showcase-row row-reverse">
-          <div class="showcase-content">
-            <h2 class="showcase-title">Secure Account & Data Control</h2>
-            <p class="showcase-desc">Connect your Last.fm account effortlessly with direct authorization, keeping credentials protected in the Windows Credential Locker.</p>
-            <p class="showcase-desc">Enjoy full ownership of your data with one-click account disconnection and zero telemetry or background tracking.</p>
-            <a href="download.html" class="feature-cta-btn">
-              <span class="cta-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z" fill="#fff" />
-                </svg>
-              </span>
-              <span class="cta-text">Try Fluent Scrobbler Now</span>
-            </a>
-          </div>
-          <div class="showcase-image-wrapper">
-            <img src="assets/section4.webp" alt="Secure Account & Data Control" class="showcase-img" width="2731" height="1536" />
-          </div>
+  <section class="feature-showcase-section alt-bg">
+    <div class="container">
+      <div class="showcase-row row-reverse">
+        <div class="showcase-content">
+          <h2 class="showcase-title">Secure Account & Data Control</h2>
+          <p class="showcase-desc">Connect your Last.fm account effortlessly with direct authorization, keeping
+            credentials protected in the Windows Credential Locker.</p>
+          <p class="showcase-desc">Enjoy full ownership of your data with one-click account disconnection and zero
+            telemetry or background tracking.</p>
+          <a href="download.html" class="feature-cta-btn">
+            <span class="cta-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.46967 4.21967C8.17678 4.51256 8.17678 4.98744 8.46967 5.28033L15.1893 12L8.46967 18.7197C8.17678 19.0126 8.17678 19.4874 8.46967 19.7803C8.76256 20.0732 9.23744 20.0732 9.53033 19.7803L16.7803 12.5303C17.0732 12.2374 17.0732 11.7626 16.7803 11.4697L9.53033 4.21967C9.23744 3.92678 8.76256 3.92678 8.46967 4.21967Z"
+                  fill="#fff" />
+              </svg>
+            </span>
+            <span class="cta-text">Try Fluent Scrobbler Now</span>
+          </a>
+        </div>
+        <div class="showcase-image-wrapper">
+          <img src="assets/section4.webp" alt="Secure Account & Data Control" class="showcase-img" width="2731"
+            height="1536" />
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="download" class="download-section">
-      <div class="container">
-        <img class="download-section-logo" src="logo.webp" alt="Fluent Scrobbler logo" />
-        <h2 class="section-title">Get Started Now</h2>
-        <p class="download-subtitle">Experience seamless native scrobbling today on Windows.</p>
+  <section id="download" class="download-section">
+    <div class="container">
+      <img class="download-section-logo" src="logo.webp" alt="Fluent Scrobbler logo" />
+      <h2 class="section-title">Get Started Now</h2>
+      <p class="download-subtitle">Experience seamless native scrobbling today on Windows.</p>
 
-        <div class="hero-actions">
-          <a href="download.html" class="btn-primary">Download Fluent Scrobbler</a>
-          <a href="https://github.com/snw-mint/fluent-scrobbler" class="btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
-        </div>
-        <p class="download-disclaimer">Fluent Scrobbler is an independent open-source project and is not affiliated with Microsoft Corporation or Last.fm.</p>
-
-        <div class="hero-visual-container">
-          <img class="fluent-media" src="assets/download.webp" alt="Fluent Scrobbler Interface" />
-        </div>
+      <div class="hero-actions">
+        <a href="download.html" class="btn-primary">Download Fluent Scrobbler</a>
+        <a href="https://github.com/snw-mint/fluent-scrobbler" class="btn-secondary" target="_blank" rel="noopener">View
+          on GitHub</a>
       </div>
-    </section>
+      <p class="download-disclaimer">Fluent Scrobbler is an independent open-source project and is not affiliated with
+        Microsoft Corporation or Last.fm.</p>
 
-    <footer class="site-footer">
-      <div class="container footer-grid">
-        <div class="footer-brand">
-          <div class="logo">
-            <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
-            <span>Fluent Scrobbler</span>
-          </div>
-          <p class="footer-description">Fluent Scrobbler is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Microsoft Corporation or Last.fm.</p>
+      <div class="hero-visual-container">
+        <img class="fluent-media" src="assets/download.webp" alt="Fluent Scrobbler Interface" />
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <img class="logo-mark" src="logo.webp" alt="Fluent Scrobbler logo" />
+          <span>Fluent Scrobbler</span>
         </div>
-
-        <div class="footer-nav">
-          <div class="footer-column">
-            <h4>Overview</h4>
-            <a href="index.html">Home</a>
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="terms.html">Terms of Use</a>
-            <a href="licenses.html">Licenses</a>
-          </div>
-
-          <div class="footer-column">
-            <h4>Support</h4>
-            <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml">Report a Bug</a>
-            <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml">Request a Feature</a>
-            <a href="https://github.com/snw-mint/fluent-scrobbler/discussions/new/choose">Ask a Question</a>
-            <a href="mailto:snowmint.dev@gmail.com">Contact</a>
-          </div>
-
-          <div class="footer-column">
-            <h4>Community</h4>
-            <a href="https://github.com/snw-mint/fluent-scrobbler">Source Code</a>
-            <a href="https://github.com/snw-mint/fluent-scrobbler/blob/main/CONTRIBUTING.md">Contributing</a>
-            <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener noreferrer">Support the Project</a>
-          </div>
-
-          <div class="footer-column">
-            <h4>Download</h4>
-            <a href="https://github.com/snw-mint/fluent-scrobbler/releases" target="_blank" rel="noopener noreferrer">All Releases</a>
-          </div>
-        </div>
+        <p class="footer-description">Fluent Scrobbler is an independent open-source project and is not affiliated with,
+          endorsed by, or sponsored by Microsoft Corporation or Last.fm.</p>
       </div>
 
-      <div class="container footer-bottom">
-        <p>
-          &copy; 2026 Fluent Scrobbler. Created by
-          <a href="https://github.com/snw-mint" target="_blank" rel="noopener noreferrer">Snow Mint</a>
-          .
-        </p>
+      <div class="footer-nav">
+        <div class="footer-column">
+          <h4>Overview</h4>
+          <a href="index.html">Home</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Use</a>
+          <a href="licenses.html">Licenses</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Support</h4>
+          <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=bug_report.yml">Report a Bug</a>
+          <a href="https://github.com/snw-mint/fluent-scrobbler/issues/new?template=feature_request.yml">Request a
+            Feature</a>
+          <a href="https://github.com/snw-mint/fluent-scrobbler/discussions/new/choose">Ask a Question</a>
+          <a href="mailto:snowmint.dev@gmail.com">Contact</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Community</h4>
+          <a href="https://github.com/snw-mint/fluent-scrobbler">Source Code</a>
+          <a href="https://github.com/snw-mint/fluent-scrobbler/blob/main/CONTRIBUTING.md">Contributing</a>
+          <a href="https://buymeacoffee.com/snw.mint" target="_blank" rel="noopener noreferrer">Support the Project</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Download</h4>
+          <a href="https://github.com/snw-mint/fluent-scrobbler/releases" target="_blank" rel="noopener noreferrer">All
+            Releases</a>
+        </div>
       </div>
-    </footer>
-    <script src="script.js"></script>
-  </body>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>
+        &copy; 2026 Fluent Scrobbler. Created by
+        <a href="https://github.com/snw-mint" target="_blank" rel="noopener noreferrer">Snow Mint</a>
+        .
+      </p>
+    </div>
+  </footer>
+  <script src="script.js"></script>
+</body>
+
 </html>
