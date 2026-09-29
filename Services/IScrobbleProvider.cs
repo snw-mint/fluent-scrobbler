@@ -8,8 +8,8 @@ namespace FluentScrobbler.Services
         
         bool IsLoggedIn();
         
-        Task<bool> UpdateNowPlayingAsync(string track, string artist, string album);
+        Task<bool> UpdateNowPlayingAsync(string track, string artist, string album = "");
         
-        Task<bool> ScrobbleTrackAsync(string track, string artist, string album, long startTimeStamp);
+        Task<bool> ScrobbleTrackAsync(string track, string artist, string album = "", long? timestamp = null);
     }
 }

@@ -11,8 +11,9 @@ using FluentScrobbler.Models;
 
 namespace FluentScrobbler.Services
 {
-    public class LastFmService
+    public class LastFmService : IScrobbleProvider
     {
+        public string Name => "Last.fm";
         public static event EventHandler<(string Track, string Artist, bool IsLoved)>? TrackLoveChanged;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _localLoveCache = new(StringComparer.OrdinalIgnoreCase);
