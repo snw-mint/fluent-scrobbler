@@ -25,7 +25,7 @@ namespace FluentScrobbler.Services
         private static ScrobblerBackgroundService? _instance;
         public static ScrobblerBackgroundService Instance => _instance ??= new ScrobblerBackgroundService();
 
-        private readonly LastFmService _lastFmService = new();
+        private readonly IScrobbleProvider[] _providers = new IScrobbleProvider[] { new LastFmService() };
         private readonly MediaArtResolver _mediaArtResolver = new();
         private readonly WindowsMediaService _windowsMediaService = new();
         private readonly ILegacyPlayerWatcher _legacyPlayerWatcher = LegacyPlayerWatcher.Instance;
@@ -170,7 +170,17 @@ namespace FluentScrobbler.Services
         {
             try
             {
-                if (!_lastFmService.IsLoggedIn())
+                bool anyLoggedIn = false;
+                for (int i = 0; i < _providers.Length; i++)
+                {
+                    if (_providers[i].IsLoggedIn())
+                    {
+                        anyLoggedIn = true;
+                        break;
+                    }
+                }
+
+                if (!anyLoggedIn)
                 {
                     bool wasPlaying = _isPlaying || CurrentTrack != null;
                     _isPlaying = false;
@@ -413,7 +423,13 @@ namespace FluentScrobbler.Services
                 NowPlayingChanged?.Invoke(this, CurrentTrack);
                 SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
-                await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                for (int i = 0; i < _providers.Length; i++)
+                {
+                    if (_providers[i].IsLoggedIn())
+                    {
+                        await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                    }
+                }
                 _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
             }
             else
@@ -450,7 +466,13 @@ namespace FluentScrobbler.Services
                     _hasScrobbledCurrentTrack = false;
                     _lastTimelinePosition = currentPosition;
 
-                    await _lastFmService.UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                    for (int i = 0; i < _providers.Length; i++)
+                    {
+                        if (_providers[i].IsLoggedIn())
+                        {
+                            await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                        }
+                    }
                     _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                 }
                 else
@@ -527,7 +549,14 @@ namespace FluentScrobbler.Services
                 bool success = false;
                 try
                 {
-                    success = await _lastFmService.ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                    for (int i = 0; i < _providers.Length; i++)
+                    {
+                        if (_providers[i].IsLoggedIn())
+                        {
+                            bool pSuccess = await _providers[i].ScrobbleTrackAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
+                            if (pSuccess) success = true;
+                        }
+                    }
                 }
                 catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is TaskCanceledException)
                 {
