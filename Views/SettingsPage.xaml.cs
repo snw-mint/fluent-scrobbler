@@ -188,16 +188,59 @@ namespace FluentScrobbler.Views
                         IsChecked = app.IsAllowed,
                         Content = textStack,
                         VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Left,
                         Tag = app.AppId
                     };
                     check.Checked += SourceApp_CheckChanged;
                     check.Unchecked += SourceApp_CheckChanged;
 
-                    SourceAppsStackPanel.Children.Add(check);
+                    var removeIcon = new FluentIcons.WinUI.SymbolIcon
+                    {
+                        Symbol = FluentIcons.Common.Symbol.Dismiss,
+                        FontSize = 14
+                    };
+
+                    var removeButton = new Button
+                    {
+                        Style = Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle) ? (Style)subtleStyle : null,
+                        Padding = new Thickness(8),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Content = removeIcon,
+                        Tag = app.AppId
+                    };
+                    ToolTipService.SetToolTip(removeButton, "Remove");
+                    removeButton.Click += SourceApp_RemoveClicked;
+
+                    var rowGrid = new Grid
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                    Grid.SetColumn(check, 0);
+                    rowGrid.Children.Add(check);
+
+                    Grid.SetColumn(removeButton, 1);
+                    rowGrid.Children.Add(removeButton);
+
+                    SourceAppsStackPanel.Children.Add(rowGrid);
                 }
             }
             catch
             {
+            }
+        }
+
+        private void SourceApp_RemoveClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string appId)
+            {
+                var mediaService = new WindowsMediaService();
+                mediaService.RemoveKnownSource(appId);
+                LoadSourceApplications();
             }
         }
 

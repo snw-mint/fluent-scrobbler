@@ -69,7 +69,7 @@ namespace FluentScrobbler
             {
                 if (e.Key == Windows.System.VirtualKey.F12)
                 {
-                    await CapturarMarketing4KAsync();
+                    await CapturarScreenshot4KAsync();
                 }
             };
 
@@ -77,7 +77,7 @@ namespace FluentScrobbler
             OfflineCacheWorker.Instance.Start();
         }
 
-        public async Task CapturarMarketing4KAsync(string nomeArquivo = "FluentScrobbler_Marketing_4K.png")
+        public async Task CapturarScreenshot4KAsync(string nomeArquivo = "FluentScrobbler_Screenshot_4K.png")
         {
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             SizeInt32 tamanhoOriginal = this.AppWindow.Size;
@@ -86,10 +86,14 @@ namespace FluentScrobbler
             int alturaBase = 1080;
             int larguraFinal4K = 3840;
             int alturaFinal4K = 2160;
+            
+            var oldBackground = this.RootGrid.Background;
 
             try
             {
                 SetWindowPos(hWnd, IntPtr.Zero, 0, 0, larguraBase, alturaBase, 0x0004 | 0x0010);
+                
+                this.RootGrid.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ApplicationPageBackgroundThemeBrush"];
 
                 this.RootGrid.Width = larguraBase;
                 this.RootGrid.Height = alturaBase;
@@ -126,7 +130,7 @@ namespace FluentScrobbler
             }
             finally
             {
-
+                this.RootGrid.Background = oldBackground;
                 this.RootGrid.ClearValue(FrameworkElement.WidthProperty);
                 this.RootGrid.ClearValue(FrameworkElement.HeightProperty);
 

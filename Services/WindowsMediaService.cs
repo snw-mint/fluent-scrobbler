@@ -219,75 +219,10 @@ namespace FluentScrobbler.Services
             return GetStoredList(LocalSettingsKnownKey);
         }
 
-        public async Task<List<SourceAppInfo>> GetDetectedSourcesAsync()
+        public Task<List<SourceAppInfo>> GetDetectedSourcesAsync()
         {
             var knownSources = GetStoredList(LocalSettingsKnownKey);
             var allowedSources = GetStoredList(LocalSettingsAllowedKey);
-
-            try
-            {
-                var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                if (manager != null)
-                {
-                    var sessions = manager.GetSessions();
-                    if (sessions != null)
-                    {
-                        foreach (var session in sessions)
-                        {
-                            try
-                            {
-                                string appId = session.SourceAppUserModelId;
-                                if (!string.IsNullOrWhiteSpace(appId) && !knownSources.Contains(appId))
-                                {
-                                    knownSources.Add(appId);
-                                }
-                            }
-                            catch
-                            {
-                            }
-                        }
-                    }
-                    SaveStoredList(LocalSettingsKnownKey, knownSources);
-                }
-            }
-            catch
-            {
-            }
-
-            if (IsVlcInstalled() && !knownSources.Any(s => s.Contains("vlc", StringComparison.OrdinalIgnoreCase)))
-            {
-                knownSources.Add("vlc.exe");
-                SaveStoredList(LocalSettingsKnownKey, knownSources);
-            }
-
-            if (SettingsService.IsLegacyPlayersEnabled())
-            {
-                try
-                {
-                    var legacyTrack = LegacyPlayerWatcher.Instance.CurrentTrack;
-                    if (legacyTrack == null || legacyTrack.State == LegacyPlaybackState.NotRunning)
-                    {
-                        LegacyPlayerWatcher.Instance.CheckPlayerState();
-                        legacyTrack = LegacyPlayerWatcher.Instance.CurrentTrack;
-                    }
-
-                    if (legacyTrack != null && legacyTrack.State != LegacyPlaybackState.NotRunning && !string.IsNullOrWhiteSpace(legacyTrack.SourceApp))
-                    {
-                        if (!knownSources.Contains(legacyTrack.SourceApp))
-                        {
-                            knownSources.Add(legacyTrack.SourceApp);
-                            SaveStoredList(LocalSettingsKnownKey, knownSources);
-                        }
-                        if (!string.IsNullOrWhiteSpace(legacyTrack.DisplayName))
-                        {
-                            RegisterKnownSource(legacyTrack.SourceApp, legacyTrack.DisplayName);
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
 
             var result = new List<SourceAppInfo>();
             foreach (var appId in knownSources)
@@ -296,11 +231,11 @@ namespace FluentScrobbler.Services
                 {
                     AppId = appId,
                     DisplayName = FormatAppDisplayName(appId),
-                    IsAllowed = allowedSources.Contains(appId)
+                    IsAllowed = allowedSources.Any(a => string.Equals(a, appId, StringComparison.OrdinalIgnoreCase))
                 });
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
         public static bool IsVlcInstalled()
@@ -331,7 +266,7 @@ namespace FluentScrobbler.Services
         {
             if (string.IsNullOrWhiteSpace(appId)) return;
             var knownSources = GetStoredList(LocalSettingsKnownKey);
-            if (!knownSources.Contains(appId))
+            if (!knownSources.Any(s => string.Equals(s, appId, StringComparison.OrdinalIgnoreCase)))
             {
                 knownSources.Add(appId);
                 SaveStoredList(LocalSettingsKnownKey, knownSources);
@@ -349,19 +284,46 @@ namespace FluentScrobbler.Services
             }
         }
 
+        public void RemoveKnownSource(string appId)
+        {
+            if (string.IsNullOrWhiteSpace(appId)) return;
+            var knownSources = GetStoredList(LocalSettingsKnownKey);
+            knownSources.RemoveAll(s => string.Equals(s, appId, StringComparison.OrdinalIgnoreCase));
+            SaveStoredList(LocalSettingsKnownKey, knownSources);
+
+            var allowedSources = GetStoredList(LocalSettingsAllowedKey);
+            allowedSources.RemoveAll(s => string.Equals(s, appId, StringComparison.OrdinalIgnoreCase));
+            SaveStoredList(LocalSettingsAllowedKey, allowedSources);
+
+            try
+            {
+                var dict = LoadSettingsFromFile();
+                string nameKey = $"SourceDisplayName_{appId.ToLowerInvariant()}";
+                if (dict.Remove(nameKey))
+                {
+                    SaveSettingsToFile(dict);
+                }
+            }
+            catch
+            {
+            }
+
+            ScrobblerBackgroundService.Instance.ForgetSource(appId);
+        }
+
         public void SetSourceAllowed(string appId, bool isAllowed)
         {
             var allowedSources = GetStoredList(LocalSettingsAllowedKey);
             if (isAllowed)
             {
-                if (!allowedSources.Contains(appId))
+                if (!allowedSources.Any(a => string.Equals(a, appId, StringComparison.OrdinalIgnoreCase)))
                 {
                     allowedSources.Add(appId);
                 }
             }
             else
             {
-                allowedSources.Remove(appId);
+                allowedSources.RemoveAll(a => string.Equals(a, appId, StringComparison.OrdinalIgnoreCase));
             }
             SaveStoredList(LocalSettingsAllowedKey, allowedSources);
         }
