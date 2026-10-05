@@ -4,11 +4,7 @@ namespace FluentScrobbler.Services
 {
     public static class FeatureBadgeService
     {
-        private static readonly HashSet<string> SettingsFeatures = new()
-        {
-            "DiscordRichPresence",
-            "LegacyPlayersSupport"
-        };
+        private static readonly HashSet<string> SettingsFeatures = new();
 
         private static string GetKey(string id) => $"SeenFeature_{id}_{AppInfoService.Version}";
 
