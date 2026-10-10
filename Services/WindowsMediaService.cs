@@ -139,6 +139,11 @@ namespace FluentScrobbler.Services
 
         public bool IsSendNowPlayingEnabled()
         {
+            var dict = LoadSettingsFromFile();
+            if (dict.TryGetValue(SendNowPlayingKey, out string? val) && bool.TryParse(val, out bool result))
+            {
+                return result;
+            }
             return true;
         }
 

@@ -478,11 +478,14 @@ namespace FluentScrobbler.Services
                 NowPlayingChanged?.Invoke(this, CurrentTrack);
                 SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
-                for (int i = 0; i < _providers.Length; i++)
+                if (_windowsMediaService.IsSendNowPlayingEnabled())
                 {
-                    if (_providers[i].IsLoggedIn())
+                    for (int i = 0; i < _providers.Length; i++)
                     {
-                        await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                        if (_providers[i].IsLoggedIn())
+                        {
+                            await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                        }
                     }
                 }
                 _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
@@ -490,12 +493,9 @@ namespace FluentScrobbler.Services
             else
             {
                 _isPlaying = true;
-
-                // Detect when the SAME track repeats or is replayed
                 bool isTrackRepeated = false;
                 if (currentPosition.HasValue && _lastTimelinePosition.HasValue)
                 {
-                    // Track was playing (>= 15s) and position rewound back to start (< 5s or dropped by > 15s)
                     if (_lastTimelinePosition.Value >= TimeSpan.FromSeconds(15) &&
                         (currentPosition.Value < TimeSpan.FromSeconds(5) || currentPosition.Value < _lastTimelinePosition.Value - TimeSpan.FromSeconds(15)))
                     {
@@ -504,7 +504,6 @@ namespace FluentScrobbler.Services
                 }
                 else if (trackDuration.HasValue && trackDuration.Value.TotalSeconds >= 30)
                 {
-                    // Fallback when position is not reported but duration is known
                     if (_elapsedSeconds >= (int)trackDuration.Value.TotalSeconds)
                     {
                         isTrackRepeated = true;
@@ -521,11 +520,14 @@ namespace FluentScrobbler.Services
                     _hasScrobbledCurrentTrack = false;
                     _lastTimelinePosition = currentPosition;
 
-                    for (int i = 0; i < _providers.Length; i++)
+                    if (_windowsMediaService.IsSendNowPlayingEnabled())
                     {
-                        if (_providers[i].IsLoggedIn())
+                        for (int i = 0; i < _providers.Length; i++)
                         {
-                            await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                            if (_providers[i].IsLoggedIn())
+                            {
+                                await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum);
+                            }
                         }
                     }
                     _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
@@ -582,7 +584,6 @@ namespace FluentScrobbler.Services
             {
                 if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
 
-                // Anti-burst lock: prevent same-second or burst duplicate scrobbles (< 10 seconds)
                 if (IsRecentlyScrobbled(_currentArtist, _currentTrack, 10))
                 {
                     _hasScrobbledCurrentTrack = true;

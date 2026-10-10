@@ -53,6 +53,16 @@ namespace FluentScrobbler.Views
             ThemeModeComboBox.SelectionChanged += ThemeMode_SelectionChanged;
 
             var mediaService = new WindowsMediaService();
+            bool isSendNowPlaying = mediaService.IsSendNowPlayingEnabled();
+            SendNowPlayingToggle.Toggled -= SendNowPlayingToggle_Toggled;
+            SendNowPlayingToggle.IsOn = isSendNowPlaying;
+            SendNowPlayingStatusText.Text = isSendNowPlaying ? "On" : "Off";
+            SendNowPlayingToggle.Toggled += SendNowPlayingToggle_Toggled;
+
+            SendNowPlayingInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("SendNowPlaying")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
             bool isPrimaryArtistOnly = mediaService.IsPrimaryArtistOnlyEnabled();
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             UsePrimaryArtistOnlyToggle.IsOn = isPrimaryArtistOnly;
@@ -111,11 +121,13 @@ namespace FluentScrobbler.Views
             FeatureBadgeService.MarkFeatureAsSeen("CleanTrackTitles");
             FeatureBadgeService.MarkFeatureAsSeen("DiscordRichPresence");
             FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
+            FeatureBadgeService.MarkFeatureAsSeen("SendNowPlaying");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
 
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
+            SendNowPlayingToggle.Toggled -= SendNowPlayingToggle_Toggled;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
@@ -301,6 +313,17 @@ namespace FluentScrobbler.Views
             };
 
             MainWindow.Current.SetAppTheme(theme);
+        }
+
+        private void SendNowPlayingToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (SendNowPlayingStatusText != null && SendNowPlayingToggle != null)
+            {
+                bool isOn = SendNowPlayingToggle.IsOn;
+                SendNowPlayingStatusText.Text = isOn ? "On" : "Off";
+                var mediaService = new WindowsMediaService();
+                mediaService.SetSendNowPlayingEnabled(isOn);
+            }
         }
 
         private void UsePrimaryArtistOnlyToggle_Toggled(object sender, RoutedEventArgs e)
