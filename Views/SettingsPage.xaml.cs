@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using FluentScrobbler.Services;
@@ -60,6 +61,16 @@ namespace FluentScrobbler.Views
             SendNowPlayingToggle.Toggled += SendNowPlayingToggle_Toggled;
 
             SendNowPlayingInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("SendNowPlaying")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            int scrobbleDelayPercentage = mediaService.GetScrobblePercentageThreshold();
+            ScrobbleDelaySlider.ValueChanged -= ScrobbleDelaySlider_ValueChanged;
+            ScrobbleDelaySlider.Value = scrobbleDelayPercentage;
+            ScrobbleDelayValueText.Text = $"{scrobbleDelayPercentage}%";
+            ScrobbleDelaySlider.ValueChanged += ScrobbleDelaySlider_ValueChanged;
+
+            ScrobbleDelayInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayPercentage")
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -122,12 +133,14 @@ namespace FluentScrobbler.Views
             FeatureBadgeService.MarkFeatureAsSeen("DiscordRichPresence");
             FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
             FeatureBadgeService.MarkFeatureAsSeen("SendNowPlaying");
+            FeatureBadgeService.MarkFeatureAsSeen("ScrobbleDelayPercentage");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
 
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             SendNowPlayingToggle.Toggled -= SendNowPlayingToggle_Toggled;
+            ScrobbleDelaySlider.ValueChanged -= ScrobbleDelaySlider_ValueChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
@@ -324,6 +337,17 @@ namespace FluentScrobbler.Views
                 var mediaService = new WindowsMediaService();
                 mediaService.SetSendNowPlayingEnabled(isOn);
             }
+        }
+
+        private void ScrobbleDelaySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            int val = (int)Math.Round(e.NewValue);
+            if (ScrobbleDelayValueText != null)
+            {
+                ScrobbleDelayValueText.Text = $"{val}%";
+            }
+            var mediaService = new WindowsMediaService();
+            mediaService.SetScrobblePercentageThreshold(val);
         }
 
         private void UsePrimaryArtistOnlyToggle_Toggled(object sender, RoutedEventArgs e)

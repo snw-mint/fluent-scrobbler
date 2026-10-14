@@ -159,7 +159,7 @@ namespace FluentScrobbler.Services
             var dict = LoadSettingsFromFile();
             if (dict.TryGetValue(PercentageThresholdKey, out string? val) && int.TryParse(val, out int result))
             {
-                return Math.Clamp(result, 10, 100);
+                return Math.Clamp(result, 30, 95);
             }
             return 50;
         }
@@ -167,7 +167,7 @@ namespace FluentScrobbler.Services
         public void SetScrobblePercentageThreshold(int percentage)
         {
             var dict = LoadSettingsFromFile();
-            dict[PercentageThresholdKey] = percentage.ToString();
+            dict[PercentageThresholdKey] = Math.Clamp(percentage, 30, 95).ToString();
             SaveSettingsToFile(dict);
         }
 

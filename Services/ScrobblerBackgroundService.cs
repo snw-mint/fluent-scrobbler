@@ -45,7 +45,9 @@ namespace FluentScrobbler.Services
         private string _currentAppId = string.Empty;
         private GlobalSystemMediaTransportControlsSession? _currentSession;
         private long _trackStartTime;
-        private int _elapsedSeconds;
+        private TimeSpan? _currentTrackDuration;
+        private double _listenedSeconds;
+        private DateTimeOffset? _lastPlayTickTime;
         private bool _hasScrobbledCurrentTrack;
         private bool _isPlaying;
         private string _lastScrobbledSignature = string.Empty;
@@ -72,6 +74,9 @@ namespace FluentScrobbler.Services
             if (string.Equals(_currentAppId, appId, StringComparison.OrdinalIgnoreCase))
             {
                 _currentAppId = string.Empty;
+                _currentTrackDuration = null;
+                _lastPlayTickTime = null;
+                _listenedSeconds = 0;
                 _isPlaying = false;
                 CurrentTrack = null;
                 NowPlayingChanged?.Invoke(this, null);
@@ -462,17 +467,17 @@ namespace FluentScrobbler.Services
 
             if (title != _currentTrack || artist != _currentArtist)
             {
-                await CheckTrackEndedAsync();
-
                 _currentTrack = title;
                 _currentArtist = artist;
                 _currentAlbum = album;
                 _currentAppId = appId;
                 _trackStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                _elapsedSeconds = 0;
+                _listenedSeconds = 0;
+                _lastPlayTickTime = DateTimeOffset.UtcNow;
                 _hasScrobbledCurrentTrack = false;
                 _isPlaying = true;
                 _lastTimelinePosition = currentPosition;
+                _currentTrackDuration = trackDuration;
 
                 CurrentTrack = new NowPlayingInfo(title, artist, album);
                 NowPlayingChanged?.Invoke(this, CurrentTrack);
@@ -496,15 +501,14 @@ namespace FluentScrobbler.Services
                 bool isTrackRepeated = false;
                 if (currentPosition.HasValue && _lastTimelinePosition.HasValue)
                 {
-                    if (_lastTimelinePosition.Value >= TimeSpan.FromSeconds(15) &&
-                        (currentPosition.Value < TimeSpan.FromSeconds(5) || currentPosition.Value < _lastTimelinePosition.Value - TimeSpan.FromSeconds(15)))
+                    if (_lastTimelinePosition.Value >= TimeSpan.FromSeconds(30) && currentPosition.Value < TimeSpan.FromSeconds(5))
                     {
                         isTrackRepeated = true;
                     }
                 }
-                else if (trackDuration.HasValue && trackDuration.Value.TotalSeconds >= 30)
+                else if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30)
                 {
-                    if (_elapsedSeconds >= (int)trackDuration.Value.TotalSeconds)
+                    if (_listenedSeconds >= _currentTrackDuration.Value.TotalSeconds)
                     {
                         isTrackRepeated = true;
                     }
@@ -513,10 +517,10 @@ namespace FluentScrobbler.Services
                 if (isTrackRepeated)
                 {
                     LogService.LogInfo($"[Scrobbler] Repeat detected for '{_currentArtist} - {_currentTrack}'. Starting new scrobble cycle.");
-                    await CheckTrackEndedAsync();
 
                     _trackStartTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    _elapsedSeconds = 0;
+                    _listenedSeconds = 0;
+                    _lastPlayTickTime = DateTimeOffset.UtcNow;
                     _hasScrobbledCurrentTrack = false;
                     _lastTimelinePosition = currentPosition;
 
@@ -534,7 +538,22 @@ namespace FluentScrobbler.Services
                 }
                 else
                 {
+                    DateTimeOffset now = DateTimeOffset.UtcNow;
+                    if (_lastPlayTickTime.HasValue)
+                    {
+                        double delta = (now - _lastPlayTickTime.Value).TotalSeconds;
+                        if (delta > 0 && delta < 5)
+                        {
+                            _listenedSeconds += delta;
+                        }
+                    }
+                    _lastPlayTickTime = now;
+
                     _lastTimelinePosition = currentPosition;
+                    if (trackDuration.HasValue && trackDuration.Value > TimeSpan.Zero)
+                    {
+                        _currentTrackDuration = trackDuration;
+                    }
 
                     if (CurrentTrack == null)
                     {
@@ -543,15 +562,39 @@ namespace FluentScrobbler.Services
                         SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
                         _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                     }
-                    _elapsedSeconds = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - _trackStartTime);
 
-                    int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
-                    int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
-                    if (!_hasScrobbledCurrentTrack && _elapsedSeconds >= minLength)
+                    if (!_hasScrobbledCurrentTrack)
                     {
-                        if (_elapsedSeconds >= maxSeconds || _elapsedSeconds >= 30)
+                        int percentage = _windowsMediaService.GetScrobblePercentageThreshold();
+                        int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
+
+                        if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30)
                         {
-                            await ExecuteScrobbleAsync();
+                            double totalDurationSeconds = _currentTrackDuration.Value.TotalSeconds;
+                            double triggerSeconds = totalDurationSeconds * (percentage / 100.0);
+
+                            bool shouldScrobble = false;
+                            if (currentPosition.HasValue)
+                            {
+                                shouldScrobble = currentPosition.Value.TotalSeconds >= triggerSeconds;
+                            }
+                            else
+                            {
+                                shouldScrobble = _listenedSeconds >= triggerSeconds && _listenedSeconds >= minLength;
+                            }
+
+                            if (shouldScrobble)
+                            {
+                                await ExecuteScrobbleAsync();
+                            }
+                        }
+                        else if (!_currentTrackDuration.HasValue)
+                        {
+                            int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
+                            if (_listenedSeconds >= maxSeconds && _listenedSeconds >= minLength)
+                            {
+                                await ExecuteScrobbleAsync();
+                            }
                         }
                     }
                 }
@@ -562,7 +605,7 @@ namespace FluentScrobbler.Services
         {
             _currentSession = null;
             _lastTimelinePosition = null;
-            await CheckTrackEndedAsync();
+            _lastPlayTickTime = null;
             bool wasPlaying = _isPlaying || CurrentTrack != null;
             _isPlaying = false;
             if (wasPlaying)
@@ -572,6 +615,7 @@ namespace FluentScrobbler.Services
                 _ = ClearDiscordPresenceAsync();
             }
             SetStatus(ScrobbleStatus.Idle);
+            await Task.CompletedTask;
         }
 
         private async Task ExecuteScrobbleAsync()
@@ -641,14 +685,6 @@ namespace FluentScrobbler.Services
             }
         }
 
-        private async Task CheckTrackEndedAsync()
-        {
-            if (_isPlaying && !_hasScrobbledCurrentTrack && !string.IsNullOrEmpty(_currentTrack) && _elapsedSeconds >= 30)
-            {
-                await ExecuteScrobbleAsync();
-            }
-        }
-
         private void ResetStateWithoutScrobble()
         {
             bool wasPlaying = !string.IsNullOrEmpty(_currentTrack);
@@ -658,8 +694,10 @@ namespace FluentScrobbler.Services
             _currentSession = null;
             _activeSessionId = null;
             _lastTimelinePosition = null;
+            _currentTrackDuration = null;
+            _lastPlayTickTime = null;
             _hasScrobbledCurrentTrack = true;
-            _elapsedSeconds = 0;
+            _listenedSeconds = 0;
             _isPlaying = false;
 
             SetStatus(ScrobbleStatus.Idle);

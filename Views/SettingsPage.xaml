@@ -73,6 +73,31 @@
                         </StackPanel>
                     </Grid>
                 </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="Timer" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Scrobble delay percentage" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                                <InfoBadge x:Name="ScrobbleDelayInfoBadge" Visibility="Collapsed" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="Scrobble a track after playing a specific percentage of its total length." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Slider x:Name="ScrobbleDelaySlider" Orientation="Horizontal" Minimum="30" Maximum="95" Value="50" StepFrequency="1" Width="160" VerticalAlignment="Center" ValueChanged="ScrobbleDelaySlider_ValueChanged" />
+                            <TextBlock x:Name="ScrobbleDelayValueText" Text="50%" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" MinWidth="36" TextAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <StackPanel Spacing="8" Margin="0,8,0,0">
