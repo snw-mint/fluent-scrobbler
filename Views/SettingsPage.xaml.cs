@@ -60,7 +60,7 @@ namespace FluentScrobbler.Views
             SendNowPlayingStatusText.Text = isSendNowPlaying ? "On" : "Off";
             SendNowPlayingToggle.Toggled += SendNowPlayingToggle_Toggled;
 
-            SendNowPlayingInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("SendNowPlaying")
+            SendNowPlayingNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("SendNowPlaying")
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -70,7 +70,7 @@ namespace FluentScrobbler.Views
             ScrobbleDelayValueText.Text = $"{scrobbleDelayPercentage}%";
             ScrobbleDelaySlider.ValueChanged += ScrobbleDelaySlider_ValueChanged;
 
-            ScrobbleDelayInfoBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayPercentage")
+            ScrobbleDelayNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayPercentage")
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -82,6 +82,10 @@ namespace FluentScrobbler.Views
             MaxWaitTimeWarningInfoBar.IsOpen = showMaxWaitWarning;
             MaxWaitTimeWarningInfoBar.Visibility = showMaxWaitWarning ? Visibility.Visible : Visibility.Collapsed;
             MaxWaitTimeSlider.ValueChanged += MaxWaitTimeSlider_ValueChanged;
+
+            MaxWaitTimeNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayMinutes")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             bool isPrimaryArtistOnly = mediaService.IsPrimaryArtistOnlyEnabled();
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
@@ -143,6 +147,7 @@ namespace FluentScrobbler.Views
             FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
             FeatureBadgeService.MarkFeatureAsSeen("SendNowPlaying");
             FeatureBadgeService.MarkFeatureAsSeen("ScrobbleDelayPercentage");
+            FeatureBadgeService.MarkFeatureAsSeen("ScrobbleDelayMinutes");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;

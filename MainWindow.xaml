@@ -71,7 +71,7 @@
                             <ic:SymbolIcon Symbol="Settings" />
                         </NavigationViewItem.Icon>
                         <NavigationViewItem.InfoBadge>
-                            <InfoBadge x:Name="SettingsNavInfoBadge" Visibility="Collapsed" />
+                            <InfoBadge x:Name="SettingsNavInfoBadge" Visibility="Collapsed" Width="7" Height="7" />
                         </NavigationViewItem.InfoBadge>
                     </NavigationViewItem>
 
