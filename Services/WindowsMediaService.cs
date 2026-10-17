@@ -176,7 +176,7 @@ namespace FluentScrobbler.Services
             var dict = LoadSettingsFromFile();
             if (dict.TryGetValue(MaxTimeThresholdKey, out string? val) && int.TryParse(val, out int result))
             {
-                return Math.Clamp(result, 60, 600);
+                return Math.Clamp(result, 30, 360);
             }
             return 240;
         }
@@ -184,7 +184,7 @@ namespace FluentScrobbler.Services
         public void SetMaximumTimeThresholdSeconds(int seconds)
         {
             var dict = LoadSettingsFromFile();
-            dict[MaxTimeThresholdKey] = seconds.ToString();
+            dict[MaxTimeThresholdKey] = Math.Clamp(seconds, 30, 360).ToString();
             SaveSettingsToFile(dict);
         }
 

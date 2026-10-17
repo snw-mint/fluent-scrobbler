@@ -74,6 +74,15 @@ namespace FluentScrobbler.Views
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            int maxWaitTime = mediaService.GetMaximumTimeThresholdSeconds();
+            MaxWaitTimeSlider.ValueChanged -= MaxWaitTimeSlider_ValueChanged;
+            MaxWaitTimeSlider.Value = maxWaitTime;
+            MaxWaitTimeValueText.Text = FormatSecondsToMmSs(maxWaitTime);
+            bool showMaxWaitWarning = maxWaitTime < 60;
+            MaxWaitTimeWarningInfoBar.IsOpen = showMaxWaitWarning;
+            MaxWaitTimeWarningInfoBar.Visibility = showMaxWaitWarning ? Visibility.Visible : Visibility.Collapsed;
+            MaxWaitTimeSlider.ValueChanged += MaxWaitTimeSlider_ValueChanged;
+
             bool isPrimaryArtistOnly = mediaService.IsPrimaryArtistOnlyEnabled();
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             UsePrimaryArtistOnlyToggle.IsOn = isPrimaryArtistOnly;
@@ -141,6 +150,7 @@ namespace FluentScrobbler.Views
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             SendNowPlayingToggle.Toggled -= SendNowPlayingToggle_Toggled;
             ScrobbleDelaySlider.ValueChanged -= ScrobbleDelaySlider_ValueChanged;
+            MaxWaitTimeSlider.ValueChanged -= MaxWaitTimeSlider_ValueChanged;
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
@@ -348,6 +358,30 @@ namespace FluentScrobbler.Views
             }
             var mediaService = new WindowsMediaService();
             mediaService.SetScrobblePercentageThreshold(val);
+        }
+
+        private static string FormatSecondsToMmSs(int totalSeconds)
+        {
+            int m = totalSeconds / 60;
+            int s = totalSeconds % 60;
+            return $"{m:D2}:{s:D2}";
+        }
+
+        private void MaxWaitTimeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            int val = (int)Math.Round(e.NewValue);
+            if (MaxWaitTimeValueText != null)
+            {
+                MaxWaitTimeValueText.Text = FormatSecondsToMmSs(val);
+            }
+            if (MaxWaitTimeWarningInfoBar != null)
+            {
+                bool showWarning = val < 60;
+                MaxWaitTimeWarningInfoBar.IsOpen = showWarning;
+                MaxWaitTimeWarningInfoBar.Visibility = showWarning ? Visibility.Visible : Visibility.Collapsed;
+            }
+            var mediaService = new WindowsMediaService();
+            mediaService.SetMaximumTimeThresholdSeconds(val);
         }
 
         private void UsePrimaryArtistOnlyToggle_Toggled(object sender, RoutedEventArgs e)

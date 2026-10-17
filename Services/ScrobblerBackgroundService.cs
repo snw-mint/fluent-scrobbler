@@ -567,11 +567,13 @@ namespace FluentScrobbler.Services
                     {
                         int percentage = _windowsMediaService.GetScrobblePercentageThreshold();
                         int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
+                        int maxWaitSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
 
-                        if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30)
+                        if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= Math.Min(30, maxWaitSeconds))
                         {
                             double totalDurationSeconds = _currentTrackDuration.Value.TotalSeconds;
-                            double triggerSeconds = totalDurationSeconds * (percentage / 100.0);
+                            double percentageSeconds = totalDurationSeconds * (percentage / 100.0);
+                            double triggerSeconds = Math.Min(percentageSeconds, maxWaitSeconds);
 
                             bool shouldScrobble = false;
                             if (currentPosition.HasValue)
@@ -580,7 +582,7 @@ namespace FluentScrobbler.Services
                             }
                             else
                             {
-                                shouldScrobble = _listenedSeconds >= triggerSeconds && _listenedSeconds >= minLength;
+                                shouldScrobble = _listenedSeconds >= triggerSeconds && _listenedSeconds >= Math.Min(minLength, maxWaitSeconds);
                             }
 
                             if (shouldScrobble)
@@ -590,8 +592,7 @@ namespace FluentScrobbler.Services
                         }
                         else if (!_currentTrackDuration.HasValue)
                         {
-                            int maxSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
-                            if (_listenedSeconds >= maxSeconds && _listenedSeconds >= minLength)
+                            if (_listenedSeconds >= maxWaitSeconds && _listenedSeconds >= Math.Min(minLength, maxWaitSeconds))
                             {
                                 await ExecuteScrobbleAsync();
                             }
