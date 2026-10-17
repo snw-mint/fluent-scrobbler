@@ -93,7 +93,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <Slider x:Name="ScrobbleDelaySlider" Orientation="Horizontal" Minimum="30" Maximum="95" Value="50" StepFrequency="1" Width="160" VerticalAlignment="Center" ValueChanged="ScrobbleDelaySlider_ValueChanged" />
+                            <Slider x:Name="ScrobbleDelaySlider" Orientation="Horizontal" Minimum="30" Maximum="95" Value="50" StepFrequency="1" Width="160" VerticalAlignment="Center" IsThumbToolTipEnabled="False" ValueChanged="ScrobbleDelaySlider_ValueChanged" />
                             <TextBlock x:Name="ScrobbleDelayValueText" Text="50%" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" MinWidth="36" TextAlignment="Right" />
                         </StackPanel>
                     </Grid>
@@ -116,7 +116,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Slider x:Name="MaxWaitTimeSlider" Orientation="Horizontal" Minimum="30" Maximum="360" Value="240" StepFrequency="5" SmallChange="5" LargeChange="15" Width="160" VerticalAlignment="Center" ValueChanged="MaxWaitTimeSlider_ValueChanged" />
+                                <Slider x:Name="MaxWaitTimeSlider" Orientation="Horizontal" Minimum="30" Maximum="360" Value="240" StepFrequency="5" SmallChange="5" LargeChange="15" Width="160" VerticalAlignment="Center" IsThumbToolTipEnabled="False" ValueChanged="MaxWaitTimeSlider_ValueChanged" />
                                 <TextBlock x:Name="MaxWaitTimeValueText" Text="04:00" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" MinWidth="36" TextAlignment="Right" />
                             </StackPanel>
                         </Grid>
