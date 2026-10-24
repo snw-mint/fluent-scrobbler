@@ -535,9 +535,9 @@ namespace FluentScrobbler.Services
                     if (_lastPlayTickTime.HasValue)
                     {
                         double delta = (now - _lastPlayTickTime.Value).TotalSeconds;
-                        if (delta > 0 && delta < 5)
+                        if (delta > 0)
                         {
-                            _listenedSeconds += delta;
+                            _listenedSeconds += Math.Min(delta, 5);
                         }
                     }
                     _lastPlayTickTime = now;
