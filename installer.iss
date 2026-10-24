@@ -16,6 +16,7 @@
 #endif
 
 [Setup]
+AppId={{8B1A24B7-3E77-4FE8-8F6A-4A053C2D1F98}}
 AppName=Fluent Scrobbler
 AppVersion={#MyAppVersion}
 AppPublisher=Snow Mint
@@ -23,6 +24,14 @@ AppPublisherURL=https://github.com/snw-mint/fluent-scrobbler
 AppSupportURL=https://github.com/snw-mint/fluent-scrobbler/issues
 AppUpdatesURL=https://github.com/snw-mint/fluent-scrobbler/releases
 DefaultDirName={localappdata}\FluentScrobbler
+MinVersion=10.0.17763
+#if AppArch == "arm64"
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
+#elif AppArch == "x64"
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+#endif
 PrivilegesRequired=lowest
 DefaultGroupName=Fluent Scrobbler
 UninstallDisplayIcon={app}\FluentScrobbler.exe

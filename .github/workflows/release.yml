@@ -2,8 +2,13 @@ name: Build and Release (.exe)
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -16,6 +21,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate Secrets
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.LASTFM_API_KEY }}") -or [string]::IsNullOrWhiteSpace("${{ secrets.LASTFM_API_SECRET }}")) {
+            Write-Error "LASTFM_API_KEY and LASTFM_API_SECRET are required and must not be empty."
+            exit 1
+          }
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -26,7 +40,11 @@ jobs:
 
       - name: Build and Package Installers (.exe)
         run: |
-          $version = "${{ github.ref_name }}".TrimStart('v')
+          $version = if ($env:GITHUB_REF -like "refs/tags/v*") {
+            $env:GITHUB_REF_NAME.TrimStart('v')
+          } else {
+            "1.2.0-ci"
+          }
           $targets = @(
             @{ Rid = "win-x64"; Arch = "x64"; Platform = "x64" },
             @{ Rid = "win-arm64"; Arch = "arm64"; Platform = "ARM64" }
@@ -60,6 +78,7 @@ jobs:
           }
 
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: Output/FluentScrobbler-Setup-*.exe

@@ -87,6 +87,11 @@ namespace FluentScrobbler.Services
                             continue;
                         }
 
+                        if (release.TryGetProperty("prerelease", out var pre) && pre.GetBoolean())
+                        {
+                            continue;
+                        }
+
                         string tag = release.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? string.Empty : string.Empty;
                         if (string.IsNullOrEmpty(tag) && release.TryGetProperty("name", out var nameProp))
                         {
@@ -101,6 +106,12 @@ namespace FluentScrobbler.Services
                 }
                 else if (root.ValueKind == JsonValueKind.Object)
                 {
+                    if ((root.TryGetProperty("draft", out var rootDraft) && rootDraft.GetBoolean()) ||
+                        (root.TryGetProperty("prerelease", out var rootPre) && rootPre.GetBoolean()))
+                    {
+                        return;
+                    }
+
                     bestTagName = root.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? string.Empty : string.Empty;
                     if (string.IsNullOrEmpty(bestTagName) && root.TryGetProperty("name", out var nameProp))
                     {
