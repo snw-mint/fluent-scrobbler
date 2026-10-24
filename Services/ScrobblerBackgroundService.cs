@@ -358,7 +358,7 @@ namespace FluentScrobbler.Services
                             return;
                         }
 
-                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null, legacyTrack.Position, legacyTrack.Duration);
                         return;
                     }
 
@@ -380,7 +380,7 @@ namespace FluentScrobbler.Services
                             return;
                         }
 
-                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null);
+                        await ProcessTrackAsync(legacyTrack.Title, legacyTrack.Artist, string.Empty, legacyAppId, null, legacyTrack.Position, legacyTrack.Duration);
                         return;
                     }
 
@@ -423,7 +423,7 @@ namespace FluentScrobbler.Services
             }
         }
 
-        private async Task ProcessTrackAsync(string rawTitle, string rawArtist, string rawAlbum, string appId, GlobalSystemMediaTransportControlsSession? session)
+        private async Task ProcessTrackAsync(string rawTitle, string rawArtist, string rawAlbum, string appId, GlobalSystemMediaTransportControlsSession? session, TimeSpan? legacyPosition = null, TimeSpan? legacyDuration = null)
         {
             if (!_windowsMediaService.IsSourceAllowed(appId))
             {
@@ -465,6 +465,11 @@ namespace FluentScrobbler.Services
                 catch
                 {
                 }
+            }
+            else
+            {
+                currentPosition = legacyPosition;
+                trackDuration = legacyDuration;
             }
 
             if (title != _currentTrack || artist != _currentArtist)
@@ -582,7 +587,8 @@ namespace FluentScrobbler.Services
                         }
                         else if (!_currentTrackDuration.HasValue)
                         {
-                            if (_listenedSeconds >= maxWaitSeconds && _listenedSeconds >= Math.Min(minLength, maxWaitSeconds))
+                            int unknownDurationThreshold = Math.Max(Math.Min(30, maxWaitSeconds), Math.Min(minLength, maxWaitSeconds));
+                            if (_listenedSeconds >= unknownDurationThreshold)
                             {
                                 await ExecuteScrobbleAsync();
                             }

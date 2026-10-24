@@ -20,6 +20,8 @@ namespace FluentScrobbler.Models
         public string DisplayName { get; set; } = string.Empty;
         public string BinaryPath { get; set; } = string.Empty;
         public string SourceApp { get; set; } = string.Empty;
+        public TimeSpan? Position { get; set; }
+        public TimeSpan? Duration { get; set; }
 
         public static string NormalizeSourceApp(string? rawName)
         {

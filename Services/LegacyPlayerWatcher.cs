@@ -19,6 +19,7 @@ namespace FluentScrobbler.Services
         private const string WinampClassName = "Winamp v1.x";
         private const uint WM_USER = 0x0400;
         private const int IPC_ISPLAYING = 104;
+        private const int IPC_GETOUTPUTTIME = 105;
         private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
         private const int IPC_GETLISTPOS = 125;
         private const int IPC_GETPLAYLISTTITLE = 212;
@@ -205,6 +206,16 @@ namespace FluentScrobbler.Services
                 string rawTitle = ipcTitle ?? NormalizeScrollingTitle(GetWindowTitle(hWnd));
                 var (artist, title) = ParseAndCleanTitle(rawTitle, stripTrackNumber: ipcTitle == null);
 
+                TimeSpan? position = null;
+                TimeSpan? duration = null;
+                if (state != LegacyPlaybackState.Stopped)
+                {
+                    int positionMs = SendMessage(hWnd, WM_USER, IntPtr.Zero, (IntPtr)IPC_GETOUTPUTTIME).ToInt32();
+                    int lengthSeconds = SendMessage(hWnd, WM_USER, (IntPtr)1, (IntPtr)IPC_GETOUTPUTTIME).ToInt32();
+                    if (positionMs >= 0) position = TimeSpan.FromMilliseconds(positionMs);
+                    if (lengthSeconds > 0) duration = TimeSpan.FromSeconds(lengthSeconds);
+                }
+
                 currentInfo = new LegacyTrackInfo
                 {
                     Artist = artist,
@@ -214,13 +225,16 @@ namespace FluentScrobbler.Services
                     ProcessName = technicalId,
                     DisplayName = displayName,
                     BinaryPath = binaryPath,
-                    SourceApp = LegacyTrackInfo.NormalizeSourceApp(technicalId)
+                    SourceApp = LegacyTrackInfo.NormalizeSourceApp(technicalId),
+                    Position = position,
+                    Duration = duration
                 };
             }
 
-            if (!Equals(_lastTrack, currentInfo))
+            bool changed = !Equals(_lastTrack, currentInfo);
+            _lastTrack = currentInfo;
+            if (changed)
             {
-                _lastTrack = currentInfo;
                 TrackChanged?.Invoke(this, currentInfo);
             }
         }
