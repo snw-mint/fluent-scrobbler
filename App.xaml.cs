@@ -73,6 +73,7 @@ namespace FluentScrobbler
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             LogService.LogError($"[Render/UI Exception] {e.Message}", e.Exception);
+            e.Handled = true;
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
