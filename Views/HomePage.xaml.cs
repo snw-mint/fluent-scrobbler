@@ -60,7 +60,6 @@ namespace FluentScrobbler.Views
             ApplyCachedState();
             this.Loaded += HomePage_Loaded;
             this.Unloaded += HomePage_Unloaded;
-            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
         }
 
         private void ApplyCachedState()
@@ -166,6 +165,7 @@ namespace FluentScrobbler.Views
 
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
+            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -205,6 +205,7 @@ namespace FluentScrobbler.Views
 
         private void HomePage_Unloaded(object sender, RoutedEventArgs e)
         {
+            LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;

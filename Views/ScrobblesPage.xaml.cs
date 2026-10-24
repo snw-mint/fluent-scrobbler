@@ -35,13 +35,13 @@ namespace FluentScrobbler.Views
             this.InitializeComponent();
             this.Loaded += ScrobblesPage_Loaded;
             this.Unloaded += ScrobblesPage_Unloaded;
-            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
         }
 
         private async void ScrobblesPage_Loaded(object sender, RoutedEventArgs e)
         {
             _cts = new CancellationTokenSource();
 
+            LastFmService.TrackLoveChanged += OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
 
@@ -84,6 +84,7 @@ namespace FluentScrobbler.Views
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             _cts?.Cancel();
