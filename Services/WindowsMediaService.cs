@@ -42,7 +42,7 @@ namespace FluentScrobbler.Services
         {
             lock (FileLock)
             {
-                if (_cache != null) return _cache;
+                if (_cache != null) return new Dictionary<string, string>(_cache);
 
                 try
                 {
@@ -53,7 +53,7 @@ namespace FluentScrobbler.Services
                         if (dict != null)
                         {
                             _cache = dict;
-                            return _cache;
+                            return new Dictionary<string, string>(_cache);
                         }
                     }
                 }
@@ -61,7 +61,7 @@ namespace FluentScrobbler.Services
                 {
                 }
                 _cache = new Dictionary<string, string>();
-                return _cache;
+                return new Dictionary<string, string>(_cache);
             }
         }
 
@@ -69,7 +69,7 @@ namespace FluentScrobbler.Services
         {
             lock (FileLock)
             {
-                _cache = dict;
+                _cache = new Dictionary<string, string>(dict);
                 try
                 {
                     string dir = Path.GetDirectoryName(SettingsFilePath)!;
@@ -370,19 +370,22 @@ namespace FluentScrobbler.Services
         {
             lock (FileLock)
             {
-                if (_listCache.TryGetValue(key, out var cached)) return cached;
+                if (_listCache.TryGetValue(key, out var cached))
+                {
+                    return new List<string>(cached);
+                }
 
                 var dict = LoadSettingsFromFile();
                 if (dict.TryGetValue(key, out string? raw) && !string.IsNullOrWhiteSpace(raw))
                 {
                     var list = raw.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList();
                     _listCache[key] = list;
-                    return list;
+                    return new List<string>(list);
                 }
 
                 var empty = new List<string>();
                 _listCache[key] = empty;
-                return empty;
+                return new List<string>();
             }
         }
 
@@ -390,7 +393,7 @@ namespace FluentScrobbler.Services
         {
             lock (FileLock)
             {
-                var distinct = list.Distinct().ToList();
+                var distinct = list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                 _listCache[key] = distinct;
                 var dict = LoadSettingsFromFile();
                 dict[key] = string.Join('|', distinct);

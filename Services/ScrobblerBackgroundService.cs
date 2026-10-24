@@ -66,7 +66,10 @@ namespace FluentScrobbler.Services
         public void ForgetSource(string appId)
         {
             if (string.IsNullOrWhiteSpace(appId)) return;
-            _notifiedNewInstances.Remove(appId);
+            lock (_notifiedNewInstances)
+            {
+                _notifiedNewInstances.Remove(appId);
+            }
 
             if (string.Equals(_activeSessionId, appId, StringComparison.OrdinalIgnoreCase))
             {
@@ -296,9 +299,18 @@ namespace FluentScrobbler.Services
 
                         if (isPlaying && !knownSources.Any(k => string.Equals(k, sAppId, StringComparison.OrdinalIgnoreCase)))
                         {
-                            if (userGavePlay && !_notifiedNewInstances.Contains(sAppId))
+                            bool shouldRegister = false;
+                            lock (_notifiedNewInstances)
                             {
-                                _notifiedNewInstances.Add(sAppId);
+                                if (userGavePlay && !_notifiedNewInstances.Contains(sAppId))
+                                {
+                                    _notifiedNewInstances.Add(sAppId);
+                                    shouldRegister = true;
+                                }
+                            }
+
+                            if (shouldRegister)
+                            {
                                 string displayName = WindowsMediaService.FormatAppDisplayName(sAppId);
                                 _windowsMediaService.RegisterKnownSource(sAppId, displayName);
                                 NotificationService.ShowNewInstanceNotification(displayName);
@@ -407,9 +419,18 @@ namespace FluentScrobbler.Services
             try
             {
                 var knownSources = _windowsMediaService.GetKnownSources();
-                if (!knownSources.Any(k => string.Equals(k, appId, StringComparison.OrdinalIgnoreCase)) && !_notifiedNewInstances.Contains(appId))
+                bool shouldNotify = false;
+                lock (_notifiedNewInstances)
                 {
-                    _notifiedNewInstances.Add(appId);
+                    if (!knownSources.Any(k => string.Equals(k, appId, StringComparison.OrdinalIgnoreCase)) && !_notifiedNewInstances.Contains(appId))
+                    {
+                        _notifiedNewInstances.Add(appId);
+                        shouldNotify = true;
+                    }
+                }
+
+                if (shouldNotify)
+                {
                     string name = !string.IsNullOrWhiteSpace(displayName)
                         ? displayName
                         : WindowsMediaService.FormatAppDisplayName(appId);
