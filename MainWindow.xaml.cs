@@ -285,9 +285,44 @@ namespace FluentScrobbler
             this.Activate();
         }
 
+        private bool _isExiting = false;
+
+        public void ShutdownApp()
+        {
+            if (_isExiting) return;
+            _isExiting = true;
+
+            try
+            {
+                AppTrayIcon?.Dispose();
+                AppTrayIcon = null;
+            }
+            catch { }
+
+            try
+            {
+                Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+            }
+            catch { }
+
+            try
+            {
+                DiscordRpcService.Instance.Disconnect();
+            }
+            catch { }
+
+            try
+            {
+                this.Close();
+            }
+            catch { }
+
+            Application.Current.Exit();
+        }
+
         private void OnExitAppClick(object sender, RoutedEventArgs e)
         {
-            Application.Current.Exit();
+            ShutdownApp();
         }
 
         #endregion
@@ -317,6 +352,14 @@ namespace FluentScrobbler
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
+            if (_isExiting) return;
+
+            if (!this.AppWindow.IsVisible)
+            {
+                ShutdownApp();
+                return;
+            }
+
             args.Handled = true;
             this.AppWindow.Hide();
         }

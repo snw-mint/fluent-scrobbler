@@ -25,6 +25,7 @@ namespace FluentScrobbler.Services
         public static event EventHandler? SessionInvalidated;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _localLoveCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime ExpiresAt, List<string> Tags)> _artistTopTagsCache = new(StringComparer.OrdinalIgnoreCase);
 
         public static void UpdateLocalLoveCache(string track, string artist, bool isLoved)
         {
@@ -713,6 +714,14 @@ namespace FluentScrobbler.Services
 
         public async Task<List<string>> GetArtistTopTagsAsync(string artist, int count = 5)
         {
+            if (string.IsNullOrWhiteSpace(artist)) return new List<string>();
+
+            string cacheKey = artist.Trim();
+            if (_artistTopTagsCache.TryGetValue(cacheKey, out var cached) && cached.ExpiresAt > DateTime.UtcNow)
+            {
+                return cached.Tags.Take(count).ToList();
+            }
+
             var tags = new List<string>();
             try
             {
@@ -736,16 +745,18 @@ namespace FluentScrobbler.Services
                                     tags.Add(name.ToLowerInvariant());
                                 }
                             }
-                            if (tags.Count >= count) break;
+                            if (tags.Count >= Math.Max(count, 10)) break;
                         }
                     }
+
+                    _artistTopTagsCache[cacheKey] = (DateTime.UtcNow.AddHours(tags.Count > 0 ? 24 : 1), tags);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar tags do artista: {ex.Message}");
+                LogService.LogError($"[Last.fm] Error fetching artist top tags for {artist}", ex);
             }
-            return tags;
+            return tags.Take(count).ToList();
         }
 
         public async Task<bool> UpdateNowPlayingAsync(string track, string artist, string album = "")

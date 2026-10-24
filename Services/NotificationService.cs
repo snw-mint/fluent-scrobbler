@@ -32,6 +32,7 @@ namespace FluentScrobbler.Services
                     .AddText("New instance detected")
                     .AddText($"Scrobble from {instanceName}?")
                     .AddText("Settings > Source & Track Filtering > Source Filtering")
+                    .AddArgument("action", "open_source_settings")
                     .BuildNotification();
 
                 AppNotificationManager.Default.Show(notification);

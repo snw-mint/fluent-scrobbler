@@ -605,12 +605,15 @@ namespace FluentScrobbler.Views
                                 "male vocalists", "female vocalists", "albums i own", "check out"
                             };
 
-                            foreach (var group in topArtistsToday)
+                            var tagTasks = topArtistsToday.Select(async group =>
                             {
-                                string artistName = group.Key;
-                                int playCount = group.Count();
+                                var tags = await _lastFmService.GetArtistTopTagsAsync(group.Key, count: 5);
+                                return (group.Key, PlayCount: group.Count(), Tags: tags);
+                            }).ToList();
 
-                                var artistTags = await _lastFmService.GetArtistTopTagsAsync(artistName, count: 5);
+                            var tagResults = await Task.WhenAll(tagTasks);
+                            foreach (var (_, playCount, artistTags) in tagResults)
+                            {
                                 foreach (var tag in artistTags)
                                 {
                                     if (ignoredTags.Contains(tag)) continue;
@@ -644,8 +647,9 @@ namespace FluentScrobbler.Views
 
                 SetOfflineStatus(isOffline: false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogService.LogError("[Dashboard Error] Failed to load dashboard data", ex);
                 SetOfflineStatus(isOffline: true);
                 _isLoadingDashboard = false;
                 return;
