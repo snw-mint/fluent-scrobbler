@@ -28,46 +28,57 @@ namespace FluentScrobbler.Services
 
             if (DateTime.UtcNow - _lastAttempt < TimeSpan.FromSeconds(5))
             {
-                LogService.LogInfo("[Discord RPC] Connect skipped due to throttle");
                 return false;
             }
             _lastAttempt = DateTime.UtcNow;
 
             ClosePipe();
 
-            for (int i = 0; i < 10; i++)
+            var existingPipes = new System.Collections.Generic.List<string>();
+            try
+            {
+                foreach (var pipePath in Directory.EnumerateFiles(@"\\.\pipe\", "discord-ipc-*"))
+                {
+                    string name = Path.GetFileName(pipePath);
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        existingPipes.Add(name);
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            if (existingPipes.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var pipeName in existingPipes)
             {
                 try
                 {
-                    LogService.LogInfo($"[Discord RPC] Probing discord-ipc-{i}...");
-                    var p = new NamedPipeClientStream(".", $"discord-ipc-{i}", PipeDirection.InOut, PipeOptions.Asynchronous);
+                    var p = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
                     using var cts = new CancellationTokenSource(1000);
                     await p.ConnectAsync(cts.Token);
 
-                    LogService.LogInfo($"[Discord RPC] Connected to pipe discord-ipc-{i}, sending handshake...");
                     _pipe = p;
                     if (await HandshakeAsync())
                     {
                         _isReady = true;
-                        LogService.LogInfo($"[Discord RPC] Handshake successful on discord-ipc-{i}");
+                        LogService.LogInfo($"[Discord RPC] Handshake successful on {pipeName}");
                         _ = ReadLoopAsync(_pipe);
                         return true;
                     }
-                    LogService.LogWarning($"[Discord RPC] Handshake failed on discord-ipc-{i}");
                     ClosePipe();
                 }
-                catch (OperationCanceledException)
+                catch
                 {
-                    ClosePipe();
-                }
-                catch (Exception ex)
-                {
-                    LogService.LogInfo($"[Discord RPC] discord-ipc-{i} not available: {ex.Message}");
                     ClosePipe();
                 }
             }
 
-            LogService.LogWarning("[Discord RPC] Could not connect to any Discord IPC pipe");
             return false;
         }
 
@@ -198,8 +209,8 @@ namespace FluentScrobbler.Services
                 int pid = Environment.ProcessId;
                 long start = startSec ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                string t = title.Length < 2 ? title + " " : (title.Length > 128 ? title[..128] : title);
-                string a = artist.Length < 2 ? artist + " " : (artist.Length > 128 ? artist[..128] : artist);
+                string t = SanitizeRpcString(title, 2, 128);
+                string a = SanitizeRpcString(artist, 2, 128);
 
                 bool hasImg = !string.IsNullOrWhiteSpace(imgUrl) && (imgUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || imgUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
                 if (hasImg && imgUrl != null)
@@ -233,7 +244,7 @@ namespace FluentScrobbler.Services
                         w.WriteString("large_image", imgUrl);
                         if (!string.IsNullOrWhiteSpace(album))
                         {
-                            string al = album.Length > 128 ? album[..128] : album;
+                            string al = TruncateWithoutBreakingSurrogates(album.Trim(), 128);
                             w.WriteString("large_text", al);
                         }
                         w.WriteEndObject();
@@ -303,7 +314,13 @@ namespace FluentScrobbler.Services
 
         public void Disconnect()
         {
-            _lock.Wait();
+            LogService.LogInfo("[Discord RPC] Disconnect requested");
+            ClosePipe();
+        }
+
+        public async Task DisconnectAsync()
+        {
+            await _lock.WaitAsync();
             try
             {
                 LogService.LogInfo("[Discord RPC] Disconnect requested");
@@ -313,6 +330,33 @@ namespace FluentScrobbler.Services
             {
                 _lock.Release();
             }
+        }
+
+        private static string TruncateWithoutBreakingSurrogates(string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+            {
+                return value;
+            }
+
+            if (char.IsHighSurrogate(value[maxLength - 1]))
+            {
+                maxLength--;
+            }
+
+            return value.Substring(0, maxLength);
+        }
+
+        private static string SanitizeRpcString(string? value, int minLength = 2, int maxLength = 128)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new string(' ', minLength);
+            }
+
+            string trimmed = value.Trim();
+            string truncated = TruncateWithoutBreakingSurrogates(trimmed, maxLength);
+            return truncated.Length < minLength ? truncated.PadRight(minLength) : truncated;
         }
 
         private void ClosePipe()

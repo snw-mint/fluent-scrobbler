@@ -34,6 +34,7 @@ namespace FluentScrobbler.Services
         private static readonly ConcurrentDictionary<string, DateTimeOffset> _scrobbledTracksHistory = new(StringComparer.OrdinalIgnoreCase);
         private readonly System.Collections.Generic.HashSet<string> _notifiedNewInstances = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, GlobalSystemMediaTransportControlsSessionPlaybackStatus> _lastPlaybackStatus = new(StringComparer.OrdinalIgnoreCase);
+        private long _discordUpdateSeq;
 
         private CancellationTokenSource? _cts;
         private GlobalSystemMediaTransportControlsSessionManager? _sessionMgr;
@@ -803,6 +804,7 @@ namespace FluentScrobbler.Services
 
         private async Task UpdateDiscordPresenceAsync(string track, string artist, string album, long fallbackStart)
         {
+            long seq = Interlocked.Increment(ref _discordUpdateSeq);
             try
             {
                 string? val = SettingsService.GetSetting("DiscordRichPresence");
@@ -819,13 +821,23 @@ namespace FluentScrobbler.Services
                         var tl = _currentSession.GetTimelineProperties();
                         if (tl != null && tl.EndTime > TimeSpan.Zero)
                         {
-                            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                            long pos = (long)tl.Position.TotalSeconds;
-                            long total = (long)tl.EndTime.TotalSeconds;
-                            if (total > pos)
+                            DateTimeOffset now = DateTimeOffset.UtcNow;
+                            TimeSpan elapsedSinceUpdate = TimeSpan.Zero;
+                            if (tl.LastUpdatedTime > DateTimeOffset.MinValue && now > tl.LastUpdatedTime)
                             {
-                                start = now - pos;
-                                end = start + total;
+                                elapsedSinceUpdate = now - tl.LastUpdatedTime;
+                            }
+
+                            TimeSpan actualPos = tl.Position + elapsedSinceUpdate;
+                            if (actualPos > tl.EndTime) actualPos = tl.EndTime;
+
+                            long nowSec = now.ToUnixTimeSeconds();
+                            long posSec = (long)actualPos.TotalSeconds;
+                            long totalSec = (long)tl.EndTime.TotalSeconds;
+                            if (totalSec > posSec)
+                            {
+                                start = nowSec - posSec;
+                                end = start + totalSec;
                             }
                         }
                     }
@@ -835,6 +847,11 @@ namespace FluentScrobbler.Services
                 }
 
                 string? art = await _mediaArtResolver.ResolveRemoteArtUrlAsync(artist, album, track);
+                if (seq != Volatile.Read(ref _discordUpdateSeq) || _currentTrack != track || _currentArtist != artist)
+                {
+                    return;
+                }
+
                 LogService.LogInfo($"[Discord RPC] Track art URL: '{art ?? "none"}', start={start}, end={end}");
                 await DiscordRpcService.Instance.UpdateActivityAsync(track, artist, album, art, start, end);
             }
@@ -846,6 +863,7 @@ namespace FluentScrobbler.Services
 
         private async Task ClearDiscordPresenceAsync()
         {
+            Interlocked.Increment(ref _discordUpdateSeq);
             try
             {
                 LogService.LogInfo("[Discord RPC] ClearPresence called");
