@@ -27,7 +27,9 @@ namespace FluentScrobbler.Services.Media
         {
             if (string.IsNullOrWhiteSpace(artist)) return (null, null);
 
-            var key = $"{artist}|{album}|{trackTitle}".ToLowerInvariant();
+            var key = !string.IsNullOrWhiteSpace(album)
+                ? $"{artist.Trim()}|{album.Trim()}".ToLowerInvariant()
+                : $"{artist.Trim()}||{trackTitle?.Trim()}".ToLowerInvariant();
 
             if (_mem.TryGetValue(key, out var m) && !string.IsNullOrEmpty(m.LocalUri))
             {

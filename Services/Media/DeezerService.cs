@@ -100,8 +100,13 @@ namespace FluentScrobbler.Services.Media
                     var itemTitle = el.TryGetProperty("title", out var tProp) ? tProp.GetString() ?? "" : "";
                     var itemArtist = el.TryGetProperty("artist", out var aProp) && aProp.TryGetProperty("name", out var nProp) ? nProp.GetString() ?? "" : "";
 
-                    bool matchArt = string.Equals(itemArtist.Trim(), targetArtist, StringComparison.OrdinalIgnoreCase);
-                    bool matchAlb = string.Equals(itemTitle.Trim(), targetAlbum, StringComparison.OrdinalIgnoreCase);
+                    bool matchArt = !string.IsNullOrWhiteSpace(targetArtist) && string.Equals(itemArtist.Trim(), targetArtist, StringComparison.OrdinalIgnoreCase);
+                    bool partialArt = !string.IsNullOrWhiteSpace(targetArtist) && !string.IsNullOrWhiteSpace(itemArtist) &&
+                        (itemArtist.Contains(targetArtist, StringComparison.OrdinalIgnoreCase) || targetArtist.Contains(itemArtist, StringComparison.OrdinalIgnoreCase));
+
+                    if (!matchArt && !partialArt) continue;
+
+                    bool matchAlb = !string.IsNullOrWhiteSpace(targetAlbum) && string.Equals(itemTitle.Trim(), targetAlbum, StringComparison.OrdinalIgnoreCase);
 
                     if (matchArt && matchAlb)
                     {
@@ -110,18 +115,22 @@ namespace FluentScrobbler.Services.Media
 
                     int sc = 0;
                     if (matchArt) sc += 5;
-                    else if (itemArtist.Contains(targetArtist, StringComparison.OrdinalIgnoreCase) || targetArtist.Contains(itemArtist, StringComparison.OrdinalIgnoreCase)) sc += 2;
+                    else if (partialArt) sc += 2;
 
                     if (matchAlb) sc += 5;
-                    else if (itemTitle.Contains(targetAlbum, StringComparison.OrdinalIgnoreCase) || targetAlbum.Contains(itemTitle, StringComparison.OrdinalIgnoreCase)) sc += 2;
+                    else if (!string.IsNullOrWhiteSpace(targetAlbum) && (itemTitle.Contains(targetAlbum, StringComparison.OrdinalIgnoreCase) || targetAlbum.Contains(itemTitle, StringComparison.OrdinalIgnoreCase))) sc += 2;
 
-                    cands.Add((sc, cov));
+                    if (sc > 0)
+                    {
+                        cands.Add((sc, cov));
+                    }
                 }
 
                 if (cands.Count > 0)
                 {
                     cands.Sort((a, b) => b.score.CompareTo(a.score));
-                    return cands[0].cover;
+                    if (cands[0].score > 0)
+                        return cands[0].cover;
                 }
             }
             catch
@@ -173,8 +182,15 @@ namespace FluentScrobbler.Services.Media
                     var itemTitle = el.TryGetProperty("title", out var tProp) ? tProp.GetString() ?? "" : "";
                     var itemArtist = el.TryGetProperty("artist", out var aProp) && aProp.TryGetProperty("name", out var nProp) ? nProp.GetString() ?? "" : "";
 
-                    bool matchArt = string.Equals(itemArtist.Trim(), targetArtist, StringComparison.OrdinalIgnoreCase);
-                    bool matchTrk = string.Equals(itemTitle.Trim(), targetTrack, StringComparison.OrdinalIgnoreCase);
+                    bool matchArt = !string.IsNullOrWhiteSpace(targetArtist) && string.Equals(itemArtist.Trim(), targetArtist, StringComparison.OrdinalIgnoreCase);
+                    bool partialArt = !string.IsNullOrWhiteSpace(targetArtist) && !string.IsNullOrWhiteSpace(itemArtist) &&
+                        (itemArtist.Contains(targetArtist, StringComparison.OrdinalIgnoreCase) || targetArtist.Contains(itemArtist, StringComparison.OrdinalIgnoreCase));
+
+                    if (!matchArt && !partialArt) continue;
+
+                    bool matchTrk = !string.IsNullOrWhiteSpace(targetTrack) && string.Equals(itemTitle.Trim(), targetTrack, StringComparison.OrdinalIgnoreCase);
+                    bool partialTrk = !string.IsNullOrWhiteSpace(targetTrack) && !string.IsNullOrWhiteSpace(itemTitle) &&
+                        (itemTitle.Contains(targetTrack, StringComparison.OrdinalIgnoreCase) || targetTrack.Contains(itemTitle, StringComparison.OrdinalIgnoreCase));
 
                     if (matchArt && matchTrk)
                     {
@@ -186,21 +202,25 @@ namespace FluentScrobbler.Services.Media
 
                     int sc = 0;
                     if (matchArt) sc += 4;
-                    else if (itemArtist.Contains(targetArtist, StringComparison.OrdinalIgnoreCase)) sc += 1;
+                    else if (partialArt) sc += 1;
 
                     if (matchTrk) sc += 4;
-                    else if (itemTitle.Contains(targetTrack, StringComparison.OrdinalIgnoreCase)) sc += 1;
+                    else if (partialTrk) sc += 1;
 
                     if (!string.IsNullOrEmpty(targetAlbum) && string.Equals(albTitle.Trim(), targetAlbum, StringComparison.OrdinalIgnoreCase))
                         sc += 3;
 
-                    cands.Add((sc, cov));
+                    if (sc > 0)
+                    {
+                        cands.Add((sc, cov));
+                    }
                 }
 
                 if (cands.Count > 0)
                 {
                     cands.Sort((a, b) => b.score.CompareTo(a.score));
-                    return cands[0].cover;
+                    if (cands[0].score > 0)
+                        return cands[0].cover;
                 }
             }
             catch
