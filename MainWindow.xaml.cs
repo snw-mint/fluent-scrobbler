@@ -29,8 +29,10 @@ namespace FluentScrobbler
 
     public sealed partial class MainWindow : Window
     {
+#if DEBUG
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+#endif
 
         public static new MainWindow? Current { get; private set; }
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
@@ -65,6 +67,7 @@ namespace FluentScrobbler
             ContentFrame.Navigated += ContentFrame_Navigated;
             this.Closed += MainWindow_Closed;
 
+#if DEBUG
             this.RootGrid.KeyDown += async (s, e) =>
             {
                 if (e.Key == Windows.System.VirtualKey.F12)
@@ -72,14 +75,17 @@ namespace FluentScrobbler
                     await CapturarScreenshot4KAsync();
                 }
             };
+#endif
 
             ScrobblerBackgroundService.Instance.Start();
             OfflineCacheWorker.Instance.Start();
         }
 
+#if DEBUG
         public async Task CapturarScreenshot4KAsync(string nomeArquivo = "FluentScrobbler_Screenshot_4K.png")
         {
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var posicaoOriginal = this.AppWindow.Position;
             SizeInt32 tamanhoOriginal = this.AppWindow.Size;
 
             int larguraBase = 1920;
@@ -134,10 +140,11 @@ namespace FluentScrobbler
                 this.RootGrid.ClearValue(FrameworkElement.WidthProperty);
                 this.RootGrid.ClearValue(FrameworkElement.HeightProperty);
 
-                SetWindowPos(hWnd, IntPtr.Zero, 0, 0, tamanhoOriginal.Width, tamanhoOriginal.Height, 0x0004 | 0x0010);
+                SetWindowPos(hWnd, IntPtr.Zero, posicaoOriginal.X, posicaoOriginal.Y, tamanhoOriginal.Width, tamanhoOriginal.Height, 0x0004 | 0x0010);
                 this.RootGrid.UpdateLayout();
             }
         }
+#endif
 
         #region Tray Icon Logic
 
