@@ -54,7 +54,17 @@ namespace FluentScrobbler.Services
 
                 lock (LogLock)
                 {
-                    Directory.CreateDirectory(LogFolderPath);
+                    if (!Directory.Exists(LogFolderPath))
+                    {
+                        Directory.CreateDirectory(LogFolderPath);
+                    }
+
+                    var fi = new FileInfo(LogFilePath);
+                    if (fi.Exists && fi.Length > 2 * 1024 * 1024)
+                    {
+                        File.Move(LogFilePath, LogFilePath + ".old", overwrite: true);
+                    }
+
                     File.AppendAllText(LogFilePath, entry + Environment.NewLine);
                 }
             }

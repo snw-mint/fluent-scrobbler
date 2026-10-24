@@ -87,12 +87,11 @@ namespace FluentScrobbler.Services
             if (_pipe == null || !_pipe.IsConnected) return false;
 
             string json = $"{{\"v\":1,\"client_id\":\"{AppId}\"}}";
-            LogService.LogInfo($"[Discord RPC] Handshake payload: {json}");
             await WriteFrameAsync(0, json);
 
             using var cts = new CancellationTokenSource(3000);
             var (op, resp) = await ReadFrameAsync(_pipe, cts.Token);
-            LogService.LogInfo($"[Discord RPC] Handshake response: op={op}, payload={resp}");
+            LogService.LogInfo($"[Discord RPC] Handshake response: op={op}");
             return op == 1 && resp.Contains("\"READY\"");
         }
 
@@ -173,7 +172,7 @@ namespace FluentScrobbler.Services
                         LogService.LogInfo($"[Discord RPC] Connection closed by Discord: op={op}");
                         break;
                     }
-                    LogService.LogInfo($"[Discord RPC] Received from Discord: op={op}, len={json.Length}, payload={json}");
+                    LogService.LogInfo($"[Discord RPC] Received from Discord: op={op}, len={json.Length}");
                     if (op == 3)
                     {
                         LogService.LogInfo("[Discord RPC] Received Ping, sending Pong");
@@ -257,7 +256,7 @@ namespace FluentScrobbler.Services
                 }
 
                 string pld = Encoding.UTF8.GetString(ms.ToArray());
-                LogService.LogInfo($"[Discord RPC] Sending SET_ACTIVITY: {pld}");
+                LogService.LogInfo($"[Discord RPC] Sending SET_ACTIVITY: title='{t}', artist='{a}'");
                 await WriteFrameAsync(1, pld);
             }
             catch (Exception ex)
@@ -298,7 +297,7 @@ namespace FluentScrobbler.Services
                 }
 
                 string pld = Encoding.UTF8.GetString(ms.ToArray());
-                LogService.LogInfo($"[Discord RPC] Sending CLEAR: {pld}");
+                LogService.LogInfo("[Discord RPC] Sending CLEAR");
                 await WriteFrameAsync(1, pld);
             }
             catch (Exception ex)
