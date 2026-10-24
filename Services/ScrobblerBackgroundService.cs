@@ -535,14 +535,23 @@ namespace FluentScrobbler.Services
                 bool isTrackRepeated = false;
                 if (currentPosition.HasValue && _lastTimelinePosition.HasValue)
                 {
-                    if (_lastTimelinePosition.Value >= TimeSpan.FromSeconds(30) && currentPosition.Value < TimeSpan.FromSeconds(5))
+                    if (_lastTimelinePosition.Value >= TimeSpan.FromSeconds(15) && currentPosition.Value < TimeSpan.FromSeconds(5))
                     {
                         isTrackRepeated = true;
                     }
                 }
-                else if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30)
+
+                if (!isTrackRepeated && currentPosition.HasValue && currentPosition.Value < TimeSpan.FromSeconds(5))
                 {
-                    if (_listenedSeconds >= _currentTrackDuration.Value.TotalSeconds)
+                    if (_hasScrobbledCurrentTrack || (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30 && _listenedSeconds >= _currentTrackDuration.Value.TotalSeconds - 5))
+                    {
+                        isTrackRepeated = true;
+                    }
+                }
+
+                if (!isTrackRepeated && _currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= 30)
+                {
+                    if (_listenedSeconds >= _currentTrackDuration.Value.TotalSeconds - 5)
                     {
                         isTrackRepeated = true;
                     }
@@ -666,7 +675,6 @@ namespace FluentScrobbler.Services
         {
             _nowPlayingSent = false;
             _currentSession = null;
-            _lastTimelinePosition = null;
             _lastPlayTickTime = null;
             bool wasPlaying = _isPlaying || CurrentTrack != null;
             _isPlaying = false;
