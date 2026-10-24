@@ -15,6 +15,7 @@ namespace FluentScrobbler.Services
     {
         public string Name => "Last.fm";
         public static event EventHandler<(string Track, string Artist, bool IsLoved)>? TrackLoveChanged;
+        public static event EventHandler? SessionInvalidated;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _localLoveCache = new(StringComparer.OrdinalIgnoreCase);
 
@@ -196,6 +197,67 @@ namespace FluentScrobbler.Services
 
             _ = OfflineCacheService.Instance.ClearCacheAsync();
         }
+
+        private static void InvalidateSession()
+        {
+            string? username = GetSetting("LastFmUsername");
+            if (string.IsNullOrEmpty(username)) return;
+
+            try
+            {
+                var vault = new PasswordVault();
+                vault.Remove(vault.Retrieve(AppInfoService.AppDataFolderName, username));
+            }
+            catch { }
+
+            RemoveSetting("LastFmUsername");
+            RemoveSetting("LastFmSessionKey");
+            _cachedUserInfo = null;
+            _cachedUserInfoUsername = null;
+            _lastFmSubmittedScrobbles.Clear();
+            _cachedSession = null;
+
+            LogService.LogWarning("[Auth Warning] Last.fm session is invalid (error 9). Re-authentication required.");
+            SessionInvalidated?.Invoke(null, EventArgs.Empty);
+        }
+
+        private static bool TryParseResult(string json, out int accepted, out int errorCode)
+        {
+            accepted = 0;
+            errorCode = 0;
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.ValueKind != JsonValueKind.Object)
+                {
+                    errorCode = -1;
+                    return false;
+                }
+
+                if (root.TryGetProperty("error", out var err))
+                {
+                    errorCode = err.ValueKind == JsonValueKind.Number && err.TryGetInt32(out var code) ? code : -1;
+                    return false;
+                }
+
+                if (root.TryGetProperty("scrobbles", out var s) &&
+                    s.TryGetProperty("@attr", out var a) &&
+                    a.TryGetProperty("accepted", out var acc))
+                {
+                    accepted = acc.ValueKind == JsonValueKind.Number
+                        ? acc.GetInt32()
+                        : int.TryParse(acc.GetString(), out var n) ? n : 0;
+                }
+                return true;
+            }
+            catch (JsonException)
+            {
+                errorCode = -1;
+                return false;
+            }
+        }
+
 
         public async Task<string?> RequestAuthTokenAsync()
         {
@@ -714,7 +776,8 @@ namespace FluentScrobbler.Services
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    bool success = !json.Contains("error");
+                    bool success = TryParseResult(json, out _, out int errorCode);
+                    if (errorCode == 9) InvalidateSession();
                     if (!success)
                     {
                         LogService.LogError($"[API Error] track.updateNowPlaying returned error response: {json}");
@@ -774,25 +837,29 @@ namespace FluentScrobbler.Services
             var content = new FormUrlEncodedContent(parameters);
             var response = await _httpClient.PostAsync(BaseUrl, content);
 
-            if (response.IsSuccessStatusCode)
+            string json = await response.Content.ReadAsStringAsync();
+            bool parsed = TryParseResult(json, out int accepted, out int errorCode);
+
+            if (parsed && response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync();
-                bool success = !json.Contains("error");
-                if (success)
+                if (accepted == 0)
                 {
-                    _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
+                    LogService.LogWarning($"[API Warning] track.scrobble ignored by Last.fm: {json}");
+                    return true;
                 }
-                else
-                {
-                    LogService.LogError($"[API Error] track.scrobble returned error response: {json}");
-                }
-                return success;
+
+                _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
+                return true;
             }
-            else
+
+            if (errorCode == 9) InvalidateSession();
+
+            LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
+            if (!response.IsSuccessStatusCode && errorCode == 0)
             {
-                LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
                 throw new HttpRequestException($"HTTP Error {(int)response.StatusCode}");
             }
+            return false;
         }
 
         public async Task<bool> ScrobbleBatchAsync(List<ScrobbleEntry> entries)
@@ -832,12 +899,21 @@ namespace FluentScrobbler.Services
             var content = new FormUrlEncodedContent(parameters);
             var response = await _httpClient.PostAsync(BaseUrl, content);
 
-            if (response.IsSuccessStatusCode)
+            string json = await response.Content.ReadAsStringAsync();
+            bool parsed = TryParseResult(json, out int accepted, out int errorCode);
+
+            if (parsed && response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync();
-                return !json.Contains("error");
+                if (accepted < entries.Count)
+                {
+                    LogService.LogWarning($"[API Warning] track.scrobble batch: {accepted}/{entries.Count} accepted, rest ignored by Last.fm: {json}");
+                }
+                return true;
             }
 
+            if (errorCode == 9) InvalidateSession();
+
+            LogService.LogError($"[API Error] track.scrobble batch HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
             return false;
         }
 
@@ -871,7 +947,8 @@ namespace FluentScrobbler.Services
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    bool success = !json.Contains("error");
+                    bool success = TryParseResult(json, out _, out int errorCode);
+                    if (errorCode == 9) InvalidateSession();
                     if (!success)
                     {
                         LogService.LogError($"[API Error] {(love ? "track.love" : "track.unlove")} returned error response: {json}");

@@ -516,6 +516,16 @@ namespace FluentScrobbler
             ScrobblerBackgroundService.Instance.Start();
             OfflineCacheWorker.Instance.Start();
 
+            LastFmService.SessionInvalidated += (s, e) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateNavigationState(false);
+                    ContentFrame.Navigate(typeof(AccountPage));
+                    SetSelectedItemByTag("AccountPage");
+                });
+            };
+
             UpdateService.Instance.UpdateStatusChanged += (s, e) =>
             {
                 this.DispatcherQueue.TryEnqueue(UpdateStatusUi);

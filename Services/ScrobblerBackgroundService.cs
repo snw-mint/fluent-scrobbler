@@ -642,7 +642,7 @@ namespace FluentScrobbler.Services
 
         private async Task ExecuteScrobbleAsync()
         {
-            if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
+            if (_hasScrobbledCurrentTrack || string.IsNullOrWhiteSpace(_currentTrack) || string.IsNullOrWhiteSpace(_currentArtist)) return;
 
             if (!await _scrobbleLock.WaitAsync(0)) return;
 
