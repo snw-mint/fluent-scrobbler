@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Timer = System.Timers.Timer;
 using ElapsedEventArgs = System.Timers.ElapsedEventArgs;
 using FluentScrobbler.Models;
@@ -18,6 +19,8 @@ namespace FluentScrobbler.Services
 
         private const string WinampClassName = "Winamp v1.x";
         private const uint WM_USER = 0x0400;
+        private const uint SMTO_ABORTIFHUNG = 0x0002;
+        private const uint IpcTimeoutMs = 500;
         private const int IPC_ISPLAYING = 104;
         private const int IPC_GETOUTPUTTIME = 105;
         private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
@@ -37,7 +40,7 @@ namespace FluentScrobbler.Services
         private static extern int GetWindowTextLength(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        private static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -118,8 +121,6 @@ namespace FluentScrobbler.Services
                     };
                     _pollingTimer.Elapsed += OnTimerElapsed;
                     _pollingTimer.Start();
-
-                    CheckPlayerState();
                 }
                 else
                 {
@@ -146,8 +147,11 @@ namespace FluentScrobbler.Services
                     {
                         _lastTrack = null;
                     }
+                    return;
                 }
             }
+
+            _ = Task.Run(CheckPlayerState);
         }
 
         private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
@@ -155,16 +159,19 @@ namespace FluentScrobbler.Services
             lock (_stateLock)
             {
                 if (!_isRunning) return;
+            }
 
-                try
-                {
-                    CheckPlayerState();
-                }
-                catch (Exception ex)
-                {
-                    LogService.LogError("[LegacyPlayerWatcher] Error during polling cycle", ex);
-                }
-                finally
+            try
+            {
+                CheckPlayerState();
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[LegacyPlayerWatcher] Error during polling cycle", ex);
+            }
+            finally
+            {
+                lock (_stateLock)
                 {
                     if (_isRunning && _pollingTimer != null)
                     {
@@ -189,13 +196,17 @@ namespace FluentScrobbler.Services
             }
             else
             {
+                if (!TrySendIpc(hWnd, IntPtr.Zero, IPC_ISPLAYING, out IntPtr playResult))
+                {
+                    LogService.LogWarning("[LegacyPlayerWatcher] Winamp IPC timed out or is hung. Skipping poll.");
+                    return;
+                }
+
                 GetWindowThreadProcessId(hWnd, out uint pid);
                 int processId = (int)pid;
                 var (technicalId, displayName, binaryPath) = ResolveProcessMetadata(processId);
 
-                int playStatus = SendMessage(hWnd, WM_USER, IntPtr.Zero, (IntPtr)IPC_ISPLAYING).ToInt32();
-
-                LegacyPlaybackState state = playStatus switch
+                LegacyPlaybackState state = playResult.ToInt32() switch
                 {
                     1 => LegacyPlaybackState.Playing,
                     3 => LegacyPlaybackState.Paused,
@@ -210,10 +221,14 @@ namespace FluentScrobbler.Services
                 TimeSpan? duration = null;
                 if (state != LegacyPlaybackState.Stopped)
                 {
-                    int positionMs = SendMessage(hWnd, WM_USER, IntPtr.Zero, (IntPtr)IPC_GETOUTPUTTIME).ToInt32();
-                    int lengthSeconds = SendMessage(hWnd, WM_USER, (IntPtr)1, (IntPtr)IPC_GETOUTPUTTIME).ToInt32();
-                    if (positionMs >= 0) position = TimeSpan.FromMilliseconds(positionMs);
-                    if (lengthSeconds > 0) duration = TimeSpan.FromSeconds(lengthSeconds);
+                    if (TrySendIpc(hWnd, IntPtr.Zero, IPC_GETOUTPUTTIME, out IntPtr positionResult) && positionResult.ToInt32() >= 0)
+                    {
+                        position = TimeSpan.FromMilliseconds(positionResult.ToInt32());
+                    }
+                    if (TrySendIpc(hWnd, (IntPtr)1, IPC_GETOUTPUTTIME, out IntPtr lengthResult) && lengthResult.ToInt32() > 0)
+                    {
+                        duration = TimeSpan.FromSeconds(lengthResult.ToInt32());
+                    }
                 }
 
                 currentInfo = new LegacyTrackInfo
@@ -231,12 +246,23 @@ namespace FluentScrobbler.Services
                 };
             }
 
-            bool changed = !Equals(_lastTrack, currentInfo);
-            _lastTrack = currentInfo;
+            bool changed;
+            lock (_stateLock)
+            {
+                if (!_isRunning) return;
+                changed = !Equals(_lastTrack, currentInfo);
+                _lastTrack = currentInfo;
+            }
+
             if (changed)
             {
                 TrackChanged?.Invoke(this, currentInfo);
             }
+        }
+
+        private static bool TrySendIpc(IntPtr hWnd, IntPtr wParam, int ipcCommand, out IntPtr result)
+        {
+            return SendMessageTimeout(hWnd, WM_USER, wParam, (IntPtr)ipcCommand, SMTO_ABORTIFHUNG, IpcTimeoutMs, out result) != IntPtr.Zero;
         }
 
         private static (string TechnicalId, string DisplayName, string BinaryPath) ResolveProcessMetadata(int processId)
@@ -382,13 +408,13 @@ namespace FluentScrobbler.Services
 
         private static string? TryGetWinampPlaylistTitle(IntPtr hWnd, int processId)
         {
-            int pos = SendMessage(hWnd, WM_USER, IntPtr.Zero, (IntPtr)IPC_GETLISTPOS).ToInt32();
+            if (!TrySendIpc(hWnd, IntPtr.Zero, IPC_GETLISTPOS, out IntPtr posResult)) return null;
+            int pos = posResult.ToInt32();
             if (pos < 0) return null;
 
-            IntPtr remoteW = SendMessage(hWnd, WM_USER, (IntPtr)pos, (IntPtr)IPC_GETPLAYLISTTITLEW);
-            IntPtr remoteA = remoteW == IntPtr.Zero
-                ? SendMessage(hWnd, WM_USER, (IntPtr)pos, (IntPtr)IPC_GETPLAYLISTTITLE)
-                : IntPtr.Zero;
+            if (!TrySendIpc(hWnd, (IntPtr)pos, IPC_GETPLAYLISTTITLEW, out IntPtr remoteW)) return null;
+            IntPtr remoteA = IntPtr.Zero;
+            if (remoteW == IntPtr.Zero && !TrySendIpc(hWnd, (IntPtr)pos, IPC_GETPLAYLISTTITLE, out remoteA)) return null;
 
             IntPtr remote = remoteW != IntPtr.Zero ? remoteW : remoteA;
             if (remote == IntPtr.Zero) return null;
