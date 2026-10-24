@@ -124,7 +124,7 @@ namespace FluentScrobbler.Services
                 _legacyPlayerWatcher.Start();
             }
 
-            _ = InitSessionManagerAsync();
+            _ = EnsureSessionManagerAsync();
             _ = RunLoopAsync(_cts.Token);
         }
 
@@ -137,19 +137,38 @@ namespace FluentScrobbler.Services
             _ = ProcessSessionUpdateAsync();
         }
 
-        private async Task InitSessionManagerAsync()
+        private async Task EnsureSessionManagerAsync()
         {
+            if (_sessionMgr != null) return;
+
             try
             {
-                _sessionMgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                if (_sessionMgr != null)
+                var mgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                if (mgr != null)
                 {
-                    _sessionMgr.CurrentSessionChanged += OnCurrentSessionChanged;
-                    _sessionMgr.SessionsChanged += OnSessionsChanged;
+                    mgr.CurrentSessionChanged += OnCurrentSessionChanged;
+                    mgr.SessionsChanged += OnSessionsChanged;
+                    _sessionMgr = mgr;
                 }
             }
             catch
             {
+                _sessionMgr = null;
+            }
+        }
+
+        private void UnsubscribeSessionManager()
+        {
+            if (_sessionMgr != null)
+            {
+                try
+                {
+                    _sessionMgr.CurrentSessionChanged -= OnCurrentSessionChanged;
+                    _sessionMgr.SessionsChanged -= OnSessionsChanged;
+                }
+                catch
+                {
+                }
                 _sessionMgr = null;
             }
         }
@@ -249,26 +268,20 @@ namespace FluentScrobbler.Services
                     return;
                 }
 
-                try
-                {
-                    if (_sessionMgr == null)
-                    {
-                        _sessionMgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                        if (_sessionMgr != null)
-                        {
-                            _sessionMgr.CurrentSessionChanged += OnCurrentSessionChanged;
-                            _sessionMgr.SessionsChanged += OnSessionsChanged;
-                        }
-                    }
-                }
-                catch
-                {
-                    _sessionMgr = null;
-                }
-
+                await EnsureSessionManagerAsync();
                 if (_sessionMgr == null) return;
 
-                var sessions = _sessionMgr.GetSessions();
+                IReadOnlyList<GlobalSystemMediaTransportControlsSession>? sessions = null;
+                try
+                {
+                    sessions = _sessionMgr.GetSessions();
+                }
+                catch (Exception ex)
+                {
+                    LogService.LogError("[SMTC Error] Failed to get sessions, resetting session manager", ex);
+                    UnsubscribeSessionManager();
+                    return;
+                }
                 var playingSessions = new List<GlobalSystemMediaTransportControlsSession>();
                 if (sessions != null)
                 {
@@ -409,7 +422,6 @@ namespace FluentScrobbler.Services
             }
             catch (Exception ex)
             {
-                _sessionMgr = null;
                 LogService.LogError("[Scrobbler Service Error] Background processing failed", ex);
             }
         }
