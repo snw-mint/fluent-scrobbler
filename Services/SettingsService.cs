@@ -95,8 +95,29 @@ namespace FluentScrobbler.Services
                     {
                         Directory.CreateDirectory(dir);
                     }
-                    string json = JsonSerializer.Serialize(settings, AppJsonContext.Default.DictionaryStringString);
-                    File.WriteAllText(SettingsFilePath, json);
+
+                    string tempPath = SettingsFilePath + ".tmp";
+                    try
+                    {
+                        string json = JsonSerializer.Serialize(settings, AppJsonContext.Default.DictionaryStringString);
+                        File.WriteAllText(tempPath, json);
+
+                        if (File.Exists(SettingsFilePath))
+                        {
+                            File.Replace(tempPath, SettingsFilePath, null);
+                        }
+                        else
+                        {
+                            File.Move(tempPath, SettingsFilePath);
+                        }
+                    }
+                    finally
+                    {
+                        if (File.Exists(tempPath))
+                        {
+                            try { File.Delete(tempPath); } catch { }
+                        }
+                    }
                 }
                 catch
                 {
