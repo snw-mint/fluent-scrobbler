@@ -30,6 +30,17 @@ namespace FluentScrobbler.Services
 
         public async Task AddScrobbleAsync(string track, string artist, string album, long timestamp)
         {
+            if (string.IsNullOrWhiteSpace(track) || string.IsNullOrWhiteSpace(artist))
+            {
+                return;
+            }
+
+            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (timestamp <= 0 || (now - timestamp) > 1209600 || timestamp > now + 3600)
+            {
+                return;
+            }
+
             var existing = await _db.Table<ScrobbleEntry>()
                                     .Where(s => s.Status == "Pending" && s.Track == track && s.Artist == artist)
                                     .ToListAsync();
@@ -65,10 +76,21 @@ namespace FluentScrobbler.Services
 
         public async Task RemoveScrobblesAsync(IEnumerable<int> ids)
         {
-            foreach (var id in ids)
+            var idList = ids as List<int> ?? ids.ToList();
+            if (idList.Count == 0) return;
+
+            await _db.RunInTransactionAsync(conn =>
             {
-                await _db.DeleteAsync<ScrobbleEntry>(id);
-            }
+                foreach (var id in idList)
+                {
+                    conn.Delete<ScrobbleEntry>(id);
+                }
+            });
+        }
+
+        public async Task<int> PurgeExpiredScrobblesAsync(long cutoffTimestamp)
+        {
+            return await _db.ExecuteAsync("DELETE FROM ScrobbleEntries WHERE Timestamp < ?", cutoffTimestamp);
         }
 
         public async Task<int> GetPendingCountAsync()

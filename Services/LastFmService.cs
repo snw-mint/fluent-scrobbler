@@ -11,6 +11,13 @@ using FluentScrobbler.Models;
 
 namespace FluentScrobbler.Services
 {
+    public enum BatchScrobbleResult
+    {
+        Success,
+        TransientError,
+        PermanentError
+    }
+
     public class LastFmService : IScrobbleProvider
     {
         public string Name => "Last.fm";
@@ -862,15 +869,15 @@ namespace FluentScrobbler.Services
             return false;
         }
 
-        public async Task<bool> ScrobbleBatchAsync(List<ScrobbleEntry> entries)
+        public async Task<BatchScrobbleResult> ScrobbleBatchAsync(List<ScrobbleEntry> entries)
         {
             var (_, sessionKey) = GetUserSession();
             if (string.IsNullOrEmpty(sessionKey))
             {
-                return false;
+                return BatchScrobbleResult.TransientError;
             }
 
-            if (entries.Count == 0) return true;
+            if (entries.Count == 0) return BatchScrobbleResult.Success;
             if (entries.Count > 50) entries = entries.Take(50).ToList();
 
             var parameters = new Dictionary<string, string>
@@ -892,29 +899,52 @@ namespace FluentScrobbler.Services
                 }
             }
 
-            string apiSig = GenerateApiSignature(parameters, ApiSecret);
-            parameters["api_sig"] = apiSig;
-            parameters["format"] = "json";
-
-            var content = new FormUrlEncodedContent(parameters);
-            var response = await _httpClient.PostAsync(BaseUrl, content);
-
-            string json = await response.Content.ReadAsStringAsync();
-            bool parsed = TryParseResult(json, out int accepted, out int errorCode);
-
-            if (parsed && response.IsSuccessStatusCode)
+            try
             {
-                if (accepted < entries.Count)
+                string apiSig = GenerateApiSignature(parameters, ApiSecret);
+                parameters["api_sig"] = apiSig;
+                parameters["format"] = "json";
+
+                var content = new FormUrlEncodedContent(parameters);
+                var response = await _httpClient.PostAsync(BaseUrl, content);
+
+                string json = await response.Content.ReadAsStringAsync();
+                bool parsed = TryParseResult(json, out int accepted, out int errorCode);
+
+                if (parsed && response.IsSuccessStatusCode)
                 {
-                    LogService.LogWarning($"[API Warning] track.scrobble batch: {accepted}/{entries.Count} accepted, rest ignored by Last.fm: {json}");
+                    if (accepted < entries.Count)
+                    {
+                        LogService.LogWarning($"[API Warning] track.scrobble batch: {accepted}/{entries.Count} accepted, rest ignored by Last.fm: {json}");
+                    }
+                    return BatchScrobbleResult.Success;
                 }
-                return true;
+
+                if (errorCode == 9)
+                {
+                    InvalidateSession();
+                    return BatchScrobbleResult.TransientError;
+                }
+
+                LogService.LogError($"[API Error] track.scrobble batch HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
+
+                if (errorCode == 11 || errorCode == 16 || errorCode == 29 || ((int)response.StatusCode >= 500 && (int)response.StatusCode <= 599))
+                {
+                    return BatchScrobbleResult.TransientError;
+                }
+
+                if (errorCode > 0 || response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    return BatchScrobbleResult.PermanentError;
+                }
+
+                return BatchScrobbleResult.TransientError;
             }
-
-            if (errorCode == 9) InvalidateSession();
-
-            LogService.LogError($"[API Error] track.scrobble batch HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
-            return false;
+            catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException || ex is TimeoutException)
+            {
+                LogService.LogError("[Network Error] Batch scrobble failed due to network.", ex);
+                return BatchScrobbleResult.TransientError;
+            }
         }
 
         public async Task<bool> ToggleLoveTrackAsync(string track, string artist, bool love)

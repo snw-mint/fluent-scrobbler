@@ -116,76 +116,94 @@ namespace FluentScrobbler.Services
 
             try
             {
-                int count = await _cacheService.GetPendingCountAsync();
-                CacheCountChanged?.Invoke(this, count);
-
-                if (count == 0)
+                while (true)
                 {
-                    OfflineMode = false;
-                    _currentBackoffLevel = 0;
-                    SetTimerInterval();
-                    return;
-                }
+                    long cutoff = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 1209600;
+                    await _cacheService.PurgeExpiredScrobblesAsync(cutoff);
 
-                OfflineMode = true;
+                    int count = await _cacheService.GetPendingCountAsync();
+                    CacheCountChanged?.Invoke(this, count);
 
-                var pendingScrobbles = await _cacheService.GetPendingScrobblesAsync(50);
-                if (!pendingScrobbles.Any()) return;
-
-                var uniqueEntries = new List<FluentScrobbler.Models.ScrobbleEntry>();
-                var duplicateIds = new List<int>();
-                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var s in pendingScrobbles)
-                {
-                    string key = $"{s.Artist.Trim().ToLowerInvariant()}|{s.Track.Trim().ToLowerInvariant()}|{s.Timestamp / 60}";
-                    if (seen.Add(key))
+                    if (count == 0)
                     {
-                        uniqueEntries.Add(s);
+                        OfflineMode = false;
+                        _currentBackoffLevel = 0;
+                        SetTimerInterval();
+                        break;
+                    }
+
+                    OfflineMode = true;
+
+                    var pendingScrobbles = await _cacheService.GetPendingScrobblesAsync(50);
+                    if (!pendingScrobbles.Any()) break;
+
+                    var uniqueEntries = new List<FluentScrobbler.Models.ScrobbleEntry>();
+                    var invalidOrDuplicateIds = new List<int>();
+                    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var s in pendingScrobbles)
+                    {
+                        if (string.IsNullOrWhiteSpace(s.Artist) || string.IsNullOrWhiteSpace(s.Track) || s.Timestamp < cutoff)
+                        {
+                            invalidOrDuplicateIds.Add(s.Id);
+                            continue;
+                        }
+
+                        string key = $"{s.Artist.Trim().ToLowerInvariant()}|{s.Track.Trim().ToLowerInvariant()}|{s.Timestamp / 60}";
+                        if (seen.Add(key))
+                        {
+                            uniqueEntries.Add(s);
+                        }
+                        else
+                        {
+                            invalidOrDuplicateIds.Add(s.Id);
+                        }
+                    }
+
+                    if (invalidOrDuplicateIds.Count > 0)
+                    {
+                        await _cacheService.RemoveScrobblesAsync(invalidOrDuplicateIds);
+                    }
+
+                    if (uniqueEntries.Count == 0)
+                    {
+                        await UpdateCacheCountAsync();
+                        continue;
+                    }
+
+                    var batchResult = await _lastFmService.ScrobbleBatchAsync(uniqueEntries);
+
+                    if (batchResult == BatchScrobbleResult.Success)
+                    {
+                        var ids = uniqueEntries.Select(s => s.Id).ToList();
+                        await _cacheService.RemoveScrobblesAsync(ids);
+
+                        _currentBackoffLevel = 0;
+                        SetTimerInterval();
+
+                        await UpdateCacheCountAsync();
+
+                        int remaining = await _cacheService.GetPendingCountAsync();
+                        if (remaining > 0)
+                        {
+                            await Task.Delay(1000);
+                            continue;
+                        }
+                        break;
+                    }
+                    else if (batchResult == BatchScrobbleResult.PermanentError)
+                    {
+                        LogService.LogWarning("[OfflineWorker] Permanent error encountered in batch. Discarding invalid entries to unblock queue.");
+                        var ids = uniqueEntries.Select(s => s.Id).ToList();
+                        await _cacheService.RemoveScrobblesAsync(ids);
+                        await UpdateCacheCountAsync();
+                        continue;
                     }
                     else
                     {
-                        duplicateIds.Add(s.Id);
+                        IncreaseBackoff();
+                        break;
                     }
-                }
-
-                if (duplicateIds.Count > 0)
-                {
-                    await _cacheService.RemoveScrobblesAsync(duplicateIds);
-                }
-
-                if (uniqueEntries.Count == 0)
-                {
-                    await UpdateCacheCountAsync();
-                    return;
-                }
-
-                bool batchSuccess = await _lastFmService.ScrobbleBatchAsync(uniqueEntries);
-
-                if (batchSuccess)
-                {
-                    var ids = uniqueEntries.Select(s => s.Id).ToList();
-                    await _cacheService.RemoveScrobblesAsync(ids);
-
-                    _currentBackoffLevel = 0;
-                    SetTimerInterval();
-
-                    await UpdateCacheCountAsync();
-
-
-                    int remaining = await _cacheService.GetPendingCountAsync();
-                    if (remaining > 0)
-                    {
-
-                        await Task.Delay(1000);
-                        _processLock.Release();
-                        await ProcessCacheAsync();
-                        return;
-                    }
-                }
-                else
-                {
-                    IncreaseBackoff();
                 }
             }
             catch (Exception ex)
@@ -195,10 +213,7 @@ namespace FluentScrobbler.Services
             }
             finally
             {
-                if (_processLock.CurrentCount == 0)
-                {
-                    _processLock.Release();
-                }
+                _processLock.Release();
             }
         }
 
