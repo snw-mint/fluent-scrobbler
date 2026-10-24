@@ -193,6 +193,33 @@ namespace FluentScrobbler.Services
             RegexOptions.Compiled
         );
 
+        public static (string Artist, string Album) SplitAppleMusicArtistAlbum(string appId, string artist, string album)
+        {
+            if (FormatAppDisplayName(appId) != "Apple Music") return (artist, album);
+
+            var m = AppleMusicArtistAlbumRegex.Match(artist);
+            if (!m.Success) return (artist, album);
+
+            return (m.Groups["artist"].Value, string.IsNullOrWhiteSpace(album) ? m.Groups["album"].Value : album);
+        }
+
+        public static Dictionary<string, string> GetSettingsSnapshot()
+        {
+            lock (FileLock)
+            {
+                return new Dictionary<string, string>(LoadSettingsFromFile());
+            }
+        }
+
+        public static void ReplaceSettings(Dictionary<string, string> settings)
+        {
+            lock (FileLock)
+            {
+                _listCache.Clear();
+                SaveSettingsToFile(new Dictionary<string, string>(settings));
+            }
+        }
+
         private static readonly Regex PrimaryArtistRegex = new(
             @"\s*[\(\[](?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,)\s+.*[\)\]]|\s+(?:feat\.?|ft\.?|featuring|with|and|e|y|et|&|,|x)\s+.*$|\s*[,;/\\|&].*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled
@@ -439,18 +466,7 @@ namespace FluentScrobbler.Services
                             string rawArtist = !string.IsNullOrWhiteSpace(mediaProperties.Artist) ? mediaProperties.Artist.Trim() : (mediaProperties.AlbumArtist?.Trim() ?? string.Empty);
                             string album = mediaProperties.AlbumTitle ?? string.Empty;
 
-                            if (sourceName == "Apple Music")
-                            {
-                                var m = AppleMusicArtistAlbumRegex.Match(rawArtist);
-                                if (m.Success)
-                                {
-                                    rawArtist = m.Groups["artist"].Value;
-                                    if (string.IsNullOrWhiteSpace(album))
-                                    {
-                                        album = m.Groups["album"].Value;
-                                    }
-                                }
-                            }
+                            (rawArtist, album) = SplitAppleMusicArtistAlbum(appId, rawArtist, album);
 
                             string artist = rawArtist;
                             if (IsPrimaryArtistOnlyEnabled())

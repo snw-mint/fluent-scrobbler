@@ -391,6 +391,7 @@ namespace FluentScrobbler.Services
                 string smtcAppId = allowedSession.SourceAppUserModelId;
                 string smtcArtist = !string.IsNullOrWhiteSpace(props.Artist) ? props.Artist.Trim() : (props.AlbumArtist?.Trim() ?? string.Empty);
                 string smtcAlbum = props.AlbumTitle?.Trim() ?? string.Empty;
+                (smtcArtist, smtcAlbum) = WindowsMediaService.SplitAppleMusicArtistAlbum(smtcAppId, smtcArtist, smtcAlbum);
 
                 await ProcessTrackAsync(props.Title, smtcArtist, smtcAlbum, smtcAppId, allowedSession);
             }

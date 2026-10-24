@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace FluentScrobbler.Services
         );
 
         public const string LegacyPlayersEnabledKey = "EnableLegacyPlayerMonitoring";
+        private const string MediaKeyPrefix = "media:";
 
         public static bool IsLegacyPlayersEnabled()
         {
@@ -122,6 +124,11 @@ namespace FluentScrobbler.Services
             {
             }
 
+            foreach (var pair in WindowsMediaService.GetSettingsSnapshot())
+            {
+                settings[MediaKeyPrefix + pair.Key] = pair.Value;
+            }
+
             string json = JsonSerializer.Serialize(settings, AppJsonContext.Default.DictionaryStringString);
             await File.WriteAllTextAsync(destinationFilePath, json);
         }
@@ -133,6 +140,21 @@ namespace FluentScrobbler.Services
             string json = await File.ReadAllTextAsync(sourceFilePath);
             var imported = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString);
             if (imported == null || imported.Count == 0) return false;
+
+            var media = new Dictionary<string, string>();
+            foreach (var pair in imported.ToList())
+            {
+                if (pair.Key.StartsWith(MediaKeyPrefix, StringComparison.Ordinal))
+                {
+                    media[pair.Key.Substring(MediaKeyPrefix.Length)] = pair.Value;
+                    imported.Remove(pair.Key);
+                }
+            }
+
+            if (media.Count > 0)
+            {
+                WindowsMediaService.ReplaceSettings(media);
+            }
 
             SaveSettingsToFile(imported);
 
