@@ -31,7 +31,7 @@ namespace FluentScrobbler.Services.Media
         public ListenBrainzService()
         {
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler/1.0 (contact@snw-mint.app)");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", $"FluentScrobbler/{AppInfoService.Version} (contact@snw-mint.app)");
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
             EnsureDiskCacheLoaded();
         }

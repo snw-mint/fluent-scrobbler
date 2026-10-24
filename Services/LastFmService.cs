@@ -68,7 +68,7 @@ namespace FluentScrobbler.Services
             {
                 Timeout = TimeSpan.FromSeconds(15)
             };
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "FluentScrobbler-WindowsApp/1.0");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", $"FluentScrobbler-WindowsApp/{AppInfoService.Version}");
         }
 
         public LastFmService()
@@ -272,7 +272,7 @@ namespace FluentScrobbler.Services
             try
             {
                 string url = $"{BaseUrl}?method=auth.getToken&api_key={ApiKey}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -346,7 +346,7 @@ namespace FluentScrobbler.Services
                 string apiSig = GenerateApiSignature(paramsForSig, ApiSecret);
 
                 string url = $"{BaseUrl}?method=auth.getSession&api_key={ApiKey}&token={token}&api_sig={apiSig}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 string json = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -394,7 +394,7 @@ namespace FluentScrobbler.Services
             try
             {
                 string url = $"{BaseUrl}?method=user.getinfo&user={Uri.EscapeDataString(username)}&api_key={ApiKey}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -473,7 +473,7 @@ namespace FluentScrobbler.Services
                     requestUrl += $"&from={fromTimestamp.Value}";
                 }
 
-                HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+                using HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -597,12 +597,49 @@ namespace FluentScrobbler.Services
             return tracks;
         }
 
+        private static string? ExtractCoverArtUrl(JsonElement imagesProp)
+        {
+            if (imagesProp.ValueKind != JsonValueKind.Array) return null;
+
+            string? xlImg = null;
+            string? lgImg = null;
+            string? mdImg = null;
+
+            foreach (var img in imagesProp.EnumerateArray())
+            {
+                if (img.TryGetProperty("size", out var sizeProp))
+                {
+                    string size = sizeProp.GetString() ?? "";
+                    if (size == "extralarge" && img.TryGetProperty("#text", out var xlText))
+                    {
+                        xlImg = xlText.GetString();
+                    }
+                    else if (size == "large" && img.TryGetProperty("#text", out var lgText))
+                    {
+                        lgImg = lgText.GetString();
+                    }
+                    else if (size == "medium" && img.TryGetProperty("#text", out var medText))
+                    {
+                        mdImg = medText.GetString();
+                    }
+                }
+            }
+
+            string? selectedImage = !string.IsNullOrEmpty(xlImg) ? xlImg : (!string.IsNullOrEmpty(lgImg) ? lgImg : mdImg);
+
+            if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
+            {
+                return selectedImage.Replace("lastfm-img.freetls.fastly.net", "lastfm.freetls.fastly.net");
+            }
+            return null;
+        }
+
         public async Task<string?> GetAlbumArtFromLastFmAsync(string artist, string album)
         {
             try
             {
                 string url = $"{BaseUrl}?method=album.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&album={Uri.EscapeDataString(album)}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -610,46 +647,15 @@ namespace FluentScrobbler.Services
                     using var doc = JsonDocument.Parse(json);
                     
                     if (doc.RootElement.TryGetProperty("album", out var albumElement) && 
-                        albumElement.TryGetProperty("image", out var imagesProp) && 
-                        imagesProp.ValueKind == JsonValueKind.Array)
+                        albumElement.TryGetProperty("image", out var imagesProp))
                     {
-                        string? xlImg = null;
-                        string? lgImg = null;
-                        string? mdImg = null;
-                        
-                        foreach (var img in imagesProp.EnumerateArray())
-                        {
-                            if (img.TryGetProperty("size", out var sizeProp))
-                            {
-                                string size = sizeProp.GetString() ?? "";
-                                if (size == "extralarge" && img.TryGetProperty("#text", out var xlText))
-                                {
-                                    xlImg = xlText.GetString();
-                                }
-                                else if (size == "large" && img.TryGetProperty("#text", out var lgText))
-                                {
-                                    lgImg = lgText.GetString();
-                                }
-                                else if (size == "medium" && img.TryGetProperty("#text", out var medText))
-                                {
-                                    mdImg = medText.GetString();
-                                }
-                            }
-                        }
-                        
-                        string? selectedImage = !string.IsNullOrEmpty(xlImg) ? xlImg : (!string.IsNullOrEmpty(lgImg) ? lgImg : mdImg);
-                        
-                        if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
-                        {
-                            selectedImage = selectedImage.Replace("lastfm-img.freetls.fastly.net", "lastfm.freetls.fastly.net");
-                            return selectedImage;
-                        }
+                        return ExtractCoverArtUrl(imagesProp);
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar album info do Last.fm: {ex.Message}");
+                LogService.LogError("[Last.fm] Error fetching album info", ex);
             }
             return null;
         }
@@ -659,7 +665,7 @@ namespace FluentScrobbler.Services
             try
             {
                 string url = $"{BaseUrl}?method=track.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&track={Uri.EscapeDataString(track)}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -668,46 +674,15 @@ namespace FluentScrobbler.Services
                     
                     if (doc.RootElement.TryGetProperty("track", out var trackElement) &&
                         trackElement.TryGetProperty("album", out var albumElement) && 
-                        albumElement.TryGetProperty("image", out var imagesProp) && 
-                        imagesProp.ValueKind == JsonValueKind.Array)
+                        albumElement.TryGetProperty("image", out var imagesProp))
                     {
-                        string? xlImg = null;
-                        string? lgImg = null;
-                        string? mdImg = null;
-                        
-                        foreach (var img in imagesProp.EnumerateArray())
-                        {
-                            if (img.TryGetProperty("size", out var sizeProp))
-                            {
-                                string size = sizeProp.GetString() ?? "";
-                                if (size == "extralarge" && img.TryGetProperty("#text", out var xlText))
-                                {
-                                    xlImg = xlText.GetString();
-                                }
-                                else if (size == "large" && img.TryGetProperty("#text", out var lgText))
-                                {
-                                    lgImg = lgText.GetString();
-                                }
-                                else if (size == "medium" && img.TryGetProperty("#text", out var medText))
-                                {
-                                    mdImg = medText.GetString();
-                                }
-                            }
-                        }
-                        
-                        string? selectedImage = !string.IsNullOrEmpty(xlImg) ? xlImg : (!string.IsNullOrEmpty(lgImg) ? lgImg : mdImg);
-                        
-                        if (!string.IsNullOrEmpty(selectedImage) && !selectedImage.Contains("2a96cbd8b46e442fc41c2b86b821562f"))
-                        {
-                            selectedImage = selectedImage.Replace("lastfm-img.freetls.fastly.net", "lastfm.freetls.fastly.net");
-                            return selectedImage;
-                        }
+                        return ExtractCoverArtUrl(imagesProp);
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar track info do Last.fm: {ex.Message}");
+                LogService.LogError("[Last.fm] Error fetching track info", ex);
             }
             return null;
         }
@@ -726,7 +701,7 @@ namespace FluentScrobbler.Services
             try
             {
                 string url = $"{BaseUrl}?method=artist.gettoptags&artist={Uri.EscapeDataString(artist)}&api_key={ApiKey}&format=json";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
@@ -789,7 +764,7 @@ namespace FluentScrobbler.Services
                 parameters["format"] = "json";
 
                 var content = new FormUrlEncodedContent(parameters);
-                var response = await _httpClient.PostAsync(BaseUrl, content);
+                using var response = await _httpClient.PostAsync(BaseUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -853,7 +828,7 @@ namespace FluentScrobbler.Services
             parameters["format"] = "json";
 
             var content = new FormUrlEncodedContent(parameters);
-            var response = await _httpClient.PostAsync(BaseUrl, content);
+            using var response = await _httpClient.PostAsync(BaseUrl, content);
 
             string json = await response.Content.ReadAsStringAsync();
             bool parsed = TryParseResult(json, out int accepted, out int errorCode);
@@ -867,6 +842,17 @@ namespace FluentScrobbler.Services
                 }
 
                 _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
+                if (_lastFmSubmittedScrobbles.Count > 100)
+                {
+                    var cutoff = DateTimeOffset.UtcNow.AddHours(-24);
+                    foreach (var kvp in _lastFmSubmittedScrobbles)
+                    {
+                        if (kvp.Value < cutoff)
+                        {
+                            _lastFmSubmittedScrobbles.TryRemove(kvp.Key, out _);
+                        }
+                    }
+                }
                 return true;
             }
 
@@ -917,7 +903,7 @@ namespace FluentScrobbler.Services
                 parameters["format"] = "json";
 
                 var content = new FormUrlEncodedContent(parameters);
-                var response = await _httpClient.PostAsync(BaseUrl, content);
+                using var response = await _httpClient.PostAsync(BaseUrl, content);
 
                 string json = await response.Content.ReadAsStringAsync();
                 bool parsed = TryParseResult(json, out int accepted, out int errorCode);
@@ -983,7 +969,7 @@ namespace FluentScrobbler.Services
                 parameters["format"] = "json";
 
                 var content = new FormUrlEncodedContent(parameters);
-                var response = await _httpClient.PostAsync(BaseUrl, content);
+                using var response = await _httpClient.PostAsync(BaseUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {

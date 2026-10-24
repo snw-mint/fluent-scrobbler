@@ -9,8 +9,8 @@ namespace FluentScrobbler.Services
 {
     public class OfflineCacheWorker
     {
-        private static OfflineCacheWorker? _instance;
-        public static OfflineCacheWorker Instance => _instance ??= new OfflineCacheWorker();
+        private static readonly Lazy<OfflineCacheWorker> _instance = new(() => new OfflineCacheWorker());
+        public static OfflineCacheWorker Instance => _instance.Value;
         private readonly OfflineCacheService _cacheService = OfflineCacheService.Instance;
         private readonly LastFmService _lastFmService = new();
         private System.Timers.Timer? _timer;

@@ -28,60 +28,84 @@ namespace FluentScrobbler.Services
             LegacyPlayerWatcher.Instance.SetMonitoringState(enabled);
         }
 
-        public static string? GetSetting(string key)
-        {
-            try
-            {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                if (localSettings.Values.TryGetValue(key, out var val) && val != null)
-                {
-                    return val.ToString();
-                }
-            }
-            catch
-            {
-            }
-
-            var fileSettings = LoadSettingsFromFile();
-            return fileSettings.TryGetValue(key, out var fileVal) ? fileVal : null;
-        }
-
-        public static void SetSetting(string key, string value)
-        {
-            try
-            {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                localSettings.Values[key] = value;
-            }
-            catch
-            {
-            }
-
-            var fileSettings = LoadSettingsFromFile();
-            fileSettings[key] = value;
-            SaveSettingsToFile(fileSettings);
-        }
-
+        private static readonly Dictionary<string, string> _memoryCache = new(StringComparer.Ordinal);
+        private static bool _cacheLoaded = false;
         private static readonly object LockObj = new();
 
-        private static Dictionary<string, string> LoadSettingsFromFile()
+        private static Dictionary<string, string> GetSettingsMapLocked()
         {
-            lock (LockObj)
+            if (!_cacheLoaded)
+            {
+                var loaded = LoadSettingsFromFile();
+                foreach (var kv in loaded)
+                {
+                    _memoryCache[kv.Key] = kv.Value;
+                }
+                _cacheLoaded = true;
+            }
+            return _memoryCache;
+        }
+
+        public static string? GetSetting(string key)
+        {
+            if (AppInfoService.IsPackaged)
             {
                 try
                 {
-                    if (File.Exists(SettingsFilePath))
+                    var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                    if (localSettings.Values.TryGetValue(key, out var val) && val != null)
                     {
-                        string json = File.ReadAllText(SettingsFilePath);
-                        return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString)
-                               ?? new Dictionary<string, string>();
+                        return val.ToString();
                     }
                 }
                 catch
                 {
                 }
-                return new Dictionary<string, string>();
             }
+
+            lock (LockObj)
+            {
+                return GetSettingsMapLocked().TryGetValue(key, out var fileVal) ? fileVal : null;
+            }
+        }
+
+        public static void SetSetting(string key, string value)
+        {
+            if (AppInfoService.IsPackaged)
+            {
+                try
+                {
+                    var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                    localSettings.Values[key] = value;
+                }
+                catch
+                {
+                }
+            }
+
+            lock (LockObj)
+            {
+                var map = GetSettingsMapLocked();
+                map[key] = value;
+                SaveSettingsToFile(new Dictionary<string, string>(map, StringComparer.Ordinal));
+            }
+        }
+
+        private static Dictionary<string, string> LoadSettingsFromFile()
+        {
+            try
+            {
+                if (File.Exists(SettingsFilePath))
+                {
+                    string json = File.ReadAllText(SettingsFilePath);
+                    return JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString)
+                           ?? new Dictionary<string, string>();
+                }
+            }
+            catch
+            {
+            }
+            return new Dictionary<string, string>();
         }
 
         private static void SaveSettingsToFile(Dictionary<string, string> settings)
@@ -129,20 +153,28 @@ namespace FluentScrobbler.Services
 
         public static async Task ExportSettingsAsync(string destinationFilePath)
         {
-            var settings = LoadSettingsFromFile();
-            try
+            Dictionary<string, string> settings;
+            lock (LockObj)
             {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                foreach (var pair in localSettings.Values)
+                settings = new Dictionary<string, string>(GetSettingsMapLocked(), StringComparer.Ordinal);
+            }
+
+            if (AppInfoService.IsPackaged)
+            {
+                try
                 {
-                    if (pair.Value != null)
+                    var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                    foreach (var pair in localSettings.Values)
                     {
-                        settings[pair.Key] = pair.Value.ToString() ?? string.Empty;
+                        if (pair.Value != null)
+                        {
+                            settings[pair.Key] = pair.Value.ToString() ?? string.Empty;
+                        }
                     }
                 }
-            }
-            catch
-            {
+                catch
+                {
+                }
             }
 
             foreach (var pair in WindowsMediaService.GetSettingsSnapshot())
@@ -177,18 +209,30 @@ namespace FluentScrobbler.Services
                 WindowsMediaService.ReplaceSettings(media);
             }
 
-            SaveSettingsToFile(imported);
-
-            try
+            lock (LockObj)
             {
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                _memoryCache.Clear();
                 foreach (var pair in imported)
                 {
-                    localSettings.Values[pair.Key] = pair.Value;
+                    _memoryCache[pair.Key] = pair.Value;
                 }
+                _cacheLoaded = true;
+                SaveSettingsToFile(new Dictionary<string, string>(_memoryCache, StringComparer.Ordinal));
             }
-            catch
+
+            if (AppInfoService.IsPackaged)
             {
+                try
+                {
+                    var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                    foreach (var pair in imported)
+                    {
+                        localSettings.Values[pair.Key] = pair.Value;
+                    }
+                }
+                catch
+                {
+                }
             }
 
             return true;

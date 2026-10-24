@@ -14,8 +14,9 @@ namespace FluentScrobbler.Services
 {
     public class LegacyPlayerWatcher : ILegacyPlayerWatcher
     {
-        private static LegacyPlayerWatcher? _instance;
-        public static LegacyPlayerWatcher Instance => _instance ??= new LegacyPlayerWatcher();
+        private static readonly Lazy<LegacyPlayerWatcher> _instance = new(() => new LegacyPlayerWatcher());
+        public static LegacyPlayerWatcher Instance => _instance.Value;
+        private static readonly ConcurrentDictionary<int, (string TechnicalId, string DisplayName, string BinaryPath)> _processMetadataCache = new();
 
         private const string WinampClassName = "Winamp v1.x";
         private const uint WM_USER = 0x0400;
@@ -276,6 +277,11 @@ namespace FluentScrobbler.Services
                 return (string.Empty, string.Empty, string.Empty);
             }
 
+            if (_processMetadataCache.TryGetValue(processId, out var cached))
+            {
+                return cached;
+            }
+
             try
             {
                 IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
@@ -364,7 +370,17 @@ namespace FluentScrobbler.Services
                 displayName = string.IsNullOrEmpty(displayName) ? "Legacy Player" : displayName;
             }
 
-            return (technicalId, displayName, binaryPath);
+            var result = (technicalId, displayName, binaryPath);
+            if (!string.IsNullOrEmpty(technicalId) && technicalId != "legacyplayer.exe")
+            {
+                if (_processMetadataCache.Count > 100)
+                {
+                    _processMetadataCache.Clear();
+                }
+                _processMetadataCache[processId] = result;
+            }
+
+            return result;
         }
 
         public static (string Artist, string Title) ParseAndCleanTitle(string? rawTitle, bool stripTrackNumber = true)

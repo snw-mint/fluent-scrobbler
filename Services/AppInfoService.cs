@@ -13,20 +13,19 @@ namespace FluentScrobbler.Services
         public const string AppDataFolderName = "FluentScrobbler";
 #endif
 
-        public static bool IsPackaged
+        private static readonly Lazy<bool> _isPackaged = new(() =>
         {
-            get
+            try
             {
-                try
-                {
-                    return Package.Current != null && !string.IsNullOrEmpty(Package.Current.Id.FamilyName);
-                }
-                catch
-                {
-                    return false;
-                }
+                return Package.Current != null && !string.IsNullOrEmpty(Package.Current.Id.FamilyName);
             }
-        }
+            catch
+            {
+                return false;
+            }
+        });
+
+        public static bool IsPackaged => _isPackaged.Value;
 
         public static string AppDataPath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

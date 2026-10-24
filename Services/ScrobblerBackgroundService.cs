@@ -22,8 +22,8 @@ namespace FluentScrobbler.Services
 
     public class ScrobblerBackgroundService
     {
-        private static ScrobblerBackgroundService? _instance;
-        public static ScrobblerBackgroundService Instance => _instance ??= new ScrobblerBackgroundService();
+        private static readonly Lazy<ScrobblerBackgroundService> _instance = new(() => new ScrobblerBackgroundService());
+        public static ScrobblerBackgroundService Instance => _instance.Value;
 
         private readonly IScrobbleProvider[] _providers = new IScrobbleProvider[] { new LastFmService() };
         private readonly MediaArtResolver _mediaArtResolver = new();
@@ -716,6 +716,17 @@ namespace FluentScrobbler.Services
                 _lastScrobbledSignature = signature;
                 string trackKey = GetTrackKey(_currentArtist, _currentTrack);
                 _scrobbledTracksHistory[trackKey] = DateTimeOffset.UtcNow;
+                if (_scrobbledTracksHistory.Count > 100)
+                {
+                    var cutoff = DateTimeOffset.UtcNow.AddHours(-24);
+                    foreach (var kvp in _scrobbledTracksHistory)
+                    {
+                        if (kvp.Value < cutoff)
+                        {
+                            _scrobbledTracksHistory.TryRemove(kvp.Key, out _);
+                        }
+                    }
+                }
 
                 bool success = false;
                 try

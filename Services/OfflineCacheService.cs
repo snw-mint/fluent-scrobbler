@@ -10,10 +10,11 @@ namespace FluentScrobbler.Services
 {
     public class OfflineCacheService
     {
-        private static OfflineCacheService? _instance;
-        public static OfflineCacheService Instance => _instance ??= new OfflineCacheService();
+        private static readonly Lazy<OfflineCacheService> _instance = new(() => new OfflineCacheService());
+        public static OfflineCacheService Instance => _instance.Value;
 
         private readonly SQLiteAsyncConnection _db;
+        private readonly Task _initTask;
         
         private OfflineCacheService()
         {
@@ -25,7 +26,7 @@ namespace FluentScrobbler.Services
             }
             
             _db = new SQLiteAsyncConnection(dbPath);
-            _db.CreateTableAsync<ScrobbleEntry>().Wait();
+            _initTask = _db.CreateTableAsync<ScrobbleEntry>();
         }
 
         public async Task AddScrobbleAsync(string track, string artist, string album, long timestamp)
@@ -41,6 +42,7 @@ namespace FluentScrobbler.Services
                 return;
             }
 
+            await _initTask;
             var existing = await _db.Table<ScrobbleEntry>()
                                     .Where(s => s.Status == "Pending" && s.Track == track && s.Artist == artist)
                                     .ToListAsync();
@@ -62,6 +64,7 @@ namespace FluentScrobbler.Services
 
         public async Task<List<ScrobbleEntry>> GetPendingScrobblesAsync(int limit = 50)
         {
+            await _initTask;
             return await _db.Table<ScrobbleEntry>()
                             .Where(s => s.Status == "Pending")
                             .OrderBy(s => s.Timestamp)
@@ -71,6 +74,7 @@ namespace FluentScrobbler.Services
 
         public async Task RemoveScrobbleAsync(int id)
         {
+            await _initTask;
             await _db.DeleteAsync<ScrobbleEntry>(id);
         }
 
@@ -79,6 +83,7 @@ namespace FluentScrobbler.Services
             var idList = ids as List<int> ?? ids.ToList();
             if (idList.Count == 0) return;
 
+            await _initTask;
             await _db.RunInTransactionAsync(conn =>
             {
                 foreach (var id in idList)
@@ -90,16 +95,19 @@ namespace FluentScrobbler.Services
 
         public async Task<int> PurgeExpiredScrobblesAsync(long cutoffTimestamp)
         {
+            await _initTask;
             return await _db.ExecuteAsync("DELETE FROM ScrobbleEntries WHERE Timestamp < ?", cutoffTimestamp);
         }
 
         public async Task<int> GetPendingCountAsync()
         {
+            await _initTask;
             return await _db.Table<ScrobbleEntry>().Where(s => s.Status == "Pending").CountAsync();
         }
 
         public async Task ClearCacheAsync()
         {
+            await _initTask;
             await _db.DeleteAllAsync<ScrobbleEntry>();
         }
     }

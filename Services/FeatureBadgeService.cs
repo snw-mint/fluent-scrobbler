@@ -11,7 +11,7 @@ namespace FluentScrobbler.Services
             "ScrobbleDelayMinutes"
         };
 
-        private static string GetKey(string id) => $"SeenFeature_{id}_{AppInfoService.Version}";
+        private static string GetKey(string id) => $"SeenFeature_{id}";
 
         public static bool IsFeatureNew(string id)
         {

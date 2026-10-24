@@ -11,8 +11,8 @@ namespace FluentScrobbler.Services
     public class DiscordRpcService
     {
         private const string AppId = "1547589924251902073";
-        private static DiscordRpcService? _inst;
-        public static DiscordRpcService Instance => _inst ??= new DiscordRpcService();
+        private static readonly Lazy<DiscordRpcService> _inst = new(() => new DiscordRpcService());
+        public static DiscordRpcService Instance => _inst.Value;
 
         private NamedPipeClientStream? _pipe;
         private readonly SemaphoreSlim _lock = new(1, 1);

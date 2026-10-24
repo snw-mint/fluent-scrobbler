@@ -200,6 +200,18 @@ namespace FluentScrobbler
             UpdateTrayToolTip();
         }
 
+        private readonly Dictionary<string, BitmapImage> _trayIconCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private BitmapImage GetCachedTrayIcon(string relativePath)
+        {
+            if (!_trayIconCache.TryGetValue(relativePath, out var bmp))
+            {
+                bmp = new BitmapImage(new Uri(relativePath));
+                _trayIconCache[relativePath] = bmp;
+            }
+            return bmp;
+        }
+
         private void UpdateTrayIcon()
         {
             if (AppTrayIcon == null) return;
@@ -214,7 +226,7 @@ namespace FluentScrobbler
 
             try
             {
-                AppTrayIcon.IconSource = new BitmapImage(new Uri(relativePath));
+                AppTrayIcon.IconSource = GetCachedTrayIcon(relativePath);
             }
             catch (Exception ex)
             {
@@ -224,7 +236,7 @@ namespace FluentScrobbler
                 string fallbackPath = $"ms-appx:///Assets/Tray/tray-{fallbackPrefix}-{colorSuffix}.ico";
                 try
                 {
-                    AppTrayIcon.IconSource = new BitmapImage(new Uri(fallbackPath));
+                    AppTrayIcon.IconSource = GetCachedTrayIcon(fallbackPath);
                 }
                 catch
                 {
@@ -476,7 +488,7 @@ namespace FluentScrobbler
 
             UpdateResourceBrush("AccentFillColorDefaultBrush", color);
             UpdateResourceBrush("AccentFillColorSecondaryBrush", light1);
-            UpdateResourceBrush("AccentFillColorTertrush", light2);
+            UpdateResourceBrush("AccentFillColorTertiaryBrush", light2);
             UpdateResourceBrush("AccentTextFillColorPrimaryBrush", color);
             UpdateResourceBrush("TextOnAccentFillColorPrimaryBrush", textOnAccentColor);
             UpdateResourceBrush("ToggleSwitchFillOn", color);

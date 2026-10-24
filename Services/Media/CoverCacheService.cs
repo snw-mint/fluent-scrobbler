@@ -21,12 +21,13 @@ namespace FluentScrobbler.Services.Media
 
     public class CoverCacheService
     {
-        private static CoverCacheService? _inst;
-        public static CoverCacheService Instance => _inst ??= new CoverCacheService();
+        private static readonly Lazy<CoverCacheService> _inst = new(() => new CoverCacheService());
+        public static CoverCacheService Instance => _inst.Value;
 
         private readonly string _dir;
         private readonly SQLiteAsyncConnection _db;
         private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(15) };
+        private readonly Task _initTask;
 
         private CoverCacheService()
         {
@@ -44,7 +45,7 @@ namespace FluentScrobbler.Services.Media
 
             var dbPath = Path.Combine(dbDir, "covers_cache.db");
             _db = new SQLiteAsyncConnection(dbPath);
-            _db.CreateTableAsync<CoverCacheEntry>().Wait();
+            _initTask = _db.CreateTableAsync<CoverCacheEntry>();
 
             _ = Task.Run(CleanExpiredCacheAsync);
         }
@@ -53,6 +54,7 @@ namespace FluentScrobbler.Services.Media
         {
             try
             {
+                await _initTask;
                 var entry = await _db.Table<CoverCacheEntry>().Where(x => x.CacheKey == key).FirstOrDefaultAsync();
                 if (entry != null && File.Exists(entry.LocalPath))
                 {
@@ -73,6 +75,7 @@ namespace FluentScrobbler.Services.Media
         {
             try
             {
+                await _initTask;
                 var hash = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(remoteUrl))).ToLowerInvariant();
                 var path = Path.Combine(_dir, $"{hash}.jpg");
 
@@ -105,6 +108,7 @@ namespace FluentScrobbler.Services.Media
         {
             try
             {
+                await _initTask;
                 var cutoff = DateTime.UtcNow.AddDays(-3);
                 var expired = await _db.Table<CoverCacheEntry>().Where(x => x.LastAccessedUtc < cutoff).ToListAsync();
 
