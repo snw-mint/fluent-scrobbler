@@ -177,6 +177,11 @@ namespace FluentScrobbler
                 this.DispatcherQueue.TryEnqueue(() => UpdateTrayIcon());
             });
 
+            ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += (sender, isIgnored) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => UpdateTrayToolTip());
+            };
+
             ScrobblerBackgroundService.Instance.StatusChanged += (sender, statusInfo) =>
             {
                 this.DispatcherQueue.TryEnqueue(() => UpdateScrobbleStatus(statusInfo));
@@ -255,6 +260,11 @@ namespace FluentScrobbler
                 ScrobbleStatus.Error => "Error",
                 _ => "Idle"
             };
+
+            if (ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored)
+            {
+                statusText = "Ignored";
+            }
 
             if (OfflineCacheWorker.Instance.OfflineMode)
             {

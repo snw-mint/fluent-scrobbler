@@ -100,6 +100,14 @@ namespace FluentScrobbler.Views
                 if (_cachedNowPlayingTrack != null) NowPlayingTrackText.Text = _cachedNowPlayingTrack;
                 if (_cachedNowPlayingArtistAlbum != null) NowPlayingArtistAlbumText.Text = _cachedNowPlayingArtistAlbum;
                 HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, _cachedNowPlayingIsLoved);
+                NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
                 if (!string.IsNullOrEmpty(_cachedNowPlayingArtUrl))
                 {
                     try
@@ -147,6 +155,8 @@ namespace FluentScrobbler.Views
             NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
             NowPlayingIdleIcon.Visibility = Visibility.Visible;
             NowPlayingLikeButton.Visibility = Visibility.Collapsed;
+            NowPlayingIgnoreButton.Visibility = Visibility.Collapsed;
+
         }
 
         private void CacheCurrentState()
@@ -198,6 +208,8 @@ namespace FluentScrobbler.Views
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
             OfflineCacheWorker.Instance.CacheCountChanged += OnCacheCountChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected += OnNewSourceDetected;
+            ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += OnCurrentTrackIgnoredChanged;
+            ScrobblerBackgroundService.Instance.StatusChanged += OnScrobbleStatusChanged;
 
             SetOfflineStatus(OfflineCacheWorker.Instance.OfflineMode, await OfflineCacheService.Instance.GetPendingCountAsync());
             await CheckUnconfiguredSourcesAsync();
@@ -209,6 +221,8 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
+            ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged -= OnCurrentTrackIgnoredChanged;
+            ScrobblerBackgroundService.Instance.StatusChanged -= OnScrobbleStatusChanged;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
             Windows.Networking.Connectivity.NetworkInformation.NetworkStatusChanged -= OnNetworkStatusChanged;
             OfflineCacheWorker.Instance.OfflineModeChanged -= OnOfflineModeChanged;
@@ -437,6 +451,13 @@ namespace FluentScrobbler.Views
                 _dashboardLoaded = false;
                 await LoadDashboardDataAsync();
                 _dashboardLoaded = true;
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
             });
         }
 
@@ -468,6 +489,14 @@ namespace FluentScrobbler.Views
             _cachedNowPlayingIsLoved = isLoved;
             
             NowPlayingTrackText.Text = track;
+            NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+            IgnoreUiHelper.SetIgnoreVisual(
+                NowPlayingIgnoreButton,
+                NowPlayingIgnoreIcon,
+                NowPlayingStatusBadge,
+                NowPlayingStatusText,
+                ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
             string artistAlbumStr = string.IsNullOrEmpty(album) ? artist : $"{artist} • {album}";
             NowPlayingArtistAlbumText.Text = artistAlbumStr;
 
@@ -774,6 +803,39 @@ namespace FluentScrobbler.Views
         }
 
         private bool _isLikingNowPlaying = false;
+
+        private void OnCurrentTrackIgnoredChanged(object? sender, bool isIgnored)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    isIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+            });
+        }
+
+        private void OnScrobbleStatusChanged(object? sender, ScrobbleStatusInfo e)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+            });
+        }
+
+        private void NowPlayingIgnoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            ScrobblerBackgroundService.Instance.ToggleIgnoreCurrentTrack();
+        }
 
         private async void NowPlayingLikeButton_Click(object sender, RoutedEventArgs e)
         {

@@ -50,6 +50,9 @@ namespace FluentScrobbler.Services
         private double _listenedSeconds;
         private DateTimeOffset? _lastPlayTickTime;
         private bool _hasScrobbledCurrentTrack;
+        private volatile bool _isCurrentTrackIgnored;
+        private string _ignoredTrackSignature = string.Empty;
+        private static string CreateTrackSignature(string artist, string track) => $"{artist.Trim().ToLowerInvariant()}|{track.Trim().ToLowerInvariant()}";
         private bool _nowPlayingSent;
         private DateTimeOffset _lastNowPlayingAttempt = DateTimeOffset.MinValue;
         private bool _isPlaying;
@@ -60,9 +63,38 @@ namespace FluentScrobbler.Services
         public event EventHandler<NowPlayingInfo?>? NowPlayingChanged;
         public event EventHandler<ScrobbleStatusInfo>? StatusChanged;
         public event EventHandler<string>? NewSourceDetected;
+        public event EventHandler<bool>? CurrentTrackIgnoredChanged;
 
         public NowPlayingInfo? CurrentTrack { get; private set; }
         public ScrobbleStatusInfo CurrentStatus { get; private set; } = new(ScrobbleStatus.Idle);
+        public bool IsCurrentTrackIgnored => _isCurrentTrackIgnored;
+        public bool HasScrobbledCurrentTrack => _hasScrobbledCurrentTrack;
+
+        public bool ToggleIgnoreCurrentTrack()
+        {
+            if (string.IsNullOrEmpty(_currentTrack) || _hasScrobbledCurrentTrack)
+            {
+                return false;
+            }
+
+            string sig = CreateTrackSignature(_currentArtist, _currentTrack);
+            if (_isCurrentTrackIgnored)
+            {
+                _isCurrentTrackIgnored = false;
+                _ignoredTrackSignature = string.Empty;
+                CurrentTrackIgnoredChanged?.Invoke(this, false);
+
+                _ = CheckScrobbleEligibilityAsync();
+                return false;
+            }
+            else
+            {
+                _isCurrentTrackIgnored = true;
+                _ignoredTrackSignature = sig;
+                CurrentTrackIgnoredChanged?.Invoke(this, true);
+                return true;
+            }
+        }
 
         public void ForgetSource(string appId)
         {
@@ -517,6 +549,18 @@ namespace FluentScrobbler.Services
                 _listenedSeconds = 0;
                 _lastPlayTickTime = DateTimeOffset.UtcNow;
                 _hasScrobbledCurrentTrack = false;
+                string newSig = CreateTrackSignature(artist, title);
+                if (newSig != _ignoredTrackSignature)
+                {
+                    _isCurrentTrackIgnored = false;
+                    _ignoredTrackSignature = string.Empty;
+                    CurrentTrackIgnoredChanged?.Invoke(this, false);
+                }
+                else
+                {
+                    _isCurrentTrackIgnored = true;
+                    CurrentTrackIgnoredChanged?.Invoke(this, true);
+                }
                 _isPlaying = true;
                 _lastTimelinePosition = currentPosition;
                 _currentTrackDuration = trackDuration;
@@ -566,6 +610,18 @@ namespace FluentScrobbler.Services
                     _listenedSeconds = 0;
                     _lastPlayTickTime = DateTimeOffset.UtcNow;
                     _hasScrobbledCurrentTrack = false;
+                string newSig = CreateTrackSignature(artist, title);
+                if (newSig != _ignoredTrackSignature)
+                {
+                    _isCurrentTrackIgnored = false;
+                    _ignoredTrackSignature = string.Empty;
+                    CurrentTrackIgnoredChanged?.Invoke(this, false);
+                }
+                else
+                {
+                    _isCurrentTrackIgnored = true;
+                    CurrentTrackIgnoredChanged?.Invoke(this, true);
+                }
                     _lastTimelinePosition = currentPosition;
 
                     _nowPlayingSent = false;
@@ -610,7 +666,7 @@ namespace FluentScrobbler.Services
                         _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                     }
 
-                    if (!_hasScrobbledCurrentTrack)
+                    if (!_hasScrobbledCurrentTrack && !_isCurrentTrackIgnored)
                     {
                         int percentage = _windowsMediaService.GetScrobblePercentageThreshold();
                         int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
@@ -672,6 +728,37 @@ namespace FluentScrobbler.Services
             }
         }
 
+        private async Task CheckScrobbleEligibilityAsync()
+        {
+            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored) return;
+
+            int percentage = _windowsMediaService.GetScrobblePercentageThreshold();
+            int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
+            int maxWaitSeconds = _windowsMediaService.GetMaximumTimeThresholdSeconds();
+
+            if (_currentTrackDuration.HasValue && _currentTrackDuration.Value.TotalSeconds >= Math.Min(30, maxWaitSeconds))
+            {
+                double totalDurationSeconds = _currentTrackDuration.Value.TotalSeconds;
+                double percentageSeconds = totalDurationSeconds * (percentage / 100.0);
+                double triggerSeconds = Math.Min(percentageSeconds, maxWaitSeconds);
+
+                bool shouldScrobble = _listenedSeconds >= triggerSeconds && _listenedSeconds >= Math.Min(minLength, maxWaitSeconds);
+
+                if (shouldScrobble)
+                {
+                    await ExecuteScrobbleAsync();
+                }
+            }
+            else if (!_currentTrackDuration.HasValue)
+            {
+                int unknownDurationThreshold = Math.Max(Math.Min(30, maxWaitSeconds), Math.Min(minLength, maxWaitSeconds));
+                if (_listenedSeconds >= unknownDurationThreshold)
+                {
+                    await ExecuteScrobbleAsync();
+                }
+            }
+        }
+
         private async Task SetIdleStateAsync()
         {
             _nowPlayingSent = false;
@@ -691,13 +778,13 @@ namespace FluentScrobbler.Services
 
         private async Task ExecuteScrobbleAsync()
         {
-            if (_hasScrobbledCurrentTrack || string.IsNullOrWhiteSpace(_currentTrack) || string.IsNullOrWhiteSpace(_currentArtist)) return;
+            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || string.IsNullOrWhiteSpace(_currentTrack) || string.IsNullOrWhiteSpace(_currentArtist)) return;
 
             if (!await _scrobbleLock.WaitAsync(0)) return;
 
             try
             {
-                if (_hasScrobbledCurrentTrack || string.IsNullOrEmpty(_currentTrack)) return;
+                if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || string.IsNullOrEmpty(_currentTrack)) return;
 
                 if (IsRecentlyScrobbled(_currentArtist, _currentTrack, 10))
                 {
@@ -759,6 +846,7 @@ namespace FluentScrobbler.Services
                     SetStatus(ScrobbleStatus.Error, _currentTrack, _currentArtist, _currentAlbum);
                     await OfflineCacheService.Instance.AddScrobbleAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                     await OfflineCacheWorker.Instance.TriggerOfflineModeAsync();
+                    TrackScrobbled?.Invoke(this, EventArgs.Empty);
                 }
             }
             finally

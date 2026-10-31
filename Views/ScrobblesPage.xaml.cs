@@ -44,6 +44,8 @@ namespace FluentScrobbler.Views
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
+            ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += OnCurrentTrackIgnoredChanged;
+            ScrobblerBackgroundService.Instance.StatusChanged += OnScrobbleStatusChanged;
 
             if (Scrobbles.Count == 0 && _cachedScrobbles.Count > 0)
             {
@@ -80,6 +82,7 @@ namespace FluentScrobbler.Views
             NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
             NowPlayingIdleIcon.Visibility = Visibility.Visible;
             NowPlayingLikeButton.Visibility = Visibility.Collapsed;
+            NowPlayingIgnoreButton.Visibility = Visibility.Collapsed;
         }
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
@@ -87,6 +90,8 @@ namespace FluentScrobbler.Views
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
+            ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged -= OnCurrentTrackIgnoredChanged;
+            ScrobblerBackgroundService.Instance.StatusChanged -= OnScrobbleStatusChanged;
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
@@ -191,10 +196,46 @@ namespace FluentScrobbler.Views
         {
             this.DispatcherQueue?.TryEnqueue(async () =>
             {
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+
                 if (_cts != null && !_cts.IsCancellationRequested)
                 {
                     await LoadDataAsync(_cts.Token, showLoading: false, forceRefresh: true);
                 }
+            });
+        }
+
+        private void OnCurrentTrackIgnoredChanged(object? sender, bool isIgnored)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    isIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+            });
+        }
+
+        private void OnScrobbleStatusChanged(object? sender, ScrobbleStatusInfo e)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
             });
         }
 
@@ -540,8 +581,6 @@ namespace FluentScrobbler.Views
             }
         }
 
-
-
         private void UpdateHistoryList(List<ScrobbleTrack> historyTracks, CancellationToken ct)
         {
             if (ct.IsCancellationRequested) return;
@@ -584,6 +623,14 @@ namespace FluentScrobbler.Views
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingLikeButton.Visibility = Visibility.Visible;
+            NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+            IgnoreUiHelper.SetIgnoreVisual(
+                NowPlayingIgnoreButton,
+                NowPlayingIgnoreIcon,
+                NowPlayingStatusBadge,
+                NowPlayingStatusText,
+                ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
 
             bool isLoved = false;
             var cachedNowPlaying = _cachedScrobbles.FirstOrDefault(t =>
@@ -668,6 +715,11 @@ namespace FluentScrobbler.Views
                 NowPlayingLikeButton.IsEnabled = true;
                 _isLikingNowPlaying = false;
             }
+        }
+
+        private void NowPlayingIgnoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            ScrobblerBackgroundService.Instance.ToggleIgnoreCurrentTrack();
         }
     }
 }

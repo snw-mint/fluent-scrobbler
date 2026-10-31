@@ -55,9 +55,10 @@
 
                         <StackPanel x:Name="NowPlayingActiveContainer" Grid.Column="1" VerticalAlignment="Center" Spacing="6" Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="NOW PLAYING" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                <Border x:Name="NowPlayingStatusBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
+                                    <TextBlock x:Name="NowPlayingStatusText" Text="LISTENING" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
                                 </Border>
+
                                 <TextBlock x:Name="NowPlayingSourceText" Text="Last.fm" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <TextBlock x:Name="NowPlayingTrackText" Text="Track Title" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
@@ -69,8 +70,17 @@
                             <TextBlock Text="Play something to start scrobbling." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
-                        <Button x:Name="NowPlayingLikeButton"
-                                Grid.Column="2"
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button x:Name="NowPlayingIgnoreButton"
+                                    Visibility="Collapsed"
+                                    Style="{ThemeResource SubtleButtonStyle}"
+                                    ToolTipService.ToolTip="Ignore this scrobble"
+                                    Padding="8"
+                                    Click="NowPlayingIgnoreButton_Click">
+                                <ic:SymbolIcon x:Name="NowPlayingIgnoreIcon" Symbol="SubtractCircle" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Button>
+                            <Button x:Name="NowPlayingLikeButton"
+
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed"
                                 Style="{ThemeResource SubtleButtonStyle}"
@@ -78,7 +88,8 @@
                                 Padding="8"
                                 Click="NowPlayingLikeButton_Click">
                             <ic:SymbolIcon x:Name="NowPlayingLikeIcon" Symbol="Heart" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </Button>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </StackPanel>
