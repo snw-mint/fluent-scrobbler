@@ -60,12 +60,7 @@
                         <ic:SymbolIcon Grid.Column="0" Symbol="Live" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Text="Send Now Playing" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                                <Border x:Name="SendNowPlayingNewBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
-                                    <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                </Border>
-                            </StackPanel>
+                            <TextBlock Text="Send Now Playing" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                             <TextBlock Text="Submit real-time playback status to connected scrobbling services." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
@@ -87,12 +82,7 @@
                         <ic:SymbolIcon Grid.Column="0" Symbol="Timer" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Text="Scrobble delay percentage" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                                <Border x:Name="ScrobbleDelayNewBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
-                                    <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                </Border>
-                            </StackPanel>
+                            <TextBlock Text="Scrobble delay percentage" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                             <TextBlock Text="Scrobble a track after playing a specific percentage of its total length." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
 
@@ -115,12 +105,7 @@
                             <ic:SymbolIcon Grid.Column="0" Symbol="Clock" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <TextBlock Text="Maximum wait time" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                                    <Border x:Name="MaxWaitTimeNewBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
-                                        <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                    </Border>
-                                </StackPanel>
+                                <TextBlock Text="Maximum wait time" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="Upper time limit to submit a scrobble, even on longer tracks." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
 
@@ -276,6 +261,33 @@
 
             <StackPanel Spacing="8" Margin="0,8,0,0">
                 <TextBlock Text="System &amp; Behavior" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,4" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ic:SymbolIcon Grid.Column="0" Symbol="WindowSettings" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Enable tray quick flyout" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                                <Border x:Name="TrayFlyoutNewBadge" Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Show a mini popup with quick actions when clicking the tray icon instead of opening the main window." Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock x:Name="TrayFlyoutStatusText" Text="On" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource BodyTextBlockStyle}" />
+                            <ToggleSwitch x:Name="TrayFlyoutToggle" VerticalAlignment="Center" OnContent="" OffContent="" MinWidth="0" IsOn="True" Toggled="TrayFlyoutToggle_Toggled" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <Grid>

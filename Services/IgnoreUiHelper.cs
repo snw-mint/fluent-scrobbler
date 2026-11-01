@@ -25,10 +25,7 @@ namespace FluentScrobbler.Services
                 if (hasScrobbled)
                 {
                     button.IsEnabled = false;
-                    if (Application.Current.Resources.TryGetValue("TextFillColorDisabledBrush", out var disabledBrush) && disabledBrush is Brush db)
-                    {
-                        icon.Foreground = db;
-                    }
+                    icon.ClearValue(FluentSymbolIcon.ForegroundProperty);
                     ToolTipService.SetToolTip(button, "Already scrobbled");
                 }
                 else if (isIgnored)
@@ -40,10 +37,7 @@ namespace FluentScrobbler.Services
                 else
                 {
                     button.IsEnabled = true;
-                    if (Application.Current.Resources.TryGetValue("TextFillColorSecondaryBrush", out var secBrush) && secBrush is Brush sb)
-                    {
-                        icon.Foreground = sb;
-                    }
+                    icon.ClearValue(FluentSymbolIcon.ForegroundProperty);
                     ToolTipService.SetToolTip(button, "Ignore this scrobble");
                 }
             }

@@ -22,10 +22,7 @@ namespace FluentScrobbler.Services
             }
             else
             {
-                if (Application.Current.Resources.TryGetValue("TextFillColorSecondaryBrush", out var brush) && brush is Brush b)
-                {
-                    icon.Foreground = b;
-                }
+                icon.ClearValue(FluentSymbolIcon.ForegroundProperty);
             }
         }
 

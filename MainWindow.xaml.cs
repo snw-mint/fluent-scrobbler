@@ -41,6 +41,7 @@ namespace FluentScrobbler
         private readonly TrayThemeService _trayThemeService = new();
         private ScrobbleStatusInfo _currentScrobbleStatus = new(ScrobbleStatus.Idle);
         private TaskbarIcon? AppTrayIcon;
+        private TrayFlyoutWindow? _trayFlyoutWindow;
 
         public MainWindow()
         {
@@ -153,7 +154,9 @@ namespace FluentScrobbler
             AppTrayIcon = new TaskbarIcon
             {
                 ToolTipText = "Fluent Scrobbler - Idle",
-                LeftClickCommand = new TrayRelayCommand(OnTrayIconLeftClick)
+                NoLeftClickDelay = true,
+                LeftClickCommand = new TrayRelayCommand(OnTrayIconLeftClick),
+                DoubleClickCommand = new TrayRelayCommand(OnTrayIconLeftClick)
             };
 
             var openItem = new MenuFlyoutItem { Text = "Open Fluent Scrobbler" };
@@ -168,6 +171,10 @@ namespace FluentScrobbler
             };
 
             AppTrayIcon.ForceCreate(enablesEfficiencyMode: false);
+            if (SettingsService.IsTrayFlyoutEnabled())
+            {
+                _trayFlyoutWindow = new TrayFlyoutWindow();
+            }
 
             UpdateTrayIcon();
             UpdateTrayToolTip();
@@ -290,15 +297,39 @@ namespace FluentScrobbler
             }
         }
 
+        public void SetTrayFlyoutState(bool enabled)
+        {
+            if (enabled)
+            {
+                _trayFlyoutWindow ??= new TrayFlyoutWindow();
+            }
+            else
+            {
+                try
+                {
+                    _trayFlyoutWindow?.ForceClose();
+                    _trayFlyoutWindow = null;
+                }
+                catch { }
+            }
+        }
+
         private void OnTrayIconLeftClick()
         {
+            if (SettingsService.IsTrayFlyoutEnabled())
+            {
+                _trayFlyoutWindow ??= new TrayFlyoutWindow();
+                _trayFlyoutWindow.ToggleFlyout();
+                return;
+            }
+
+            if (this.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter &&
+                presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized)
+            {
+                presenter.Restore();
+            }
             this.AppWindow.Show();
             this.Activate();
-            if (ContentFrame.CurrentSourcePageType != typeof(ScrobblesPage))
-            {
-                ContentFrame.Navigate(typeof(ScrobblesPage));
-            }
-            SetSelectedItemByTag("ScrobblesPage");
         }
 
         private void OnOpenWindowClick(object sender, RoutedEventArgs e)
@@ -313,6 +344,13 @@ namespace FluentScrobbler
         {
             if (_isExiting) return;
             _isExiting = true;
+
+            try
+            {
+                _trayFlyoutWindow?.ForceClose();
+                _trayFlyoutWindow = null;
+            }
+            catch { }
 
             try
             {
@@ -410,6 +448,7 @@ namespace FluentScrobbler
                 root.ActualThemeChanged += Root_ActualThemeChanged;
             }
 
+            _trayFlyoutWindow?.SyncTheme(theme);
             UpdateTitleBarTheme(theme);
 
             if (save)
@@ -649,6 +688,24 @@ namespace FluentScrobbler
         public void NavigateToSourceSettings()
         {
             ContentFrame.Navigate(typeof(SettingsPage), "ExpandSourceFiltering");
+            SetSelectedItemByTag("SettingsPage");
+        }
+
+        public void NavigateToSettings()
+        {
+            if (this.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter &&
+                presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized)
+            {
+                presenter.Restore();
+            }
+
+            this.AppWindow.Show();
+            this.Activate();
+
+            if (ContentFrame.CurrentSourcePageType != typeof(SettingsPage))
+            {
+                ContentFrame.Navigate(typeof(SettingsPage));
+            }
             SetSelectedItemByTag("SettingsPage");
         }
 

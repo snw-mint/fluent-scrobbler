@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-  #define MyAppVersion "1.2"
+  #define MyAppVersion "1.3"
 #endif
 #ifndef AppArch
   #define AppArch ""

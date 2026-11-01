@@ -15,6 +15,19 @@ namespace FluentScrobbler.Services
         );
 
         public const string LegacyPlayersEnabledKey = "EnableLegacyPlayerMonitoring";
+        public const string TrayFlyoutEnabledKey = "EnableTrayQuickFlyout";
+
+        public static bool IsTrayFlyoutEnabled()
+        {
+            string? val = GetSetting(TrayFlyoutEnabledKey);
+            return string.IsNullOrEmpty(val) || val == "true";
+        }
+
+        public static void SetTrayFlyoutEnabled(bool enabled)
+        {
+            SetSetting(TrayFlyoutEnabledKey, enabled ? "true" : "false");
+            MainWindow.Current?.SetTrayFlyoutState(enabled);
+        }
         private const string MediaKeyPrefix = "media:";
 
         public static bool IsLegacyPlayersEnabled()

@@ -60,19 +60,11 @@ namespace FluentScrobbler.Views
             SendNowPlayingStatusText.Text = isSendNowPlaying ? "On" : "Off";
             SendNowPlayingToggle.Toggled += SendNowPlayingToggle_Toggled;
 
-            SendNowPlayingNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("SendNowPlaying")
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
             int scrobbleDelayPercentage = mediaService.GetScrobblePercentageThreshold();
             ScrobbleDelaySlider.ValueChanged -= ScrobbleDelaySlider_ValueChanged;
             ScrobbleDelaySlider.Value = scrobbleDelayPercentage;
             ScrobbleDelayValueText.Text = $"{scrobbleDelayPercentage}%";
             ScrobbleDelaySlider.ValueChanged += ScrobbleDelaySlider_ValueChanged;
-
-            ScrobbleDelayNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayPercentage")
-                ? Visibility.Visible
-                : Visibility.Collapsed;
 
             int maxWaitTime = mediaService.GetMaximumTimeThresholdSeconds();
             MaxWaitTimeSlider.ValueChanged -= MaxWaitTimeSlider_ValueChanged;
@@ -82,10 +74,6 @@ namespace FluentScrobbler.Views
             MaxWaitTimeWarningInfoBar.IsOpen = showMaxWaitWarning;
             MaxWaitTimeWarningInfoBar.Visibility = showMaxWaitWarning ? Visibility.Visible : Visibility.Collapsed;
             MaxWaitTimeSlider.ValueChanged += MaxWaitTimeSlider_ValueChanged;
-
-            MaxWaitTimeNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("ScrobbleDelayMinutes")
-                ? Visibility.Visible
-                : Visibility.Collapsed;
 
             bool isPrimaryArtistOnly = mediaService.IsPrimaryArtistOnlyEnabled();
             UsePrimaryArtistOnlyToggle.Toggled -= UsePrimaryArtistOnlyToggle_Toggled;
@@ -114,6 +102,16 @@ namespace FluentScrobbler.Views
             StartMinimizedToTrayToggle.IsOn = isStartMinimized;
             StartMinimizedToTrayStatusText.Text = isStartMinimized ? "On" : "Off";
             StartMinimizedToTrayToggle.Toggled += StartMinimizedToTrayToggle_Toggled;
+
+            bool isTrayFlyoutEnabled = SettingsService.IsTrayFlyoutEnabled();
+            TrayFlyoutToggle.Toggled -= TrayFlyoutToggle_Toggled;
+            TrayFlyoutToggle.IsOn = isTrayFlyoutEnabled;
+            TrayFlyoutStatusText.Text = isTrayFlyoutEnabled ? "On" : "Off";
+            TrayFlyoutToggle.Toggled += TrayFlyoutToggle_Toggled;
+
+            TrayFlyoutNewBadge.Visibility = FeatureBadgeService.IsFeatureNew("TrayQuickFlyout")
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             bool isDiscordEnabled = SettingsService.GetSetting("DiscordRichPresence") == "true";
             DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
@@ -145,9 +143,7 @@ namespace FluentScrobbler.Views
             FeatureBadgeService.MarkFeatureAsSeen("CleanTrackTitles");
             FeatureBadgeService.MarkFeatureAsSeen("DiscordRichPresence");
             FeatureBadgeService.MarkFeatureAsSeen("LegacyPlayersSupport");
-            FeatureBadgeService.MarkFeatureAsSeen("SendNowPlaying");
-            FeatureBadgeService.MarkFeatureAsSeen("ScrobbleDelayPercentage");
-            FeatureBadgeService.MarkFeatureAsSeen("ScrobbleDelayMinutes");
+            FeatureBadgeService.MarkFeatureAsSeen("TrayQuickFlyout");
             MainWindow.Current?.UpdateSettingsBadge();
 
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
@@ -160,6 +156,7 @@ namespace FluentScrobbler.Views
             CleanTrackTitlesToggle.Toggled -= CleanTrackTitlesToggle_Toggled;
             StartOnStartupToggle.Toggled -= StartOnStartupToggle_Toggled;
             StartMinimizedToTrayToggle.Toggled -= StartMinimizedToTrayToggle_Toggled;
+            TrayFlyoutToggle.Toggled -= TrayFlyoutToggle_Toggled;
             DiscordPresenceToggle.Toggled -= DiscordPresenceToggle_Toggled;
             LegacyPlayersToggle.Toggled -= LegacyPlayersToggle_Toggled;
         }
@@ -428,6 +425,16 @@ namespace FluentScrobbler.Views
                 bool isOn = StartMinimizedToTrayToggle.IsOn;
                 StartMinimizedToTrayStatusText.Text = isOn ? "On" : "Off";
                 StartupService.SetStartMinimizedToTrayEnabled(isOn);
+            }
+        }
+
+        private void TrayFlyoutToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (TrayFlyoutStatusText != null && TrayFlyoutToggle != null)
+            {
+                bool isOn = TrayFlyoutToggle.IsOn;
+                TrayFlyoutStatusText.Text = isOn ? "On" : "Off";
+                SettingsService.SetTrayFlyoutEnabled(isOn);
             }
         }
 
