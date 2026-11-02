@@ -29,10 +29,14 @@ namespace FluentScrobbler.Views
 
         private static readonly SemaphoreSlim _artLoadSemaphore = new(3, 3);
         private static readonly List<ScrobbleItem> _cachedScrobbles = new();
+        public static IReadOnlyList<ScrobbleItem> CachedScrobbles => _cachedScrobbles;
+        public static event EventHandler? RecentScrobblesUpdated;
 
         public ScrobblesPage()
         {
             this.InitializeComponent();
+            NowPlayingBlockTrackMenuItem.Icon = new FluentIcons.WinUI.SymbolIcon { Symbol = FluentIcons.Common.Symbol.MusicNote1, FontSize = 16 };
+            NowPlayingBlockArtistMenuItem.Icon = new FluentIcons.WinUI.SymbolIcon { Symbol = FluentIcons.Common.Symbol.Person, FontSize = 16 };
             this.Loaded += ScrobblesPage_Loaded;
             this.Unloaded += ScrobblesPage_Unloaded;
         }
@@ -42,6 +46,7 @@ namespace FluentScrobbler.Views
             _cts = new CancellationTokenSource();
 
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
+            BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += OnCurrentTrackIgnoredChanged;
@@ -83,11 +88,13 @@ namespace FluentScrobbler.Views
             NowPlayingIdleIcon.Visibility = Visibility.Visible;
             NowPlayingLikeButton.Visibility = Visibility.Collapsed;
             NowPlayingIgnoreButton.Visibility = Visibility.Collapsed;
+            NowPlayingBlockButton.Visibility = Visibility.Collapsed;
         }
 
         private void ScrobblesPage_Unloaded(object sender, RoutedEventArgs e)
         {
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
+            BlockedRulesService.Instance.BlockedRulesChanged -= OnBlockedRulesChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged -= OnCurrentTrackIgnoredChanged;
@@ -133,6 +140,23 @@ namespace FluentScrobbler.Views
                 {
                     RenderScrobblesList();
                 }
+            });
+        }
+
+        private void OnBlockedRulesChanged(object? sender, EventArgs e)
+        {
+            DispatcherQueue?.TryEnqueue(() =>
+            {
+                UpdateNowPlayingBlockVisual();
+                IgnoreUiHelper.SetIgnoreVisual(
+                    NowPlayingIgnoreButton,
+                    NowPlayingIgnoreIcon,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    BlockedRulesService.Instance.IsBlocked(_lastNowPlayingTrack, _lastNowPlayingArtist));
+                RenderScrobblesList();
             });
         }
 
@@ -202,7 +226,8 @@ namespace FluentScrobbler.Views
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    BlockedRulesService.Instance.IsBlocked(_lastNowPlayingTrack, _lastNowPlayingArtist));
 
                 if (_cts != null && !_cts.IsCancellationRequested)
                 {
@@ -221,7 +246,8 @@ namespace FluentScrobbler.Views
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     isIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    BlockedRulesService.Instance.IsBlocked(_lastNowPlayingTrack, _lastNowPlayingArtist));
             });
         }
 
@@ -235,7 +261,8 @@ namespace FluentScrobbler.Views
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    BlockedRulesService.Instance.IsBlocked(_lastNowPlayingTrack, _lastNowPlayingArtist));
             });
         }
 
@@ -321,6 +348,7 @@ namespace FluentScrobbler.Views
 
             _cachedScrobbles.Clear();
             _cachedScrobbles.AddRange(Scrobbles);
+            RecentScrobblesUpdated?.Invoke(null, EventArgs.Empty);
 
             RenderScrobblesList();
             _ = LoadArtProgressivelyAsync(historyItems, historyTracks.Select(t => (t.Artist, (string?)t.Album, t.Name, (string?)t.AlbumArtUrl)).ToList(), ct);
@@ -510,6 +538,88 @@ namespace FluentScrobbler.Views
                     isLiking = false;
                 }
             };
+            var blockIcon = new FluentIcons.WinUI.SymbolIcon
+            {
+                Symbol = FluentIcons.Common.Symbol.Prohibited,
+                IconVariant = FluentIcons.Common.IconVariant.Regular,
+                FontSize = 18
+            };
+
+            var blockButton = new Button
+            {
+                Style = Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var blockStyle) ? (Style)blockStyle : null,
+                Padding = new Thickness(6),
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = blockIcon
+            };
+
+            var blockFlyout = new MenuFlyout();
+
+            var trackMenuItem = new MenuFlyoutItem
+            {
+                Icon = new FluentIcons.WinUI.SymbolIcon { Symbol = FluentIcons.Common.Symbol.MusicNote1, FontSize = 16 }
+            };
+
+            var artistMenuItem = new MenuFlyoutItem
+            {
+                Icon = new FluentIcons.WinUI.SymbolIcon { Symbol = FluentIcons.Common.Symbol.Person, FontSize = 16 }
+            };
+
+            void UpdateBlockItemVisual()
+            {
+                bool isTrkBlocked = BlockedRulesService.Instance.IsTrackBlocked(item.TrackName);
+                bool isArtBlocked = BlockedRulesService.Instance.IsArtistBlocked(item.ArtistName);
+
+                trackMenuItem.Text = isTrkBlocked ? "Unblock track" : "Block track";
+                artistMenuItem.Text = isArtBlocked ? "Unblock artist" : "Block artist";
+
+                if (isTrkBlocked || isArtBlocked)
+                {
+                    blockIcon.Foreground = IgnoreUiHelper.IgnoreRedBrush;
+                    ToolTipService.SetToolTip(blockButton, "Blocked");
+                }
+                else
+                {
+                    blockIcon.ClearValue(FluentIcons.WinUI.SymbolIcon.ForegroundProperty);
+                    ToolTipService.SetToolTip(blockButton, "Block");
+                }
+            }
+
+            UpdateBlockItemVisual();
+
+            trackMenuItem.Click += (s, ev) =>
+            {
+                if (BlockedRulesService.Instance.IsTrackBlocked(item.TrackName))
+                {
+                    BlockedRulesService.Instance.UnblockTrack(item.TrackName);
+                }
+                else
+                {
+                    BlockedRulesService.Instance.BlockTrack(item.TrackName);
+                }
+                UpdateBlockItemVisual();
+                UpdateNowPlayingBlockVisual();
+            };
+
+            artistMenuItem.Click += (s, ev) =>
+            {
+                if (BlockedRulesService.Instance.IsArtistBlocked(item.ArtistName))
+                {
+                    BlockedRulesService.Instance.UnblockArtist(item.ArtistName);
+                }
+                else
+                {
+                    BlockedRulesService.Instance.BlockArtist(item.ArtistName);
+                }
+                UpdateBlockItemVisual();
+                UpdateNowPlayingBlockVisual();
+            };
+
+            blockFlyout.Items.Add(trackMenuItem);
+            blockFlyout.Items.Add(artistMenuItem);
+            blockButton.Flyout = blockFlyout;
+
+            rightStack.Children.Add(blockButton);
             rightStack.Children.Add(likeButton);
 
             Grid.SetColumn(rightStack, 2);
@@ -577,6 +687,7 @@ namespace FluentScrobbler.Views
                 {
                     _cachedScrobbles.Clear();
                     _cachedScrobbles.AddRange(Scrobbles);
+                    RecentScrobblesUpdated?.Invoke(null, EventArgs.Empty);
                 });
             }
         }
@@ -624,13 +735,16 @@ namespace FluentScrobbler.Views
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
             NowPlayingLikeButton.Visibility = Visibility.Visible;
             NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+            NowPlayingBlockButton.Visibility = Visibility.Visible;
+            UpdateNowPlayingBlockVisual();
             IgnoreUiHelper.SetIgnoreVisual(
                 NowPlayingIgnoreButton,
                 NowPlayingIgnoreIcon,
                 NowPlayingStatusBadge,
                 NowPlayingStatusText,
                 ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                BlockedRulesService.Instance.IsBlocked(track, artist));
 
             bool isLoved = false;
             var cachedNowPlaying = _cachedScrobbles.FirstOrDefault(t =>
@@ -720,6 +834,54 @@ namespace FluentScrobbler.Views
         private void NowPlayingIgnoreButton_Click(object sender, RoutedEventArgs e)
         {
             ScrobblerBackgroundService.Instance.ToggleIgnoreCurrentTrack();
+        }
+
+        private void UpdateNowPlayingBlockVisual()
+        {
+            bool isTrkBlocked = BlockedRulesService.Instance.IsTrackBlocked(_lastNowPlayingTrack);
+            bool isArtBlocked = BlockedRulesService.Instance.IsArtistBlocked(_lastNowPlayingArtist);
+
+            NowPlayingBlockTrackMenuItem.Text = isTrkBlocked ? "Unblock track" : "Block track";
+            NowPlayingBlockArtistMenuItem.Text = isArtBlocked ? "Unblock artist" : "Block artist";
+
+            if (isTrkBlocked || isArtBlocked)
+            {
+                NowPlayingBlockIcon.Foreground = IgnoreUiHelper.IgnoreRedBrush;
+                ToolTipService.SetToolTip(NowPlayingBlockButton, "Blocked");
+            }
+            else
+            {
+                NowPlayingBlockIcon.ClearValue(FluentIcons.WinUI.SymbolIcon.ForegroundProperty);
+                ToolTipService.SetToolTip(NowPlayingBlockButton, "Block");
+            }
+        }
+
+        private void NowPlayingBlockTrackMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_lastNowPlayingTrack)) return;
+            if (BlockedRulesService.Instance.IsTrackBlocked(_lastNowPlayingTrack))
+            {
+                BlockedRulesService.Instance.UnblockTrack(_lastNowPlayingTrack);
+            }
+            else
+            {
+                BlockedRulesService.Instance.BlockTrack(_lastNowPlayingTrack);
+            }
+            UpdateNowPlayingBlockVisual();
+        }
+
+        private void NowPlayingBlockArtistMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_lastNowPlayingArtist)) return;
+            if (BlockedRulesService.Instance.IsArtistBlocked(_lastNowPlayingArtist))
+            {
+                BlockedRulesService.Instance.UnblockArtist(_lastNowPlayingArtist);
+            }
+            else
+            {
+                BlockedRulesService.Instance.BlockArtist(_lastNowPlayingArtist);
+            }
+            UpdateNowPlayingBlockVisual();
         }
     }
 }

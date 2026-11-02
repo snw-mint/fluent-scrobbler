@@ -156,6 +156,33 @@
                 </Border>
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="0">
+                        <Grid x:Name="BlockedItemsHeader" Background="Transparent" PointerPressed="BlockedItemsHeader_PointerPressed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ic:SymbolIcon Grid.Column="0" Symbol="Prohibited" FontSize="20" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0" />
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,16,0">
+                                <TextBlock Text="Blocked Items" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Prevent specific tracks or artists from ever being scrobbled" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <ic:SymbolIcon x:Name="BlockedItemsChevron" Grid.Column="2" Symbol="ChevronRight" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                        </Grid>
+
+                        <StackPanel x:Name="BlockedItemsAccordion" Visibility="Collapsed" Margin="0,16,0,0" Spacing="12">
+                            <MenuFlyoutSeparator Margin="0,0,0,8" />
+                            <TextBlock Text="Blocked Tracks &amp; Artists" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <StackPanel x:Name="BlockedItemsStackPanel" Spacing="8" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />

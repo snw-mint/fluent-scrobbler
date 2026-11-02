@@ -10,6 +10,7 @@
 *.sln.docstates
 artifacts/
 AppTest/
+AGENTS.md
 
 # Build logs
 [Ll]og/

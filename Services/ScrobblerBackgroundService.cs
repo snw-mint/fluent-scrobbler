@@ -15,7 +15,8 @@ namespace FluentScrobbler.Services
         Idle,
         Listening,
         Sent,
-        Error
+        Error,
+        Blocked
     }
 
     public record ScrobbleStatusInfo(ScrobbleStatus Status, string? Track = null, string? Artist = null, string? Album = null);
@@ -68,6 +69,7 @@ namespace FluentScrobbler.Services
         public NowPlayingInfo? CurrentTrack { get; private set; }
         public ScrobbleStatusInfo CurrentStatus { get; private set; } = new(ScrobbleStatus.Idle);
         public bool IsCurrentTrackIgnored => _isCurrentTrackIgnored;
+        public bool IsCurrentTrackBlocked => BlockedRulesService.Instance.IsBlocked(_currentTrack, _currentArtist);
         public bool HasScrobbledCurrentTrack => _hasScrobbledCurrentTrack;
 
         public bool ToggleIgnoreCurrentTrack()
@@ -152,6 +154,7 @@ namespace FluentScrobbler.Services
             _cts = new CancellationTokenSource();
 
             _legacyPlayerWatcher.TrackChanged += OnLegacyTrackChanged;
+            BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
             if (SettingsService.IsLegacyPlayersEnabled())
             {
                 _legacyPlayerWatcher.Start();
@@ -168,6 +171,22 @@ namespace FluentScrobbler.Services
                 RegisterLegacySourceIfNew(info.SourceApp, info.DisplayName);
             }
             _ = ProcessSessionUpdateAsync();
+        }
+
+        private void OnBlockedRulesChanged(object? sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_currentTrack))
+            {
+                bool isBlocked = IsCurrentTrackBlocked;
+                if (isBlocked && CurrentStatus.Status != ScrobbleStatus.Blocked)
+                {
+                    SetStatus(ScrobbleStatus.Blocked, _currentTrack, _currentArtist, _currentAlbum);
+                }
+                else if (!isBlocked && CurrentStatus.Status == ScrobbleStatus.Blocked)
+                {
+                    SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                }
+            }
         }
 
         private async Task EnsureSessionManagerAsync()
@@ -567,7 +586,8 @@ namespace FluentScrobbler.Services
 
                 CurrentTrack = new NowPlayingInfo(title, artist, album);
                 NowPlayingChanged?.Invoke(this, CurrentTrack);
-                SetStatus(ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
+                bool isBlocked = BlockedRulesService.Instance.IsBlocked(title, artist);
+                SetStatus(isBlocked ? ScrobbleStatus.Blocked : ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
                 _nowPlayingSent = false;
                 _lastNowPlayingAttempt = DateTimeOffset.MinValue;
@@ -626,6 +646,8 @@ namespace FluentScrobbler.Services
 
                     _nowPlayingSent = false;
                     _lastNowPlayingAttempt = DateTimeOffset.MinValue;
+                    bool isBlocked = BlockedRulesService.Instance.IsBlocked(title, artist);
+                    SetStatus(isBlocked ? ScrobbleStatus.Blocked : ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
                     await TrySendNowPlayingAsync();
                     _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                 }
@@ -700,7 +722,7 @@ namespace FluentScrobbler.Services
 
         private async Task TrySendNowPlayingAsync()
         {
-            if (_nowPlayingSent || string.IsNullOrEmpty(_currentTrack) || !_windowsMediaService.IsSendNowPlayingEnabled())
+            if (_isCurrentTrackIgnored || IsCurrentTrackBlocked || _nowPlayingSent || string.IsNullOrEmpty(_currentTrack) || !_windowsMediaService.IsSendNowPlayingEnabled())
             {
                 return;
             }
@@ -730,7 +752,7 @@ namespace FluentScrobbler.Services
 
         private async Task CheckScrobbleEligibilityAsync()
         {
-            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored) return;
+            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || IsCurrentTrackBlocked) return;
 
             int percentage = _windowsMediaService.GetScrobblePercentageThreshold();
             int minLength = _windowsMediaService.GetMinimumTrackLengthSeconds();
@@ -778,13 +800,13 @@ namespace FluentScrobbler.Services
 
         private async Task ExecuteScrobbleAsync()
         {
-            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || string.IsNullOrWhiteSpace(_currentTrack) || string.IsNullOrWhiteSpace(_currentArtist)) return;
+            if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || IsCurrentTrackBlocked || string.IsNullOrWhiteSpace(_currentTrack) || string.IsNullOrWhiteSpace(_currentArtist)) return;
 
             if (!await _scrobbleLock.WaitAsync(0)) return;
 
             try
             {
-                if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || string.IsNullOrEmpty(_currentTrack)) return;
+                if (_hasScrobbledCurrentTrack || _isCurrentTrackIgnored || IsCurrentTrackBlocked || string.IsNullOrEmpty(_currentTrack)) return;
 
                 if (IsRecentlyScrobbled(_currentArtist, _currentTrack, 10))
                 {

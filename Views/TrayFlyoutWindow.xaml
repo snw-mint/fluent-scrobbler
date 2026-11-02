@@ -17,19 +17,22 @@
             <ResourceDictionary>
                 <ResourceDictionary.ThemeDictionaries>
                     <ResourceDictionary x:Key="Default">
-                        <SolidColorBrush x:Key="FlyoutOuterBorderBrush" Color="#0FFFFFFF" />
-                        <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#0FFFFFFF" />
-                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#10FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutOuterBorderBrush" Color="#15FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#12FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutBodyBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#1E000000" />
                     </ResourceDictionary>
                     <ResourceDictionary x:Key="Dark">
-                        <SolidColorBrush x:Key="FlyoutOuterBorderBrush" Color="#0FFFFFFF" />
-                        <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#0FFFFFFF" />
-                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#10FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutOuterBorderBrush" Color="#15FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#12FFFFFF" />
+                        <SolidColorBrush x:Key="FlyoutBodyBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#1E000000" />
                     </ResourceDictionary>
                     <ResourceDictionary x:Key="Light">
                         <SolidColorBrush x:Key="FlyoutOuterBorderBrush" Color="#0F000000" />
                         <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#0F000000" />
-                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#0A000000" />
+                        <SolidColorBrush x:Key="FlyoutBodyBackgroundBrush" Color="Transparent" />
+                        <SolidColorBrush x:Key="FlyoutFooterBackgroundBrush" Color="#08000000" />
                     </ResourceDictionary>
                 </ResourceDictionary.ThemeDictionaries>
             </ResourceDictionary>
@@ -39,7 +42,7 @@
                 CornerRadius="8"
                 BorderThickness="1"
                 BorderBrush="{ThemeResource FlyoutOuterBorderBrush}"
-                Background="Transparent">
+                Background="{ThemeResource FlyoutBodyBackgroundBrush}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -130,6 +133,28 @@
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center" />
                                     <TextBlock Text="Ignore track"
+                                               Style="{ThemeResource BodyTextBlockStyle}"
+                                               FontSize="12.5"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="BlockTrackButton"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Style="{ThemeResource SubtleButtonStyle}"
+                                    Padding="10,7"
+                                    CornerRadius="6"
+                                    Click="BlockTrackButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ic:SymbolIcon x:Name="BlockTrackIcon"
+                                                   Symbol="Prohibited"
+                                                   IconVariant="Regular"
+                                                   FontSize="15"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center" />
+                                    <TextBlock x:Name="BlockTrackText"
+                                               Text="Block track"
                                                Style="{ThemeResource BodyTextBlockStyle}"
                                                FontSize="12.5"
                                                VerticalAlignment="Center" />

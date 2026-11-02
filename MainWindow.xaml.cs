@@ -186,7 +186,12 @@ namespace FluentScrobbler
 
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += (sender, isIgnored) =>
             {
-                this.DispatcherQueue.TryEnqueue(() => UpdateTrayToolTip());
+                this.DispatcherQueue.TryEnqueue(() => { UpdateTrayIcon(); UpdateTrayToolTip(); });
+            };
+
+            BlockedRulesService.Instance.BlockedRulesChanged += (sender, e) =>
+            {
+                this.DispatcherQueue.TryEnqueue(() => { UpdateTrayIcon(); UpdateTrayToolTip(); });
             };
 
             ScrobblerBackgroundService.Instance.StatusChanged += (sender, statusInfo) =>
@@ -230,7 +235,13 @@ namespace FluentScrobbler
 
             var theme = _trayThemeService.GetCurrentTheme();
             string colorSuffix = theme == TrayTheme.Dark ? "white" : "black";
-            bool isActive = _currentScrobbleStatus.Status != ScrobbleStatus.Idle;
+            bool isInactiveOrIgnored =
+                _currentScrobbleStatus.Status == ScrobbleStatus.Idle ||
+                _currentScrobbleStatus.Status == ScrobbleStatus.Blocked ||
+                ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored ||
+                ScrobblerBackgroundService.Instance.IsCurrentTrackBlocked;
+
+            bool isActive = !isInactiveOrIgnored;
             bool isError = _currentScrobbleStatus.Status == ScrobbleStatus.Error || OfflineCacheWorker.Instance.OfflineMode;
 
             string statePrefix = isError ? "error" : (isActive ? "active" : "idle");
@@ -265,10 +276,15 @@ namespace FluentScrobbler
                 ScrobbleStatus.Listening => "Listening",
                 ScrobbleStatus.Sent => "Sent",
                 ScrobbleStatus.Error => "Error",
+                ScrobbleStatus.Blocked => "Blocked",
                 _ => "Idle"
             };
 
-            if (ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored)
+            if (_currentScrobbleStatus.Status == ScrobbleStatus.Blocked || ScrobblerBackgroundService.Instance.IsCurrentTrackBlocked)
+            {
+                statusText = "Blocked";
+            }
+            else if (ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored)
             {
                 statusText = "Ignored";
             }

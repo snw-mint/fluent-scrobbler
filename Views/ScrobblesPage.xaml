@@ -71,6 +71,23 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button x:Name="NowPlayingBlockButton"
+                                    Visibility="Collapsed"
+                                    Style="{ThemeResource SubtleButtonStyle}"
+                                    ToolTipService.ToolTip="Block"
+                                    Padding="8">
+                                <ic:SymbolIcon x:Name="NowPlayingBlockIcon" Symbol="Prohibited" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem x:Name="NowPlayingBlockTrackMenuItem"
+                                                        Text="Block track"
+                                                        Click="NowPlayingBlockTrackMenuItem_Click" />
+                                        <MenuFlyoutItem x:Name="NowPlayingBlockArtistMenuItem"
+                                                        Text="Block artist"
+                                                        Click="NowPlayingBlockArtistMenuItem_Click" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
                             <Button x:Name="NowPlayingIgnoreButton"
                                     Visibility="Collapsed"
                                     Style="{ThemeResource SubtleButtonStyle}"

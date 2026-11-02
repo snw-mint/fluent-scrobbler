@@ -112,7 +112,7 @@ namespace FluentScrobbler.Views
         private const int WM_MBUTTONDOWN = 0x0207;
 
         private const double FlyoutWidthDip = 196;
-        private const double FlyoutHeightDip = 198;
+        private const double FlyoutHeightDip = 234;
         private const double FlyoutIdleHeightDip = 118;
         private const double ScreenMarginDip = 12;
         private const float MarqueeGapDip = 36f;
@@ -217,10 +217,11 @@ namespace FluentScrobbler.Views
 
             if (isDark)
             {
-                _acrylicController.TintColor = Windows.UI.Color.FromArgb(255, 18, 18, 18);
-                _acrylicController.TintOpacity = 0.75f;
-                _acrylicController.LuminosityOpacity = 0.70f;
-                _acrylicController.FallbackColor = Windows.UI.Color.FromArgb(255, 18, 18, 18);
+                _acrylicController.Kind = DesktopAcrylicKind.Base;
+                _acrylicController.TintColor = Windows.UI.Color.FromArgb(255, 20, 20, 20);
+                _acrylicController.TintOpacity = 0.88f;
+                _acrylicController.LuminosityOpacity = 0.85f;
+                _acrylicController.FallbackColor = Windows.UI.Color.FromArgb(255, 20, 20, 20);
             }
             else
             {
@@ -253,6 +254,7 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += OnCurrentTrackIgnoredChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
+            BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
             OfflineCacheWorker.Instance.OfflineModeChanged += OnOfflineModeChanged;
         }
 
@@ -263,6 +265,7 @@ namespace FluentScrobbler.Views
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged -= OnCurrentTrackIgnoredChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
+            BlockedRulesService.Instance.BlockedRulesChanged -= OnBlockedRulesChanged;
             OfflineCacheWorker.Instance.OfflineModeChanged -= OnOfflineModeChanged;
         }
 
@@ -306,9 +309,15 @@ namespace FluentScrobbler.Views
             this.DispatcherQueue?.TryEnqueue(RefreshTrackData);
         }
 
+        private void OnBlockedRulesChanged(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(RefreshTrackData);
+        }
+
         private void RefreshTrackData()
         {
             var current = ScrobblerBackgroundService.Instance.CurrentTrack;
+            bool isBlocked = current != null && ScrobblerBackgroundService.Instance.IsCurrentTrackBlocked;
             bool isIgnored = ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored;
             bool hasScrobbled = ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack;
 
@@ -320,9 +329,26 @@ namespace FluentScrobbler.Views
 
                 bool isLoved = LastFmService.GetLocalLoveCache(current.Track, current.Artist ?? string.Empty) ?? false;
                 HeartUiHelper.SetHeartVisual(LikeTrackIcon, isLoved);
-                IgnoreUiHelper.SetIgnoreVisual(IgnoreTrackButton, IgnoreTrackIcon, null, null, isIgnored, hasScrobbled);
+                IgnoreUiHelper.SetIgnoreVisual(IgnoreTrackButton, IgnoreTrackIcon, null, null, isIgnored, hasScrobbled, isBlocked);
 
-                if (isIgnored)
+                bool isTrackBlocked = BlockedRulesService.Instance.IsTrackBlocked(current.Track);
+                if (isTrackBlocked)
+                {
+                    BlockTrackText.Text = "Unblock track";
+                    BlockTrackIcon.Foreground = IgnoreUiHelper.IgnoreRedBrush;
+                }
+                else
+                {
+                    BlockTrackText.Text = "Block track";
+                    BlockTrackIcon.ClearValue(FluentIcons.WinUI.SymbolIcon.ForegroundProperty);
+                }
+
+                if (isBlocked || _lastScrobbleStatus == ScrobbleStatus.Blocked)
+                {
+                    StatusText.Text = "Blocked";
+                    StatusText.Foreground = IgnoreUiHelper.IgnoreRedBrush;
+                }
+                else if (isIgnored)
                 {
                     StatusText.Text = "Ignored";
                     StatusText.Foreground = IgnoreUiHelper.IgnoreRedBrush;
@@ -710,6 +736,23 @@ namespace FluentScrobbler.Views
             if (current != null && !string.IsNullOrWhiteSpace(current.Track))
             {
                 ScrobblerBackgroundService.Instance.ToggleIgnoreCurrentTrack();
+                RefreshTrackData();
+            }
+        }
+
+        private void BlockTrackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var current = ScrobblerBackgroundService.Instance.CurrentTrack;
+            if (current != null && !string.IsNullOrWhiteSpace(current.Track))
+            {
+                if (BlockedRulesService.Instance.IsTrackBlocked(current.Track))
+                {
+                    BlockedRulesService.Instance.UnblockTrack(current.Track);
+                }
+                else
+                {
+                    BlockedRulesService.Instance.BlockTrack(current.Track);
+                }
                 RefreshTrackData();
             }
         }

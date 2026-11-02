@@ -134,7 +134,14 @@ namespace FluentScrobbler.Views
                 SetNowPlayingIdle();
             }
 
-            if (_cachedRecentScrobbles.Count > 0)
+            if (ScrobblesPage.CachedScrobbles.Count > 0)
+            {
+                var recent = ScrobblesPage.CachedScrobbles.Take(5).ToList();
+                _cachedRecentScrobbles.Clear();
+                _cachedRecentScrobbles.AddRange(recent);
+                RenderRecentScrobbles(recent);
+            }
+            else if (_cachedRecentScrobbles.Count > 0)
             {
                 RenderRecentScrobbles(_cachedRecentScrobbles);
             }
@@ -176,6 +183,14 @@ namespace FluentScrobbler.Views
         private async void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
+            ScrobblesPage.RecentScrobblesUpdated += OnRecentScrobblesUpdated;
+            if (ScrobblesPage.CachedScrobbles.Count > 0)
+            {
+                var recent = ScrobblesPage.CachedScrobbles.Take(5).ToList();
+                _cachedRecentScrobbles.Clear();
+                _cachedRecentScrobbles.AddRange(recent);
+                RenderRecentScrobbles(recent);
+            }
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
             System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -218,6 +233,7 @@ namespace FluentScrobbler.Views
         private void HomePage_Unloaded(object sender, RoutedEventArgs e)
         {
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
+            ScrobblesPage.RecentScrobblesUpdated -= OnRecentScrobblesUpdated;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
@@ -231,6 +247,25 @@ namespace FluentScrobbler.Views
             _refreshCts?.Dispose();
             _refreshCts = null;
             _isRefreshing = false;
+        }
+
+        private void OnRecentScrobblesUpdated(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                var recent = ScrobblesPage.CachedScrobbles.Take(5).ToList();
+                if (recent.Count > 0)
+                {
+                    _cachedRecentScrobbles.Clear();
+                    _cachedRecentScrobbles.AddRange(recent);
+                    RenderRecentScrobbles(recent);
+                }
+            });
+        }
+
+        private void ViewAllScrobblesButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame?.Navigate(typeof(ScrobblesPage));
         }
 
         private void OnTrackLoveChanged(object? sender, (string Track, string Artist, bool IsLoved) e)
@@ -562,7 +597,7 @@ namespace FluentScrobbler.Views
                         var tracksToday = await tracksTodayTask;
                         var recentHistory = await recentHistoryTask;
 
-                        var historyTracks = recentHistory.Where(t => !t.IsNowPlaying).Take(3).ToList();
+                        var historyTracks = recentHistory.Where(t => !t.IsNowPlaying).Take(5).ToList();
                         var historyItems = historyTracks.Select(t => {
                             var cached = _cachedRecentScrobbles.FirstOrDefault(c => c.TrackName == t.Name && c.ArtistName == t.Artist && !string.IsNullOrEmpty(c.CoverUrl));
                             return new ScrobbleItem
@@ -1016,47 +1051,7 @@ namespace FluentScrobbler.Views
             };
             rightStack.Children.Add(timeText);
 
-            var heartIcon = new FluentIcons.WinUI.SymbolIcon
-            {
-                Symbol = FluentIcons.Common.Symbol.Heart,
-                IconVariant = FluentIcons.Common.IconVariant.Regular,
-                FontSize = 18
-            };
-            HeartUiHelper.SetHeartVisual(heartIcon, item.IsFavorite);
 
-            var likeButton = new Button
-            {
-                Style = Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle) ? (Style)subtleStyle : null,
-                Padding = new Thickness(6),
-                VerticalAlignment = VerticalAlignment.Center,
-                Content = heartIcon
-            };
-            ToolTipService.SetToolTip(likeButton, "Love track");
-
-            bool isLiking = false;
-            likeButton.Click += async (s, ev) =>
-            {
-                if (isLiking) return;
-                isLiking = true;
-                likeButton.IsEnabled = false;
-
-                try
-                {
-                    bool willBeLoved = heartIcon.IconVariant != FluentIcons.Common.IconVariant.Filled;
-                    HeartUiHelper.SetHeartVisual(heartIcon, willBeLoved);
-                    HeartUiHelper.AnimateHeartPop(heartIcon);
-                    item.IsFavorite = willBeLoved;
-
-                    await _lastFmService.ToggleLoveTrackAsync(item.TrackName, item.ArtistName, willBeLoved);
-                    await Task.Delay(500);
-                }
-                finally
-                {
-                    likeButton.IsEnabled = true;
-                    isLiking = false;
-                }
-            };
-            rightStack.Children.Add(likeButton);
 
             Grid.SetColumn(rightStack, 2);
             grid.Children.Add(rightStack);
@@ -1070,6 +1065,8 @@ namespace FluentScrobbler.Views
         Padding=""14""
         Margin=""0,0,0,8"" />");
 
+            outerBorder.PointerPressed += (s, ev) => Frame?.Navigate(typeof(ScrobblesPage));
+            ToolTipService.SetToolTip(outerBorder, "View in Scrobbles");
             outerBorder.Child = grid;
             return outerBorder;
         }

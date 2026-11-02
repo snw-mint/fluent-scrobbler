@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using FluentScrobbler.Models;
 using FluentScrobbler.Services;
 
 namespace FluentScrobbler.Views
@@ -13,6 +14,7 @@ namespace FluentScrobbler.Views
     public sealed partial class SettingsPage : Page
     {
         private bool isSourceFilteringExpanded = false;
+        private bool isBlockedItemsExpanded = false;
 
         public SettingsPage()
         {
@@ -134,8 +136,10 @@ namespace FluentScrobbler.Views
                 : Visibility.Collapsed;
 
             ScrobblerBackgroundService.Instance.NewSourceDetected += OnNewSourceDetected;
+            BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
 
             LoadSourceApplications();
+            LoadBlockedItems();
         }
 
         private void SettingsPage_Unloaded(object sender, RoutedEventArgs e)
@@ -147,6 +151,7 @@ namespace FluentScrobbler.Views
             MainWindow.Current?.UpdateSettingsBadge();
 
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
+            BlockedRulesService.Instance.BlockedRulesChanged -= OnBlockedRulesChanged;
 
             ThemeModeComboBox.SelectionChanged -= ThemeMode_SelectionChanged;
             SendNowPlayingToggle.Toggled -= SendNowPlayingToggle_Toggled;
@@ -167,6 +172,119 @@ namespace FluentScrobbler.Views
             {
                 LoadSourceApplications();
             });
+        }
+
+        private void BlockedItemsHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            isBlockedItemsExpanded = !isBlockedItemsExpanded;
+            BlockedItemsAccordion.Visibility = isBlockedItemsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            BlockedItemsChevron.Symbol = isBlockedItemsExpanded ? FluentIcons.Common.Symbol.ChevronDown : FluentIcons.Common.Symbol.ChevronRight;
+        }
+
+        private void OnBlockedRulesChanged(object? sender, EventArgs e)
+        {
+            this.DispatcherQueue?.TryEnqueue(LoadBlockedItems);
+        }
+
+        private void LoadBlockedItems()
+        {
+            try
+            {
+                if (BlockedItemsStackPanel == null) return;
+                BlockedItemsStackPanel.Children.Clear();
+
+                var rules = BlockedRulesService.Instance.GetRules();
+                if (rules == null || rules.Count == 0)
+                {
+                    var emptyText = new TextBlock
+                    {
+                        Text = "No tracks or artists are currently blocked.",
+                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                    };
+                    BlockedItemsStackPanel.Children.Add(emptyText);
+                    return;
+                }
+
+                foreach (var rule in rules)
+                {
+                    var rowGrid = new Grid
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                    rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                    var icon = new FluentIcons.WinUI.SymbolIcon
+                    {
+                        Symbol = rule.Target == BlockedRuleTarget.Track ? FluentIcons.Common.Symbol.MusicNote1 : FluentIcons.Common.Symbol.Person,
+                        FontSize = 16,
+                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 0, 12, 0)
+                    };
+                    Grid.SetColumn(icon, 0);
+                    rowGrid.Children.Add(icon);
+
+                    var textStack = new StackPanel
+                    {
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Spacing = 2
+                    };
+
+                    var nameText = new TextBlock
+                    {
+                        Text = rule.Pattern,
+                        Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
+                    };
+                    textStack.Children.Add(nameText);
+
+                    var typeText = new TextBlock
+                    {
+                        Text = rule.Target == BlockedRuleTarget.Track ? "Track" : "Artist",
+                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                    };
+                    textStack.Children.Add(typeText);
+
+                    Grid.SetColumn(textStack, 1);
+                    rowGrid.Children.Add(textStack);
+
+                    var removeIcon = new FluentIcons.WinUI.SymbolIcon
+                    {
+                        Symbol = FluentIcons.Common.Symbol.Dismiss,
+                        FontSize = 14
+                    };
+
+                    var removeButton = new Button
+                    {
+                        Style = Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle) ? (Style)subtleStyle : null,
+                        Padding = new Thickness(8),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Content = removeIcon,
+                        Tag = rule.Id
+                    };
+                    ToolTipService.SetToolTip(removeButton, "Unblock");
+                    removeButton.Click += (s, ev) =>
+                    {
+                        if (s is Button b && b.Tag is string ruleId)
+                        {
+                            BlockedRulesService.Instance.RemoveRule(ruleId);
+                        }
+                    };
+
+                    Grid.SetColumn(removeButton, 2);
+                    rowGrid.Children.Add(removeButton);
+
+                    BlockedItemsStackPanel.Children.Add(rowGrid);
+                }
+            }
+            catch
+            {
+            }
         }
 
         private void SourceFilteringHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

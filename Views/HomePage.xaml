@@ -172,7 +172,24 @@
             </StackPanel>
 
             <StackPanel Spacing="12">
-                <TextBlock Text="Recent Scrobbles" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Recent Scrobbles" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button x:Name="ViewAllScrobblesButton"
+                            Grid.Column="1"
+                            Style="{ThemeResource SubtleButtonStyle}"
+                            Padding="8,4"
+                            VerticalAlignment="Center"
+                            Click="ViewAllScrobblesButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="See all" Style="{ThemeResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                            <ic:SymbolIcon Symbol="ChevronRight" FontSize="14" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
                 <StackPanel x:Name="RecentScrobblesContainer" Spacing="8">
                     <TextBlock x:Name="NoRecentScrobblesText" Text="No recent scrobbles yet." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
                 </StackPanel>

@@ -16,13 +16,20 @@ namespace FluentScrobbler.Services
             Border? badgeBorder,
             TextBlock? badgeText,
             bool isIgnored,
-            bool hasScrobbled)
+            bool hasScrobbled,
+            bool isBlocked = false)
         {
             if (button != null && icon != null)
             {
                 icon.IconVariant = IconVariant.Regular;
 
-                if (hasScrobbled)
+                if (isBlocked)
+                {
+                    button.IsEnabled = false;
+                    icon.ClearValue(FluentSymbolIcon.ForegroundProperty);
+                    ToolTipService.SetToolTip(button, "Blocked track cannot be ignored");
+                }
+                else if (hasScrobbled)
                 {
                     button.IsEnabled = false;
                     icon.ClearValue(FluentSymbolIcon.ForegroundProperty);
@@ -44,7 +51,12 @@ namespace FluentScrobbler.Services
 
             if (badgeBorder != null && badgeText != null)
             {
-                if (isIgnored)
+                if (isBlocked)
+                {
+                    badgeText.Text = "BLOCKED";
+                    badgeBorder.Background = IgnoreRedBrush;
+                }
+                else if (isIgnored)
                 {
                     badgeText.Text = "IGNORED";
                     badgeBorder.Background = IgnoreRedBrush;
