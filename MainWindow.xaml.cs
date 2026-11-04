@@ -34,6 +34,39 @@ namespace FluentScrobbler
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 #endif
 
+        private const uint WM_GETMINMAXINFO = 0x0024;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        private delegate nint SubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam, nuint uIdSubclass, nuint dwRefData);
+
+        [DllImport("comctl32.dll", SetLastError = true)]
+        private static extern bool SetWindowSubclass(IntPtr hWnd, SubclassProc pfnSubclass, nuint uIdSubclass, nuint dwRefData);
+
+        [DllImport("comctl32.dll", SetLastError = true)]
+        private static extern bool RemoveWindowSubclass(IntPtr hWnd, SubclassProc pfnSubclass, nuint uIdSubclass);
+
+        [DllImport("comctl32.dll", SetLastError = true)]
+        private static extern nint DefSubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hwnd);
+
         public static new MainWindow? Current { get; private set; }
         public ElementTheme CurrentTheme { get; private set; } = ElementTheme.Default;
         public Windows.UI.Color CurrentAccentColor { get; private set; }
@@ -42,6 +75,8 @@ namespace FluentScrobbler
         private ScrobbleStatusInfo _currentScrobbleStatus = new(ScrobbleStatus.Idle);
         private TaskbarIcon? AppTrayIcon;
         private TrayFlyoutWindow? _trayFlyoutWindow;
+        private readonly IntPtr _hWnd;
+        private readonly SubclassProc _subclassProc;
 
         public MainWindow()
         {
@@ -53,6 +88,10 @@ namespace FluentScrobbler
             this.Title = "Fluent Scrobbler";
 
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _hWnd = windowHandle;
+            _subclassProc = new SubclassProc(WindowSubclassHandler);
+            SetWindowSubclass(_hWnd, _subclassProc, 1, 0);
+
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
             var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
 
@@ -354,12 +393,35 @@ namespace FluentScrobbler
             this.Activate();
         }
 
+        private nint WindowSubclassHandler(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam, nuint uIdSubclass, nuint dwRefData)
+        {
+            if (uMsg == WM_GETMINMAXINFO)
+            {
+                var minMaxInfo = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                double dpiScale = GetDpiForWindow(hWnd) / 96.0;
+                minMaxInfo.ptMinTrackSize.X = (int)Math.Round(700 * dpiScale);
+                minMaxInfo.ptMinTrackSize.Y = (int)Math.Round(500 * dpiScale);
+                Marshal.StructureToPtr(minMaxInfo, lParam, false);
+                return 0;
+            }
+            return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        }
+
         private bool _isExiting = false;
 
         public void ShutdownApp()
         {
             if (_isExiting) return;
             _isExiting = true;
+
+            try
+            {
+                if (_hWnd != IntPtr.Zero && _subclassProc != null)
+                {
+                    RemoveWindowSubclass(_hWnd, _subclassProc, 1);
+                }
+            }
+            catch { }
 
             try
             {
