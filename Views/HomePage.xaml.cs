@@ -96,18 +96,18 @@ namespace FluentScrobbler.Views
                 NowPlayingActiveContainer.Visibility = Visibility.Visible;
                 NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
                 NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
-                NowPlayingLikeButton.Visibility = Visibility.Visible;
                 if (_cachedNowPlayingTrack != null) NowPlayingTrackText.Text = _cachedNowPlayingTrack;
                 if (_cachedNowPlayingArtistAlbum != null) NowPlayingArtistAlbumText.Text = _cachedNowPlayingArtistAlbum;
-                HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, _cachedNowPlayingIsLoved);
-                NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                bool isBlocked = cur != null && BlockedRulesService.Instance.IsBlocked(cur.Track, cur.Artist);
                 IgnoreUiHelper.SetIgnoreVisual(
-                    NowPlayingIgnoreButton,
-                    NowPlayingIgnoreIcon,
+                    null,
+                    null,
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    isBlocked);
                 if (!string.IsNullOrEmpty(_cachedNowPlayingArtUrl))
                 {
                     try
@@ -161,8 +161,7 @@ namespace FluentScrobbler.Views
             NowPlayingAlbumArtImage.Visibility = Visibility.Collapsed;
             NowPlayingFallbackIcon.Visibility = Visibility.Collapsed;
             NowPlayingIdleIcon.Visibility = Visibility.Visible;
-            NowPlayingLikeButton.Visibility = Visibility.Collapsed;
-            NowPlayingIgnoreButton.Visibility = Visibility.Collapsed;
+
 
         }
 
@@ -184,6 +183,7 @@ namespace FluentScrobbler.Views
         {
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
             ScrobblesPage.RecentScrobblesUpdated += OnRecentScrobblesUpdated;
+            BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
             if (ScrobblesPage.CachedScrobbles.Count > 0)
             {
                 var recent = ScrobblesPage.CachedScrobbles.Take(5).ToList();
@@ -234,6 +234,7 @@ namespace FluentScrobbler.Views
         {
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
             ScrobblesPage.RecentScrobblesUpdated -= OnRecentScrobblesUpdated;
+            BlockedRulesService.Instance.BlockedRulesChanged -= OnBlockedRulesChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbled;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.NewSourceDetected -= OnNewSourceDetected;
@@ -276,7 +277,6 @@ namespace FluentScrobbler.Views
                     string.Equals(_lastNowPlayingArtist, e.Artist, StringComparison.OrdinalIgnoreCase))
                 {
                     _cachedNowPlayingIsLoved = e.IsLoved;
-                    HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, e.IsLoved);
                 }
 
                 bool changed = false;
@@ -486,13 +486,16 @@ namespace FluentScrobbler.Views
                 _dashboardLoaded = false;
                 await LoadDashboardDataAsync();
                 _dashboardLoaded = true;
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                bool isBlocked = cur != null && BlockedRulesService.Instance.IsBlocked(cur.Track, cur.Artist);
                 IgnoreUiHelper.SetIgnoreVisual(
-                    NowPlayingIgnoreButton,
-                    NowPlayingIgnoreIcon,
+                    null,
+                    null,
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    isBlocked);
             });
         }
 
@@ -501,37 +504,16 @@ namespace FluentScrobbler.Views
             NowPlayingIdleContainer.Visibility = Visibility.Collapsed;
             NowPlayingActiveContainer.Visibility = Visibility.Visible;
             NowPlayingIdleIcon.Visibility = Visibility.Collapsed;
-            NowPlayingLikeButton.Visibility = Visibility.Visible;
-            
-            bool isLoved = false;
-            var cachedNowPlaying = _cachedRecentScrobbles.FirstOrDefault(t => 
-                string.Equals(t.TrackName, track, StringComparison.OrdinalIgnoreCase) && 
-                string.Equals(t.ArtistName, artist, StringComparison.OrdinalIgnoreCase));
-            if (cachedNowPlaying != null)
-            {
-                isLoved = cachedNowPlaying.IsFavorite;
-            }
-            else
-            {
-                var localLoved = LastFmService.GetLocalLoveCache(track ?? "", artist ?? "");
-                if (localLoved.HasValue)
-                {
-                    isLoved = localLoved.Value;
-                }
-            }
-
-            HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, isLoved);
-            _cachedNowPlayingIsLoved = isLoved;
-            
             NowPlayingTrackText.Text = track;
-            NowPlayingIgnoreButton.Visibility = Visibility.Visible;
+            bool isBlocked = BlockedRulesService.Instance.IsBlocked(track, artist);
             IgnoreUiHelper.SetIgnoreVisual(
-                NowPlayingIgnoreButton,
-                NowPlayingIgnoreIcon,
+                null,
+                null,
                 NowPlayingStatusBadge,
                 NowPlayingStatusText,
                 ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                isBlocked);
             string artistAlbumStr = string.IsNullOrEmpty(album) ? artist : $"{artist} • {album}";
             NowPlayingArtistAlbumText.Text = artistAlbumStr;
 
@@ -837,19 +819,20 @@ namespace FluentScrobbler.Views
             ForceSyncButton.IsEnabled = true;
         }
 
-        private bool _isLikingNowPlaying = false;
-
         private void OnCurrentTrackIgnoredChanged(object? sender, bool isIgnored)
         {
             this.DispatcherQueue?.TryEnqueue(() =>
             {
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                bool isBlocked = cur != null && BlockedRulesService.Instance.IsBlocked(cur.Track, cur.Artist);
                 IgnoreUiHelper.SetIgnoreVisual(
-                    NowPlayingIgnoreButton,
-                    NowPlayingIgnoreIcon,
+                    null,
+                    null,
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     isIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    isBlocked);
             });
         }
 
@@ -857,46 +840,39 @@ namespace FluentScrobbler.Views
         {
             this.DispatcherQueue?.TryEnqueue(() =>
             {
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                bool isBlocked = cur != null && BlockedRulesService.Instance.IsBlocked(cur.Track, cur.Artist);
                 IgnoreUiHelper.SetIgnoreVisual(
-                    NowPlayingIgnoreButton,
-                    NowPlayingIgnoreIcon,
+                    null,
+                    null,
                     NowPlayingStatusBadge,
                     NowPlayingStatusText,
                     ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
-                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack);
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    isBlocked);
             });
         }
 
-        private void NowPlayingIgnoreButton_Click(object sender, RoutedEventArgs e)
+        private void OnBlockedRulesChanged(object? sender, EventArgs e)
         {
-            ScrobblerBackgroundService.Instance.ToggleIgnoreCurrentTrack();
+            this.DispatcherQueue?.TryEnqueue(() =>
+            {
+                var cur = ScrobblerBackgroundService.Instance.CurrentTrack;
+                bool isBlocked = cur != null && BlockedRulesService.Instance.IsBlocked(cur.Track, cur.Artist);
+                IgnoreUiHelper.SetIgnoreVisual(
+                    null,
+                    null,
+                    NowPlayingStatusBadge,
+                    NowPlayingStatusText,
+                    ScrobblerBackgroundService.Instance.IsCurrentTrackIgnored,
+                    ScrobblerBackgroundService.Instance.HasScrobbledCurrentTrack,
+                    isBlocked);
+            });
         }
 
-        private async void NowPlayingLikeButton_Click(object sender, RoutedEventArgs e)
+        private void NowPlayingCard_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            if (_isLikingNowPlaying) return;
-            
-            _isLikingNowPlaying = true;
-            NowPlayingLikeButton.IsEnabled = false;
-
-            try
-            {
-                bool willBeLoved = NowPlayingLikeIcon.IconVariant != FluentIcons.Common.IconVariant.Filled;
-                HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, willBeLoved);
-                HeartUiHelper.AnimateHeartPop(NowPlayingLikeIcon);
-
-                if (!string.IsNullOrEmpty(_lastNowPlayingTrack) && !string.IsNullOrEmpty(_lastNowPlayingArtist))
-                {
-                    await _lastFmService.ToggleLoveTrackAsync(_lastNowPlayingTrack, _lastNowPlayingArtist, willBeLoved);
-                }
-                
-                await Task.Delay(500);
-            }
-            finally
-            {
-                NowPlayingLikeButton.IsEnabled = true;
-                _isLikingNowPlaying = false;
-            }
+            Frame?.Navigate(typeof(ScrobblesPage));
         }
 
         private void RenderRecentScrobbles(List<ScrobbleItem> items)

@@ -33,12 +33,41 @@ namespace FluentScrobbler.Services
             }
         }
 
+        private static readonly string[] ArtistSeparators = new[]
+        {
+            ",", ";", "/", "\\", "|", "&",
+            " feat. ", " feat ", " ft. ", " ft ", " featuring ",
+            " with ", " and ", " e ", " y ", " x ", " vs. ", " vs "
+        };
+
         public bool IsArtistBlocked(string? artist)
         {
             if (string.IsNullOrWhiteSpace(artist)) return false;
+            string clean = artist.Trim();
+
             lock (_lock)
             {
-                return _blockedArtists.Contains(artist.Trim());
+                if (_blockedArtists.Contains(clean)) return true;
+
+                string primary = WindowsMediaService.FormatPrimaryArtist(clean);
+                if (!string.IsNullOrWhiteSpace(primary) && _blockedArtists.Contains(primary))
+                {
+                    return true;
+                }
+
+                var tokens = clean.Split(ArtistSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (tokens.Length > 1)
+                {
+                    foreach (var token in tokens)
+                    {
+                        if (_blockedArtists.Contains(token))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
         }
 

@@ -116,7 +116,14 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="Now Playing" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <Border x:Name="NowPlayingCard" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                <Border x:Name="NowPlayingCard"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="20"
+                        ToolTipService.ToolTip="View in Scrobbles"
+                        PointerPressed="NowPlayingCard_PointerPressed">
                     <Grid ColumnSpacing="20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -149,24 +156,7 @@
                             <TextBlock Text="Play something to start scrobbling." Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                            <Button x:Name="NowPlayingIgnoreButton"
-                                    Visibility="Collapsed"
-                                    Style="{ThemeResource SubtleButtonStyle}"
-                                    ToolTipService.ToolTip="Ignore this scrobble"
-                                    Padding="8"
-                                    Click="NowPlayingIgnoreButton_Click">
-                                <ic:SymbolIcon x:Name="NowPlayingIgnoreIcon" Symbol="SubtractCircle" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </Button>
-                            <Button x:Name="NowPlayingLikeButton"
-                                    Visibility="Collapsed"
-                                    Style="{ThemeResource SubtleButtonStyle}"
-                                    ToolTipService.ToolTip="Love track"
-                                    Padding="8"
-                                    Click="NowPlayingLikeButton_Click">
-                                <ic:SymbolIcon x:Name="NowPlayingLikeIcon" Symbol="Heart" IconVariant="Regular" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </Button>
-                        </StackPanel>
+                        <ic:SymbolIcon Grid.Column="2" Symbol="ChevronRight" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                     </Grid>
                 </Border>
             </StackPanel>
