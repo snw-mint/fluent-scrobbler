@@ -11,6 +11,7 @@
 artifacts/
 fluent-scrobbler-main
 AppTest/
+AGENTS.md
 
 # Build logs
 [Ll]og/
