@@ -266,6 +266,18 @@ namespace FluentScrobbler.Services
             }
         }
 
+        private async Task CheckTrackLovedStatusAsync(string track, string artist)
+        {
+            if (string.IsNullOrWhiteSpace(track) || string.IsNullOrWhiteSpace(artist)) return;
+            for (int i = 0; i < _providers.Length; i++)
+            {
+                if (_providers[i] is LastFmService lastFm)
+                {
+                    await lastFm.CheckTrackLovedAsync(track, artist);
+                }
+            }
+        }
+
         private void SetStatus(ScrobbleStatus status, string? track = null, string? artist = null, string? album = null)
         {
             var newStatus = new ScrobbleStatusInfo(status, track, artist, album);
@@ -586,6 +598,7 @@ namespace FluentScrobbler.Services
 
                 CurrentTrack = new NowPlayingInfo(title, artist, album);
                 NowPlayingChanged?.Invoke(this, CurrentTrack);
+                _ = CheckTrackLovedStatusAsync(_currentTrack, _currentArtist);
                 bool isBlocked = BlockedRulesService.Instance.IsBlocked(title, artist);
                 SetStatus(isBlocked ? ScrobbleStatus.Blocked : ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
 
@@ -649,6 +662,7 @@ namespace FluentScrobbler.Services
                     bool isBlocked = BlockedRulesService.Instance.IsBlocked(title, artist);
                     SetStatus(isBlocked ? ScrobbleStatus.Blocked : ScrobbleStatus.Listening, _currentTrack, _currentArtist, _currentAlbum);
                     await TrySendNowPlayingAsync();
+                    _ = CheckTrackLovedStatusAsync(_currentTrack, _currentArtist);
                     _ = UpdateDiscordPresenceAsync(_currentTrack, _currentArtist, _currentAlbum, _trackStartTime);
                 }
                 else

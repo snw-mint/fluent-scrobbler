@@ -25,17 +25,100 @@ namespace FluentScrobbler.Services
         public static event EventHandler? SessionInvalidated;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _localLoveCache = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Task<bool?>> _inFlightLoveChecks = new(StringComparer.OrdinalIgnoreCase);
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime ExpiresAt, List<string> Tags)> _artistTopTagsCache = new(StringComparer.OrdinalIgnoreCase);
 
         public static void UpdateLocalLoveCache(string track, string artist, bool isLoved)
         {
-            _localLoveCache[$"{artist}|{track}"] = isLoved;
+            if (string.IsNullOrWhiteSpace(track) || string.IsNullOrWhiteSpace(artist)) return;
+            _localLoveCache[$"{artist.Trim()}|{track.Trim()}"] = isLoved;
         }
 
         public static bool? GetLocalLoveCache(string track, string artist)
         {
-            if (_localLoveCache.TryGetValue($"{artist}|{track}", out bool isLoved))
+            if (string.IsNullOrWhiteSpace(track) || string.IsNullOrWhiteSpace(artist)) return null;
+            if (_localLoveCache.TryGetValue($"{artist.Trim()}|{track.Trim()}", out bool isLoved))
                 return isLoved;
+            return null;
+        }
+
+        public async Task<bool?> CheckTrackLovedAsync(string track, string artist)
+        {
+            if (string.IsNullOrWhiteSpace(track) || string.IsNullOrWhiteSpace(artist))
+                return null;
+
+            string cleanTrack = track.Trim();
+            string cleanArtist = artist.Trim();
+            string key = $"{cleanArtist}|{cleanTrack}";
+
+            if (_localLoveCache.TryGetValue(key, out bool cachedLoved))
+                return cachedLoved;
+
+            return await _inFlightLoveChecks.GetOrAdd(key, _ => CheckTrackLovedInternalAsync(cleanTrack, cleanArtist));
+        }
+
+        private async Task<bool?> CheckTrackLovedInternalAsync(string track, string artist)
+        {
+            string key = $"{artist}|{track}";
+            try
+            {
+                var (username, _) = GetUserSession();
+                if (string.IsNullOrEmpty(username))
+                    return null;
+
+                bool? result = await QueryTrackUserLovedAsync(track, artist, username);
+                if (result != true)
+                {
+                    string primaryArtist = WindowsMediaService.FormatPrimaryArtist(artist);
+                    if (!string.Equals(primaryArtist, artist, StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool? primaryResult = await QueryTrackUserLovedAsync(track, primaryArtist, username);
+                        if (primaryResult == true)
+                        {
+                            result = true;
+                            UpdateLocalLoveCache(track, primaryArtist, true);
+                        }
+                    }
+                }
+
+                if (result.HasValue)
+                {
+                    UpdateLocalLoveCache(track, artist, result.Value);
+                    TrackLoveChanged?.Invoke(this, (track, artist, result.Value));
+                }
+
+                return result;
+            }
+            finally
+            {
+                _inFlightLoveChecks.TryRemove(key, out _);
+            }
+        }
+
+        private async Task<bool?> QueryTrackUserLovedAsync(string track, string artist, string username)
+        {
+            try
+            {
+                string url = $"{BaseUrl}?method=track.getinfo&api_key={ApiKey}&artist={Uri.EscapeDataString(artist)}&track={Uri.EscapeDataString(track)}&username={Uri.EscapeDataString(username)}&format=json";
+                using var response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("track", out var trackElement) &&
+                        trackElement.TryGetProperty("userloved", out var userLovedProp))
+                    {
+                        if (userLovedProp.ValueKind == JsonValueKind.String)
+                            return userLovedProp.GetString() == "1";
+                        if (userLovedProp.ValueKind == JsonValueKind.Number)
+                            return userLovedProp.GetInt32() == 1;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Last.fm] Error checking track userloved", ex);
+            }
             return null;
         }
 

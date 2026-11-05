@@ -327,8 +327,13 @@ namespace FluentScrobbler.Views
                 SetTrackTitle(current.Track);
                 ArtistNameText.Text = !string.IsNullOrWhiteSpace(current.Artist) ? current.Artist : "Unknown artist";
 
-                bool isLoved = LastFmService.GetLocalLoveCache(current.Track, current.Artist ?? string.Empty) ?? false;
+                bool? cachedLoved = LastFmService.GetLocalLoveCache(current.Track, current.Artist ?? string.Empty);
+                bool isLoved = cachedLoved ?? false;
                 HeartUiHelper.SetHeartVisual(LikeTrackIcon, isLoved);
+                if (!cachedLoved.HasValue)
+                {
+                    _ = _lastFmService.CheckTrackLovedAsync(current.Track, current.Artist ?? string.Empty);
+                }
                 IgnoreUiHelper.SetIgnoreVisual(IgnoreTrackButton, IgnoreTrackIcon, null, null, isIgnored, hasScrobbled, isBlocked);
 
                 bool isTrackBlocked = BlockedRulesService.Instance.IsTrackBlocked(current.Track);

@@ -761,6 +761,10 @@ namespace FluentScrobbler.Views
                 {
                     isLoved = localLoved.Value;
                 }
+                else
+                {
+                    _ = _lastFmService.CheckTrackLovedAsync(track ?? "", artist ?? "");
+                }
             }
             HeartUiHelper.SetHeartVisual(NowPlayingLikeIcon, isLoved);
 
