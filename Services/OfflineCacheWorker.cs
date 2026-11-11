@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Threading;
 using Windows.Networking.Connectivity;
@@ -16,7 +17,9 @@ namespace FluentScrobbler.Services
         private System.Timers.Timer? _timer;
         private readonly SemaphoreSlim _processLock = new SemaphoreSlim(1, 1);
         private int _currentBackoffLevel = 0;
-        private readonly int[] _backoffIntervals = { 60, 300, 900, 3600 };
+        private readonly int[] _backoffIntervals = { 15, 60, 180, 600 };
+        private volatile bool _retryRequested;
+        private int _networkChangeVersion;
         private bool _offlineMode;
         public bool OfflineMode
         {
@@ -33,10 +36,12 @@ namespace FluentScrobbler.Services
 
         public event EventHandler<bool>? OfflineModeChanged;
         public event EventHandler<int>? CacheCountChanged;
+        public event EventHandler? CacheSynced;
 
         private OfflineCacheWorker()
         {
             NetworkInformation.NetworkStatusChanged += NetworkInformation_NetworkStatusChanged;
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
         }
 
         public void Start()
@@ -48,8 +53,13 @@ namespace FluentScrobbler.Services
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
 
+            _ = InitialBootSyncAsync();
+        }
 
-            _ = ProcessCacheAsync();
+        private async Task InitialBootSyncAsync()
+        {
+            await Task.Delay(3000);
+            await ProcessCacheAsync();
         }
 
         private void SetTimerInterval()
@@ -61,14 +71,49 @@ namespace FluentScrobbler.Services
             }
         }
 
-        private async void NetworkInformation_NetworkStatusChanged(object sender)
+        private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs e)
         {
-            var profile = NetworkInformation.GetInternetConnectionProfile();
-            if (profile != null && profile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess)
+            HandleNetworkChange();
+        }
+
+        private void NetworkInformation_NetworkStatusChanged(object sender)
+        {
+            HandleNetworkChange();
+        }
+
+        private async void HandleNetworkChange()
+        {
+            int version = Interlocked.Increment(ref _networkChangeVersion);
+            await Task.Delay(2500);
+            if (version != Volatile.Read(ref _networkChangeVersion)) return;
+
+            if (IsInternetAvailable())
             {
                 _currentBackoffLevel = 0;
                 SetTimerInterval();
-                await ProcessCacheAsync();
+                _retryRequested = true;
+                await ProcessCacheAsync(waitForLock: true);
+            }
+        }
+
+        private static bool IsInternetAvailable()
+        {
+            try
+            {
+                var profile = NetworkInformation.GetInternetConnectionProfile();
+                if (profile != null)
+                {
+                    var level = profile.GetNetworkConnectivityLevel();
+                    if (level == NetworkConnectivityLevel.InternetAccess || level == NetworkConnectivityLevel.ConstrainedInternetAccess)
+                    {
+                        return true;
+                    }
+                }
+                return NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch
+            {
+                return true;
             }
         }
 
@@ -81,13 +126,29 @@ namespace FluentScrobbler.Services
         {
             _currentBackoffLevel = 0;
             SetTimerInterval();
+            _retryRequested = true;
             await ProcessCacheAsync(waitForLock: true);
         }
 
         public async Task TriggerOfflineModeAsync()
         {
             OfflineMode = true;
+            _currentBackoffLevel = 0;
+            SetTimerInterval();
+            _timer?.Stop();
+            _timer?.Start();
             await UpdateCacheCountAsync();
+        }
+
+        public void NotifyNetworkSuccess()
+        {
+            if (_offlineMode || _currentBackoffLevel > 0)
+            {
+                _currentBackoffLevel = 0;
+                SetTimerInterval();
+                _retryRequested = true;
+                _ = ProcessCacheAsync();
+            }
         }
 
         public async Task UpdateCacheCountAsync()
@@ -111,13 +172,18 @@ namespace FluentScrobbler.Services
             }
             else if (!_processLock.Wait(0))
             {
+                _retryRequested = true;
                 return;
             }
+
+            bool anyBatchSynced = false;
 
             try
             {
                 while (true)
                 {
+                    _retryRequested = false;
+
                     long cutoff = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 1209600;
                     await _cacheService.PurgeExpiredScrobblesAsync(cutoff);
 
@@ -175,6 +241,7 @@ namespace FluentScrobbler.Services
 
                     if (batchResult == BatchScrobbleResult.Success)
                     {
+                        anyBatchSynced = true;
                         var ids = uniqueEntries.Select(s => s.Id).ToList();
                         await _cacheService.RemoveScrobblesAsync(ids);
 
@@ -201,6 +268,12 @@ namespace FluentScrobbler.Services
                     }
                     else
                     {
+                        if (_retryRequested)
+                        {
+                            _currentBackoffLevel = 0;
+                            SetTimerInterval();
+                            continue;
+                        }
                         IncreaseBackoff();
                         break;
                     }
@@ -214,6 +287,11 @@ namespace FluentScrobbler.Services
             finally
             {
                 _processLock.Release();
+            }
+
+            if (anyBatchSynced)
+            {
+                CacheSynced?.Invoke(this, EventArgs.Empty);
             }
         }
 

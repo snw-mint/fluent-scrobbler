@@ -155,6 +155,8 @@ namespace FluentScrobbler.Services
 
             _legacyPlayerWatcher.TrackChanged += OnLegacyTrackChanged;
             BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
+            Windows.Networking.Connectivity.NetworkInformation.NetworkStatusChanged += OnNetworkStatusChanged;
+            System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             if (SettingsService.IsLegacyPlayersEnabled())
             {
                 _legacyPlayerWatcher.Start();
@@ -162,6 +164,16 @@ namespace FluentScrobbler.Services
 
             _ = EnsureSessionManagerAsync();
             _ = RunLoopAsync(_cts.Token);
+        }
+
+        private void OnNetworkStatusChanged(object sender)
+        {
+            _lastNowPlayingAttempt = DateTimeOffset.MinValue;
+        }
+
+        private void OnNetworkAddressChanged(object? sender, EventArgs e)
+        {
+            _lastNowPlayingAttempt = DateTimeOffset.MinValue;
         }
 
         private void OnLegacyTrackChanged(object? sender, LegacyTrackInfo info)
@@ -755,6 +767,7 @@ namespace FluentScrobbler.Services
                     if (await _providers[i].UpdateNowPlayingAsync(_currentTrack, _currentArtist, _currentAlbum))
                     {
                         _nowPlayingSent = true;
+                        OfflineCacheWorker.Instance.NotifyNetworkSuccess();
                     }
                 }
                 catch (Exception ex)
@@ -875,6 +888,7 @@ namespace FluentScrobbler.Services
                 if (success)
                 {
                     SetStatus(ScrobbleStatus.Sent, _currentTrack, _currentArtist, _currentAlbum);
+                    OfflineCacheWorker.Instance.NotifyNetworkSuccess();
                     TrackScrobbled?.Invoke(this, EventArgs.Empty);
                 }
                 else

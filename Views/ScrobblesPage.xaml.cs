@@ -48,6 +48,7 @@ namespace FluentScrobbler.Views
             LastFmService.TrackLoveChanged += OnTrackLoveChanged;
             BlockedRulesService.Instance.BlockedRulesChanged += OnBlockedRulesChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled += OnTrackScrobbledInBackground;
+            OfflineCacheWorker.Instance.CacheSynced += OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged += OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged += OnCurrentTrackIgnoredChanged;
             ScrobblerBackgroundService.Instance.StatusChanged += OnScrobbleStatusChanged;
@@ -96,6 +97,7 @@ namespace FluentScrobbler.Views
             LastFmService.TrackLoveChanged -= OnTrackLoveChanged;
             BlockedRulesService.Instance.BlockedRulesChanged -= OnBlockedRulesChanged;
             ScrobblerBackgroundService.Instance.TrackScrobbled -= OnTrackScrobbledInBackground;
+            OfflineCacheWorker.Instance.CacheSynced -= OnTrackScrobbledInBackground;
             ScrobblerBackgroundService.Instance.NowPlayingChanged -= OnNowPlayingChanged;
             ScrobblerBackgroundService.Instance.CurrentTrackIgnoredChanged -= OnCurrentTrackIgnoredChanged;
             ScrobblerBackgroundService.Instance.StatusChanged -= OnScrobbleStatusChanged;

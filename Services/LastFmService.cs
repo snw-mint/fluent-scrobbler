@@ -131,9 +131,9 @@ namespace FluentScrobbler.Services
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _lastFmSubmittedScrobbles = new(StringComparer.OrdinalIgnoreCase);
         private static (string? Username, string? SessionKey)? _cachedSession;
 
-        private List<ScrobbleTrack>? _cachedRecentTracks;
-        private DateTime _lastFetchTime = DateTime.MinValue;
-        private string _lastFetchUsername = string.Empty;
+        private static List<ScrobbleTrack>? _cachedRecentTracks;
+        private static DateTime _lastFetchTime = DateTime.MinValue;
+        private static string _lastFetchUsername = string.Empty;
         private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
 
         private static (string Username, string DisplayName, string ImageUrl, int ScrobbleCount)? _cachedUserInfo;
@@ -144,12 +144,47 @@ namespace FluentScrobbler.Services
             var h = new SocketsHttpHandler
             {
                 PooledConnectionLifetime = TimeSpan.FromMinutes(2),
-                PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
-                ConnectTimeout = TimeSpan.FromSeconds(10)
+                PooledConnectionIdleTimeout = TimeSpan.FromSeconds(20),
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                KeepAlivePingDelay = TimeSpan.FromSeconds(15),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(5),
+                ConnectTimeout = TimeSpan.FromSeconds(10),
+                ConnectCallback = async (context, cancellationToken) =>
+                {
+                    System.Net.IPAddress[] addresses;
+                    try
+                    {
+                        addresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, System.Net.Sockets.AddressFamily.InterNetwork, cancellationToken).ConfigureAwait(false);
+                        if (addresses.Length == 0)
+                        {
+                            addresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, System.Net.Sockets.AddressFamily.Unspecified, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    catch
+                    {
+                        addresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, System.Net.Sockets.AddressFamily.Unspecified, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp)
+                    {
+                        NoDelay = true
+                    };
+
+                    try
+                    {
+                        await socket.ConnectAsync(addresses, context.DnsEndPoint.Port, cancellationToken).ConfigureAwait(false);
+                        return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                    }
+                    catch
+                    {
+                        socket.Dispose();
+                        throw;
+                    }
+                }
             };
             _httpClient = new HttpClient(h)
             {
-                Timeout = TimeSpan.FromSeconds(15)
+                Timeout = TimeSpan.FromSeconds(20)
             };
             _httpClient.DefaultRequestHeaders.Add("User-Agent", $"FluentScrobbler-WindowsApp/{AppInfoService.Version}");
         }
@@ -209,13 +244,16 @@ namespace FluentScrobbler.Services
 
         public (string? Username, string? SessionKey) GetUserSession()
         {
-            if (_cachedSession.HasValue) return _cachedSession.Value;
+            if (_cachedSession.HasValue && !string.IsNullOrEmpty(_cachedSession.Value.SessionKey))
+            {
+                return _cachedSession.Value;
+            }
 
             string? username = GetSetting("LastFmUsername");
             if (string.IsNullOrEmpty(username))
             {
-                _cachedSession = (null, null);
-                return _cachedSession.Value;
+                _cachedSession = null;
+                return (null, null);
             }
 
             try
@@ -223,7 +261,11 @@ namespace FluentScrobbler.Services
                 var vault = new PasswordVault();
                 var cred = vault.Retrieve(AppInfoService.AppDataFolderName, username);
                 cred.RetrievePassword();
-                _cachedSession = (username, cred.Password);
+                if (!string.IsNullOrEmpty(cred.Password))
+                {
+                    _cachedSession = (username, cred.Password);
+                    return _cachedSession.Value;
+                }
             }
             catch
             {
@@ -233,14 +275,11 @@ namespace FluentScrobbler.Services
                     SaveUserSession(username, oldSessionKey);
                     RemoveSetting("LastFmSessionKey");
                     _cachedSession = (username, oldSessionKey);
-                }
-                else
-                {
-                    _cachedSession = (username, null);
+                    return _cachedSession.Value;
                 }
             }
 
-            return _cachedSession.Value;
+            return (username, null);
         }
 
         public void SaveUserSession(string username, string sessionKey)
@@ -826,48 +865,66 @@ namespace FluentScrobbler.Services
                 return false;
             }
 
-            try
+            var parameters = new Dictionary<string, string>
             {
-                var parameters = new Dictionary<string, string>
-                {
-                    { "api_key", ApiKey },
-                    { "artist", artist },
-                    { "method", "track.updateNowPlaying" },
-                    { "sk", sessionKey },
-                    { "track", track }
-                };
+                { "api_key", ApiKey },
+                { "artist", artist },
+                { "method", "track.updateNowPlaying" },
+                { "sk", sessionKey },
+                { "track", track }
+            };
 
-                if (!string.IsNullOrWhiteSpace(album))
-                {
-                    parameters["album"] = album;
-                }
-
-                string apiSig = GenerateApiSignature(parameters, ApiSecret);
-                parameters["api_sig"] = apiSig;
-                parameters["format"] = "json";
-
-                var content = new FormUrlEncodedContent(parameters);
-                using var response = await _httpClient.PostAsync(BaseUrl, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string json = await response.Content.ReadAsStringAsync();
-                    bool success = TryParseResult(json, out _, out int errorCode);
-                    if (errorCode == 9) InvalidateSession();
-                    if (!success)
-                    {
-                        LogService.LogError($"[API Error] track.updateNowPlaying returned error response: {json}");
-                    }
-                    return success;
-                }
-                else
-                {
-                    LogService.LogError($"[API Error] track.updateNowPlaying HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
-                }
+            if (!string.IsNullOrWhiteSpace(album))
+            {
+                parameters["album"] = album;
             }
-            catch (Exception ex)
+
+            string apiSig = GenerateApiSignature(parameters, ApiSecret);
+            parameters["api_sig"] = apiSig;
+            parameters["format"] = "json";
+
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                LogService.LogError("[API Error] Exception updating Now Playing", ex);
+                try
+                {
+                    using var content = new FormUrlEncodedContent(parameters);
+                    using var response = await _httpClient.PostAsync(BaseUrl, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string json = await response.Content.ReadAsStringAsync();
+                        bool success = TryParseResult(json, out _, out int errorCode);
+                        if (errorCode == 9)
+                        {
+                            InvalidateSession();
+                            return false;
+                        }
+                        if (!success)
+                        {
+                            LogService.LogError($"[API Error] track.updateNowPlaying returned error response: {json}");
+                        }
+                        return success;
+                    }
+
+                    if (attempt == 0 && (int)response.StatusCode >= 500)
+                    {
+                        await Task.Delay(1500);
+                        continue;
+                    }
+
+                    LogService.LogError($"[API Error] track.updateNowPlaying HTTP {(int)response.StatusCode} - {response.ReasonPhrase}");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    if (attempt == 0 && ex is (HttpRequestException or TaskCanceledException or TimeoutException))
+                    {
+                        await Task.Delay(1500);
+                        continue;
+                    }
+                    LogService.LogError("[API Error] Exception updating Now Playing", ex);
+                    return false;
+                }
             }
             return false;
         }
@@ -910,41 +967,62 @@ namespace FluentScrobbler.Services
             parameters["api_sig"] = apiSig;
             parameters["format"] = "json";
 
-            var content = new FormUrlEncodedContent(parameters);
-            using var response = await _httpClient.PostAsync(BaseUrl, content);
-
-            string json = await response.Content.ReadAsStringAsync();
-            bool parsed = TryParseResult(json, out int accepted, out int errorCode);
-
-            if (parsed && response.IsSuccessStatusCode)
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                if (accepted == 0)
+                try
                 {
-                    LogService.LogWarning($"[API Warning] track.scrobble ignored by Last.fm: {json}");
-                    return true;
-                }
+                    using var content = new FormUrlEncodedContent(parameters);
+                    using var response = await _httpClient.PostAsync(BaseUrl, content);
 
-                _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
-                if (_lastFmSubmittedScrobbles.Count > 100)
-                {
-                    var cutoff = DateTimeOffset.UtcNow.AddHours(-24);
-                    foreach (var kvp in _lastFmSubmittedScrobbles)
+                    string json = await response.Content.ReadAsStringAsync();
+                    bool parsed = TryParseResult(json, out int accepted, out int errorCode);
+
+                    if (parsed && response.IsSuccessStatusCode)
                     {
-                        if (kvp.Value < cutoff)
+                        if (accepted == 0)
                         {
-                            _lastFmSubmittedScrobbles.TryRemove(kvp.Key, out _);
+                            LogService.LogWarning($"[API Warning] track.scrobble ignored by Last.fm: {json}");
+                            return true;
                         }
+
+                        _lastFmSubmittedScrobbles[dedupeKey] = DateTimeOffset.UtcNow;
+                        if (_lastFmSubmittedScrobbles.Count > 100)
+                        {
+                            var cutoff = DateTimeOffset.UtcNow.AddHours(-24);
+                            foreach (var kvp in _lastFmSubmittedScrobbles)
+                            {
+                                if (kvp.Value < cutoff)
+                                {
+                                    _lastFmSubmittedScrobbles.TryRemove(kvp.Key, out _);
+                                }
+                            }
+                        }
+                        return true;
                     }
+
+                    if (errorCode == 9)
+                    {
+                        InvalidateSession();
+                        return false;
+                    }
+
+                    if (attempt == 0 && (errorCode == 11 || errorCode == 16 || (int)response.StatusCode >= 500))
+                    {
+                        await Task.Delay(1500);
+                        continue;
+                    }
+
+                    LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
+                    if (!response.IsSuccessStatusCode && errorCode == 0)
+                    {
+                        throw new HttpRequestException($"HTTP Error {(int)response.StatusCode}");
+                    }
+                    return false;
                 }
-                return true;
-            }
-
-            if (errorCode == 9) InvalidateSession();
-
-            LogService.LogError($"[API Error] track.scrobble HTTP {(int)response.StatusCode} - {response.ReasonPhrase}: {json}");
-            if (!response.IsSuccessStatusCode && errorCode == 0)
-            {
-                throw new HttpRequestException($"HTTP Error {(int)response.StatusCode}");
+                catch (Exception ex) when (attempt == 0 && ex is (HttpRequestException or TaskCanceledException or TimeoutException))
+                {
+                    await Task.Delay(1500);
+                }
             }
             return false;
         }
