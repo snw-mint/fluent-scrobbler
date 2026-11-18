@@ -29,6 +29,7 @@ namespace FluentScrobbler.Views
             {
                 MainWindow.Current.Activated += Window_Activated;
             }
+            LoadByokCredentialsUi();
             if (!_dataLoaded)
             {
                 await LoadAccountStateAsync();
@@ -131,20 +132,103 @@ namespace FluentScrobbler.Views
             }
         }
 
+        private bool _suppressByokEvents;
+
+        private void LoadByokCredentialsUi()
+        {
+            _suppressByokEvents = true;
+            try
+            {
+                var (apiKey, apiSecret) = LastFmService.GetCustomApiCredentials();
+                CustomApiKeyInput.Text = apiKey ?? string.Empty;
+                CustomApiSecretInput.Password = apiSecret ?? string.Empty;
+
+                bool hasCustom = LastFmService.HasCustomApiCredentials();
+                ClearApiCredentialsButton.Visibility = hasCustom ? Visibility.Visible : Visibility.Collapsed;
+                SaveApiCredentialsButton.IsEnabled = false;
+
+                if (hasCustom)
+                {
+                    ByokStatusBadgeText.Text = "Custom Key Active";
+                    ByokFeedbackText.Text = "Your custom Last.fm Pro API credentials are active.";
+                }
+                else if (LastFmService.IsPastByokCutoff)
+                {
+                    ByokStatusBadgeText.Text = "Required";
+                    ByokFeedbackText.Text = "Default developer API has expired. Please save your Last.fm Pro API Key & Shared Secret to log in.";
+                }
+                else
+                {
+                    ByokStatusBadgeText.Text = "Fallback Active";
+                    ByokFeedbackText.Text = "Using developer fallback API until December 1st. Requires an active Last.fm Pro account.";
+                }
+            }
+            finally
+            {
+                _suppressByokEvents = false;
+            }
+        }
+
+        private void CustomApiInputs_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_suppressByokEvents) return;
+
+            string key = CustomApiKeyInput.Text?.Trim() ?? string.Empty;
+            string secret = CustomApiSecretInput.Password?.Trim() ?? string.Empty;
+            var (savedKey, savedSecret) = LastFmService.GetCustomApiCredentials();
+
+            bool isValid = key.Length >= 16 && secret.Length >= 16;
+            bool isModified = !string.Equals(key, savedKey ?? string.Empty, StringComparison.Ordinal) ||
+                              !string.Equals(secret, savedSecret ?? string.Empty, StringComparison.Ordinal);
+
+            SaveApiCredentialsButton.IsEnabled = isValid && isModified;
+        }
+
+        private async void SaveApiCredentialsButton_Click(object sender, RoutedEventArgs e)
+        {
+            string key = CustomApiKeyInput.Text?.Trim() ?? string.Empty;
+            string secret = CustomApiSecretInput.Password?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret)) return;
+
+            StopAuthPolling();
+            _currentAuthToken = null;
+            _dataLoaded = false;
+
+            _lastFmService.SaveCustomApiCredentials(key, secret);
+            LoadByokCredentialsUi();
+            ByokFeedbackText.Text = "API credentials saved! Please click Login above to authenticate with your new key.";
+            await LoadAccountStateAsync();
+        }
+
+        private async void ClearApiCredentialsButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopAuthPolling();
+            _currentAuthToken = null;
+            _dataLoaded = false;
+
+            _lastFmService.ClearCustomApiCredentials();
+            LoadByokCredentialsUi();
+            await LoadAccountStateAsync();
+        }
+
         private async Task LoadAccountStateAsync()
         {
             bool isLoggedIn = _lastFmService.IsLoggedIn();
+            bool hasValidApi = LastFmService.HasValidEffectiveApiCredentials();
             MainWindow.Current?.UpdateNavigationState(isLoggedIn);
 
             if (isLoggedIn)
             {
                 var (username, sessionKey) = _lastFmService.GetUserSession();
                 AccountTitleText.Text = username ?? "Last.fm User";
-                AccountSubtitleText.Text = "Connected to Last.fm";
+                AccountSubtitleText.Text = LastFmService.HasCustomApiCredentials()
+                    ? "Connected to Last.fm (BYOK)"
+                    : "Connected to Last.fm (Fallback API)";
 
                 ActionButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
+                ActionButton.IsEnabled = true;
                 ActionButtonText.Text = "Log out";
-                ActionButtonIcon.Glyph = "\uE8A7";
+                ActionButtonIcon.Symbol = FluentIcons.Common.Symbol.Open;
 
                 if (!string.IsNullOrEmpty(username))
                 {
@@ -177,15 +261,18 @@ namespace FluentScrobbler.Views
             else
             {
                 AccountTitleText.Text = "Login to Lastfm Account";
-                AccountSubtitleText.Text = "Not connected";
+                AccountSubtitleText.Text = hasValidApi
+                    ? "Not connected"
+                    : "Configure your Last.fm Pro API Key & Shared Secret below to log in";
                 AccountDetailsText.Visibility = Visibility.Collapsed;
 
                 UserAvatarImage.Visibility = Visibility.Collapsed;
                 UserAvatarIcon.Visibility = Visibility.Visible;
 
                 ActionButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+                ActionButton.IsEnabled = hasValidApi;
                 ActionButtonText.Text = string.IsNullOrEmpty(_currentAuthToken) ? "Login" : "Complete Login";
-                ActionButtonIcon.Glyph = "\uE8A7";
+                ActionButtonIcon.Symbol = FluentIcons.Common.Symbol.Open;
             }
 
             if (ExportConfigButton != null) ExportConfigButton.IsEnabled = isLoggedIn;
@@ -243,14 +330,14 @@ namespace FluentScrobbler.Views
                     }
                     else
                     {
-                        AccountSubtitleText.Text = "Network error: Failed to request token. Try again.";
+                        AccountSubtitleText.Text = "Failed to request token. Verify your API Key / Last.fm Pro subscription and try again.";
                         ActionButtonText.Text = "Retry Login";
                         _currentAuthToken = null;
                     }
                 }
                 finally
                 {
-                    ActionButton.IsEnabled = true;
+                    ActionButton.IsEnabled = LastFmService.HasValidEffectiveApiCredentials();
                     ActionButtonRing.IsActive = false;
                     ActionButtonRing.Visibility = Visibility.Collapsed;
                     ActionButtonIcon.Visibility = Visibility.Visible;

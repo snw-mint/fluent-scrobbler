@@ -123,9 +123,134 @@ namespace FluentScrobbler.Services
         }
 
         private const string BaseUrl = "https://ws.audioscrobbler.com/2.0/";
+        private const string CustomApiKeySetting = "CustomLastFmApiKey";
+        private const string CustomApiSecretVaultUser = "__LastFmCustomApiSecret__";
 
-        private readonly string ApiKey = AppSecrets.ApiKey;
-        private readonly string ApiSecret = AppSecrets.ApiSecret;
+        public static readonly DateTimeOffset ByokCutoffUtc = new(2026, 12, 1, 0, 0, 0, TimeSpan.Zero);
+        public static bool IsPastByokCutoff => DateTimeOffset.UtcNow >= ByokCutoffUtc;
+
+        public static event EventHandler? ApiCredentialsChanged;
+
+        private static string? _cachedCustomApiKey;
+        private static string? _cachedCustomApiSecret;
+        private static bool _customCredentialsLoaded;
+
+        private static void EnsureCustomCredentialsLoaded()
+        {
+            if (_customCredentialsLoaded) return;
+
+            _cachedCustomApiKey = GetSetting(CustomApiKeySetting)?.Trim();
+            if (!string.IsNullOrWhiteSpace(_cachedCustomApiKey))
+            {
+                try
+                {
+                    var vault = new PasswordVault();
+                    var cred = vault.Retrieve(AppInfoService.AppDataFolderName, CustomApiSecretVaultUser);
+                    cred.RetrievePassword();
+                    _cachedCustomApiSecret = cred.Password?.Trim();
+                }
+                catch
+                {
+                    _cachedCustomApiSecret = GetSetting("CustomLastFmApiSecret")?.Trim();
+                }
+            }
+
+            _customCredentialsLoaded = true;
+        }
+
+        public static bool HasCustomApiCredentials()
+        {
+            EnsureCustomCredentialsLoaded();
+            return !string.IsNullOrWhiteSpace(_cachedCustomApiKey) && !string.IsNullOrWhiteSpace(_cachedCustomApiSecret);
+        }
+
+        public static (string? ApiKey, string? ApiSecret) GetCustomApiCredentials()
+        {
+            EnsureCustomCredentialsLoaded();
+            return (_cachedCustomApiKey, _cachedCustomApiSecret);
+        }
+
+        public static bool HasValidEffectiveApiCredentials()
+        {
+            if (HasCustomApiCredentials()) return true;
+            if (IsPastByokCutoff) return false;
+            return !string.IsNullOrWhiteSpace(AppSecrets.ApiKey) && AppSecrets.ApiKey != "YOUR_API_KEY_HERE";
+        }
+
+        public void SaveCustomApiCredentials(string apiKey, string apiSecret)
+        {
+            string cleanKey = apiKey.Trim();
+            string cleanSecret = apiSecret.Trim();
+
+            SetSetting(CustomApiKeySetting, cleanKey);
+            try
+            {
+                var vault = new PasswordVault();
+                try
+                {
+                    var oldCred = vault.Retrieve(AppInfoService.AppDataFolderName, CustomApiSecretVaultUser);
+                    vault.Remove(oldCred);
+                }
+                catch { }
+                vault.Add(new PasswordCredential(AppInfoService.AppDataFolderName, CustomApiSecretVaultUser, cleanSecret));
+                RemoveSetting("CustomLastFmApiSecret");
+            }
+            catch (Exception ex)
+            {
+                LogService.LogError("[Auth Error] Failed to save custom API secret to PasswordVault, using settings fallback", ex);
+                SetSetting("CustomLastFmApiSecret", cleanSecret);
+            }
+
+            _cachedCustomApiKey = cleanKey;
+            _cachedCustomApiSecret = cleanSecret;
+            _customCredentialsLoaded = true;
+
+            ClearUserSession();
+            ApiCredentialsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void ClearCustomApiCredentials()
+        {
+            RemoveSetting(CustomApiKeySetting);
+            RemoveSetting("CustomLastFmApiSecret");
+
+            try
+            {
+                var vault = new PasswordVault();
+                var cred = vault.Retrieve(AppInfoService.AppDataFolderName, CustomApiSecretVaultUser);
+                vault.Remove(cred);
+            }
+            catch { }
+
+            _cachedCustomApiKey = null;
+            _cachedCustomApiSecret = null;
+            _customCredentialsLoaded = true;
+
+            ClearUserSession();
+            ApiCredentialsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private string ApiKey
+        {
+            get
+            {
+                EnsureCustomCredentialsLoaded();
+                if (!string.IsNullOrWhiteSpace(_cachedCustomApiKey) && !string.IsNullOrWhiteSpace(_cachedCustomApiSecret))
+                    return _cachedCustomApiKey;
+                return IsPastByokCutoff ? string.Empty : AppSecrets.ApiKey;
+            }
+        }
+
+        private string ApiSecret
+        {
+            get
+            {
+                EnsureCustomCredentialsLoaded();
+                if (!string.IsNullOrWhiteSpace(_cachedCustomApiKey) && !string.IsNullOrWhiteSpace(_cachedCustomApiSecret))
+                    return _cachedCustomApiSecret;
+                return IsPastByokCutoff ? string.Empty : AppSecrets.ApiSecret;
+            }
+        }
 
         private static readonly HttpClient _httpClient;
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> _lastFmSubmittedScrobbles = new(StringComparer.OrdinalIgnoreCase);
@@ -238,6 +363,7 @@ namespace FluentScrobbler.Services
 
         public bool IsLoggedIn()
         {
+            if (!HasValidEffectiveApiCredentials()) return false;
             var (_, sessionKey) = GetUserSession();
             return !string.IsNullOrEmpty(sessionKey);
         }
@@ -894,7 +1020,7 @@ namespace FluentScrobbler.Services
                     {
                         string json = await response.Content.ReadAsStringAsync();
                         bool success = TryParseResult(json, out _, out int errorCode);
-                        if (errorCode == 9)
+                        if (errorCode is 9 or 10 or 26)
                         {
                             InvalidateSession();
                             return false;
@@ -1000,7 +1126,7 @@ namespace FluentScrobbler.Services
                         return true;
                     }
 
-                    if (errorCode == 9)
+                    if (errorCode is 9 or 10 or 26)
                     {
                         InvalidateSession();
                         return false;
@@ -1078,7 +1204,7 @@ namespace FluentScrobbler.Services
                     return BatchScrobbleResult.Success;
                 }
 
-                if (errorCode == 9)
+                if (errorCode is 9 or 10 or 26)
                 {
                     InvalidateSession();
                     return BatchScrobbleResult.TransientError;
@@ -1136,7 +1262,7 @@ namespace FluentScrobbler.Services
                 {
                     string json = await response.Content.ReadAsStringAsync();
                     bool success = TryParseResult(json, out _, out int errorCode);
-                    if (errorCode == 9) InvalidateSession();
+                    if (errorCode is 9 or 10 or 26) InvalidateSession();
                     if (!success)
                     {
                         LogService.LogError($"[API Error] {(love ? "track.love" : "track.unlove")} returned error response: {json}");

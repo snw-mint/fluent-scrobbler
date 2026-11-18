@@ -701,15 +701,37 @@ namespace FluentScrobbler
             var service = new LastFmService();
             bool isLoggedIn = service.IsLoggedIn();
             UpdateNavigationState(isLoggedIn);
+            UpdateByokBannerState();
 
             ScrobblerBackgroundService.Instance.Start();
             OfflineCacheWorker.Instance.Start();
+
+            LastFmService.ApiCredentialsChanged += (s, e) =>
+            {
+                this.DispatcherQueue.TryEnqueue(UpdateByokBannerState);
+            };
+
+            var byokCheckTimer = this.DispatcherQueue.CreateTimer();
+            byokCheckTimer.Interval = TimeSpan.FromMinutes(15);
+            byokCheckTimer.Tick += (s, args) =>
+            {
+                UpdateByokBannerState();
+                bool stillLoggedIn = service.IsLoggedIn();
+                UpdateNavigationState(stillLoggedIn);
+                if (!stillLoggedIn && ContentFrame.CurrentSourcePageType != typeof(AccountPage) && ContentFrame.CurrentSourcePageType != typeof(AboutPage) && ContentFrame.CurrentSourcePageType != typeof(ContributePage))
+                {
+                    ContentFrame.Navigate(typeof(AccountPage));
+                    SetSelectedItemByTag("AccountPage");
+                }
+            };
+            byokCheckTimer.Start();
 
             LastFmService.SessionInvalidated += (s, e) =>
             {
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
                     UpdateNavigationState(false);
+                    UpdateByokBannerState();
                     ContentFrame.Navigate(typeof(AccountPage));
                     SetSelectedItemByTag("AccountPage");
                 });
@@ -852,6 +874,87 @@ namespace FluentScrobbler
                     ContentFrame.Navigate(pageType);
                 }
             }
+        }
+
+        public void UpdateByokBannerState()
+        {
+            if (ByokTransitionInfoBar == null) return;
+            bool shouldShow = !LastFmService.IsPastByokCutoff && !LastFmService.HasCustomApiCredentials();
+            ByokTransitionInfoBar.IsOpen = shouldShow;
+            ByokTransitionInfoBar.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public async Task ShowByokAnnouncementDialogAsync()
+        {
+            if (this.Content is not FrameworkElement root || root.XamlRoot == null) return;
+
+            var panel = new StackPanel { Spacing = 12, MaxWidth = 480 };
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Last.fm has announced a major change to their API policy:",
+                Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"],
+                TextWrapping = TextWrapping.Wrap
+            });
+
+            var quoteBorder = new Border
+            {
+                Background = (Brush)Application.Current.Resources["LayerFillColorDefaultBrush"],
+                BorderBrush = (Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(12)
+            };
+
+            quoteBorder.Child = new TextBlock
+            {
+                Text = "\"From the 1st December, holding a Last.fm API key will require a Last.fm Pro subscription. Creating a new key will require a Pro account, and existing keys without it will stop working until you subscribe.\"",
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                FontStyle = Windows.UI.Text.FontStyle.Italic,
+                TextWrapping = TextWrapping.Wrap
+            };
+            panel.Children.Add(quoteBorder);
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Because Fluent Scrobbler is completely free and generates no financial return, the default developer API key will stop working on December 1st, 2026. To keep the app functional, it now operates under a BYOK (Bring Your Own Key) model.",
+                Style = (Style)Application.Current.Resources["BodyTextBlockStyle"],
+                TextWrapping = TextWrapping.Wrap
+            });
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Version 1.4 is the final release of Fluent Scrobbler. After this update, the project will no longer be actively maintained and the repository will be archived. If you have questions or wish to continue maintaining the project, please reach out at: snowmint.dev@gmail.com",
+                Style = (Style)Application.Current.Resources["BodyTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                TextWrapping = TextWrapping.Wrap
+            });
+
+            var dialog = new ContentDialog
+            {
+                Title = "Project Archival & BYOK Transition (v1.4)",
+                Content = panel,
+                PrimaryButtonText = "Configure API Key",
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = root.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                if (ContentFrame.CurrentSourcePageType != typeof(AccountPage))
+                {
+                    ContentFrame.Navigate(typeof(AccountPage));
+                }
+                SetSelectedItemByTag("AccountPage");
+            }
+        }
+
+        private async void ByokLearnMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ShowByokAnnouncementDialogAsync();
         }
     }
 }

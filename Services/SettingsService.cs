@@ -190,6 +190,8 @@ namespace FluentScrobbler.Services
                 }
             }
 
+            settings.Remove("CustomLastFmApiSecret");
+
             foreach (var pair in WindowsMediaService.GetSettingsSnapshot())
             {
                 settings[MediaKeyPrefix + pair.Key] = pair.Value;

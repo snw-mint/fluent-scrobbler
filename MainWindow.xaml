@@ -15,6 +15,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -43,8 +44,22 @@
                 </StackPanel>
             </Grid>
 
+            <InfoBar x:Name="ByokTransitionInfoBar"
+                     Grid.Row="1"
+                     IsOpen="False"
+                     IsClosable="False"
+                     Severity="Error"
+                     Title="Important Notice:"
+                     Message="Last.fm API requires a Pro key starting Dec 1st. Fluent Scrobbler is transitioning to BYOK (final release)."
+                     Margin="12,0,12,8"
+                     CornerRadius="8">
+                <InfoBar.ActionButton>
+                    <Button Content="Learn More" Click="ByokLearnMoreButton_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <NavigationView x:Name="NavView"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             IsBackButtonVisible="Collapsed"
                             IsSettingsVisible="False"
                             PaneDisplayMode="Auto"
